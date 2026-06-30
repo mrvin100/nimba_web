@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client";
-import type { LoginInput, MeResponse } from "./auth-schemas";
+import type { LoginInput, MeResponse } from "./schema";
 
 /** Authenticates and establishes the session cookie; returns the analyst. */
 export function login(input: LoginInput): Promise<MeResponse> {

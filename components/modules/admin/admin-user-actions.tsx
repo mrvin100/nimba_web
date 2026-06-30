@@ -3,8 +3,8 @@
 import { toast } from "sonner";
 import { MoreHorizontal } from "lucide-react";
 import { ApiError } from "@/lib/api-error";
-import { useSetUserStatus } from "./admin-hooks";
-import type { AdminUser, UserStatusAction } from "./admin-schemas";
+import { useSetUserStatus } from "./useAdmin";
+import type { AdminUser, UserStatusAction } from "./schema";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@/lib/api-error";
 import { login } from "./auth-service";
 import { landingPath } from "./auth-access";
-import { loginSchema, type LoginInput } from "./auth-schemas";
+import { loginSchema, type LoginInput } from "./schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

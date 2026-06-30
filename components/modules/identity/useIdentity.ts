@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ROUTES } from "@/lib/constants";
 import { fetchMe, logout } from "./auth-service";
 import { hasDepartment, isAdmin, isManager, primaryDepartment, userDepartments } from "./auth-access";
-import type { Department, MeResponse } from "./auth-schemas";
+import type { Department, MeResponse } from "./schema";
 
 /** Query key for the current session (single source for cache invalidation on logout). */
 export const sessionKeys = {

@@ -6,14 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { ApiError } from "@/lib/api-error";
-import { useCreateUser } from "./admin-hooks";
+import { useCreateUser } from "./useAdmin";
 import {
   createUserSchema,
   hasAnyAssignment,
   toCreateUserPayload,
   type CreateUserInput,
   type RoleChoice,
-} from "./admin-schemas";
+} from "./schema";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {

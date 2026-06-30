@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client";
-import type { AdminUser, AdminUserPage, CreateUserPayload, UserStatusAction } from "./admin-schemas";
+import type { AdminUser, AdminUserPage, CreateUserPayload, UserStatusAction } from "./schema";
 
 /** Lists managed users, newest first (paginated). */
 export function listUsers(page = 0, size = 20): Promise<AdminUserPage> {

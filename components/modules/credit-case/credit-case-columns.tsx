@@ -1,10 +1,9 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import type { CreditCaseSummary } from "./credit-case-schemas";
+import { formatDate } from "@/lib/format";
+import type { CreditCaseSummary } from "./schema";
 import { CreditCaseStatusBadge } from "./credit-case-status-badge";
-
-const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
 
 export const creditCaseColumns: ColumnDef<CreditCaseSummary>[] = [
   {
@@ -22,6 +21,6 @@ export const creditCaseColumns: ColumnDef<CreditCaseSummary>[] = [
   {
     accessorKey: "createdAt",
     header: "Créé le",
-    cell: ({ row }) => dateFormat.format(new Date(row.original.createdAt)),
+    cell: ({ row }) => formatDate(row.original.createdAt),
   },
 ];

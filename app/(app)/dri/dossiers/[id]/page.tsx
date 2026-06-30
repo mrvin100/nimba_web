@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CreditCaseDetail } from "@/components/modules/credit-case";
+import { AmortizationPanel } from "@/components/modules/amortization-schedule";
 import { ROUTES } from "@/lib/constants";
 
 export default async function CreditCaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -10,6 +11,7 @@ export default async function CreditCaseDetailPage({ params }: { params: Promise
         ← Tous les dossiers
       </Link>
       <CreditCaseDetail caseId={id} />
+      <AmortizationPanel caseId={id} />
     </main>
   );
 }

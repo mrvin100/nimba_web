@@ -1,5 +1,5 @@
 import { ROUTES } from "@/lib/constants";
-import { DEPARTMENTS, type Department, type MeResponse } from "./auth-schemas";
+import { DEPARTMENTS, type Department, type MeResponse } from "./schema";
 
 /**
  * Pure capability helpers derived from a {@link MeResponse}. Kept free of React so

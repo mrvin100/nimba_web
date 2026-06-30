@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { caseDetailPath } from "@/lib/constants";
-import { useCreditCases } from "./credit-case-hooks";
+import { useCreditCases } from "./useCreditCase";
 import { creditCaseColumns } from "./credit-case-columns";
 import { DataTable } from "@/components/shared/data-table";
-import { Button } from "@/components/ui/button";
+import { Pager } from "@/components/shared/pager";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 
@@ -48,14 +48,12 @@ export function CreditCaseList() {
         emptyMessage="Aucun dossier."
         onRowClick={(creditCase) => router.push(caseDetailPath(creditCase.id))}
       />
-      <div className="flex items-center justify-end gap-2">
-        <Button variant="outline" size="sm" disabled={!data.hasPrevious} onClick={() => setPage((p) => Math.max(0, p - 1))}>
-          Précédent
-        </Button>
-        <Button variant="outline" size="sm" disabled={!data.hasNext} onClick={() => setPage((p) => p + 1)}>
-          Suivant
-        </Button>
-      </div>
+      <Pager
+        hasPrevious={data.hasPrevious}
+        hasNext={data.hasNext}
+        onPrevious={() => setPage((p) => Math.max(0, p - 1))}
+        onNext={() => setPage((p) => p + 1)}
+      />
     </div>
   );
 }

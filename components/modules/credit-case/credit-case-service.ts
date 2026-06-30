@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client";
-import type { CreateCaseInput, CreditCase, CreditCaseSummary, PagedResponse } from "./credit-case-schemas";
+import type { CreateCaseInput, CreditCase, CreditCaseSummary, PagedResponse } from "./schema";
 
 /** Lists credit cases, newest first (paginated). */
 export function listCreditCases(page = 0, size = 20): Promise<PagedResponse<CreditCaseSummary>> {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { PagedResponse } from "@/lib/pagination";
 import { DEPARTMENTS, type AccountStatus, type Membership } from "@/components/modules/identity";
 
 /** A managed user, as returned by the admin endpoints. */
@@ -13,15 +14,7 @@ export interface AdminUser {
 }
 
 /** Backend pagination envelope for the admin user list. */
-export interface AdminUserPage {
-  content: AdminUser[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-}
+export type AdminUserPage = PagedResponse<AdminUser>;
 
 /** Lifecycle transitions exposed as explicit admin actions. */
 export type UserStatusAction = "suspend" | "reactivate" | "revoke";

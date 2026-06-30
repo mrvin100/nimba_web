@@ -1,11 +1,10 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import type { AdminUser } from "./admin-schemas";
+import { formatDate } from "@/lib/format";
+import type { AdminUser } from "./schema";
 import { AccountStatusBadge, MembershipBadges } from "./admin-badges";
 import { AdminUserActions } from "./admin-user-actions";
-
-const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
 
 export const adminUserColumns: ColumnDef<AdminUser>[] = [
   {
@@ -27,7 +26,7 @@ export const adminUserColumns: ColumnDef<AdminUser>[] = [
   {
     accessorKey: "createdAt",
     header: "Créé le",
-    cell: ({ row }) => dateFormat.format(new Date(row.original.createdAt)),
+    cell: ({ row }) => formatDate(row.original.createdAt),
   },
   {
     id: "actions",

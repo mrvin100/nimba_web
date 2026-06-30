@@ -8,8 +8,8 @@ import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { ApiError } from "@/lib/api-error";
 import { caseDetailPath } from "@/lib/constants";
-import { useCreateCreditCase } from "./credit-case-hooks";
-import { createCaseSchema, PRODUCT_TYPES, type CreateCaseInput } from "./credit-case-schemas";
+import { useCreateCreditCase } from "./useCreditCase";
+import { createCaseSchema, PRODUCT_TYPES, type CreateCaseInput } from "./schema";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

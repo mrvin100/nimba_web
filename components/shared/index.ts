@@ -3,6 +3,7 @@ export { AppSidebar } from "./app-sidebar";
 export { WorkspaceShell } from "./workspace-shell";
 export { WorkspacePlaceholder } from "./workspace-placeholder";
 export { DataTable } from "./data-table";
+export { Pager } from "./pager";
 export { QueryProvider } from "./query-provider";
 export {
   WORKSPACES,

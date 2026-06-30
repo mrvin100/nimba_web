@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useAdminUsers } from "./admin-hooks";
+import { useAdminUsers } from "./useAdmin";
 import { adminUserColumns } from "./admin-columns";
 import { DataTable } from "@/components/shared/data-table";
-import { Button } from "@/components/ui/button";
+import { Pager } from "@/components/shared/pager";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 
@@ -40,14 +40,12 @@ export function AdminUsersTable() {
   return (
     <div className="space-y-4">
       <DataTable columns={adminUserColumns} data={data.content} emptyMessage="Aucun utilisateur." />
-      <div className="flex items-center justify-end gap-2">
-        <Button variant="outline" size="sm" disabled={!data.hasPrevious} onClick={() => setPage((p) => Math.max(0, p - 1))}>
-          Précédent
-        </Button>
-        <Button variant="outline" size="sm" disabled={!data.hasNext} onClick={() => setPage((p) => p + 1)}>
-          Suivant
-        </Button>
-      </div>
+      <Pager
+        hasPrevious={data.hasPrevious}
+        hasNext={data.hasNext}
+        onPrevious={() => setPage((p) => Math.max(0, p - 1))}
+        onNext={() => setPage((p) => p + 1)}
+      />
     </div>
   );
 }

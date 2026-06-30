@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createUser, listUsers, setUserStatus } from "./admin-service";
-import type { UserStatusAction } from "./admin-schemas";
+import type { UserStatusAction } from "./schema";
 
 /** Query keys for the admin user domain (single source for cache invalidation). */
 export const adminKeys = {

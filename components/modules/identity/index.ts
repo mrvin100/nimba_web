@@ -1,7 +1,7 @@
 export { LoginForm } from "./login-form";
-export { useSession, useLogout, sessionKeys } from "./use-session";
+export { useSession, useLogout, sessionKeys } from "./useIdentity";
 export { login, logout, fetchMe } from "./auth-service";
-export { loginSchema, DEPARTMENTS, DEPARTMENT_ROLES } from "./auth-schemas";
+export { loginSchema, DEPARTMENTS, DEPARTMENT_ROLES } from "./schema";
 export type {
   LoginInput,
   MeResponse,
@@ -9,7 +9,7 @@ export type {
   DepartmentRole,
   AccountStatus,
   Membership,
-} from "./auth-schemas";
+} from "./schema";
 export {
   isAdmin,
   isManager,

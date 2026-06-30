@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { CreditCaseStatus } from "./credit-case-schemas";
+import type { CreditCaseStatus } from "./schema";
 
 const LABELS: Record<CreditCaseStatus, { label: string; variant: "secondary" | "default" }> = {
   EN_ATTENTE_AMORTISSEMENT: { label: "En attente d'amortissement", variant: "secondary" },

@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
-import { useCreditCase } from "./credit-case-hooks";
+import { formatDate } from "@/lib/format";
+import { useCreditCase } from "./useCreditCase";
 import { CreditCaseStatusBadge } from "./credit-case-status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" });
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -37,30 +36,19 @@ export function CreditCaseDetail({ caseId }: { caseId: string }) {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{data.caseNumber}</CardTitle>
-          <CardDescription>{data.clientName}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DetailRow label="Type de produit">{data.productType}</DetailRow>
-          <DetailRow label="Devise">{data.currency}</DetailRow>
-          <DetailRow label="Statut">
-            <CreditCaseStatusBadge status={data.status} />
-          </DetailRow>
-          <DetailRow label="Créé le">{dateFormat.format(new Date(data.createdAt))}</DetailRow>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Tableau d'amortissement</CardTitle>
-          <CardDescription>
-            L'import du tableau d'amortissement et la génération des trades seront disponibles ici.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>{data.caseNumber}</CardTitle>
+        <CardDescription>{data.clientName}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <DetailRow label="Type de produit">{data.productType}</DetailRow>
+        <DetailRow label="Devise">{data.currency}</DetailRow>
+        <DetailRow label="Statut">
+          <CreditCaseStatusBadge status={data.status} />
+        </DetailRow>
+        <DetailRow label="Créé le">{formatDate(data.createdAt, "long")}</DetailRow>
+      </CardContent>
+    </Card>
   );
 }
