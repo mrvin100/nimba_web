@@ -29,7 +29,7 @@ export function CreditCaseDetail({ caseId }: { caseId: string }) {
     return (
       <p className="text-sm text-muted-foreground">
         Dossier introuvable.{" "}
-        <Link href={ROUTES.DASHBOARD} className="underline underline-offset-4">
+        <Link href={ROUTES.DRI} className="underline underline-offset-4">
           Retour au tableau de bord
         </Link>
       </p>

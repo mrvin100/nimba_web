@@ -1,13 +1,18 @@
 /** All application routes — never hardcode route strings inline. */
 export const ROUTES = {
-  DASHBOARD: "/",
   LOGIN: "/login",
-  DOSSIERS: "/dossiers",
+  DRI: "/dri",
+  DCM: "/dcm",
+  DRC: "/drc",
+  ADMIN: "/admin",
 } as const;
 
-/** Builds the path to a credit-case detail page. */
+/** The DRI dossier list lives at the DRI workspace root. */
+export const DOSSIERS = ROUTES.DRI;
+
+/** Builds the path to a credit-case detail page (DRI workspace). */
 export function caseDetailPath(id: string): string {
-  return `${ROUTES.DOSSIERS}/${id}`;
+  return `${ROUTES.DRI}/dossiers/${id}`;
 }
 
 /** Backend session cookie names (see backend application.yaml). */

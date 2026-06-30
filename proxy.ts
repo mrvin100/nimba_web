@@ -3,9 +3,10 @@ import type { NextRequest } from "next/server";
 import { AUTH_COOKIES, ROUTES } from "@/lib/constants";
 
 /**
- * Guards the DRI workspace: a visitor without a session cookie is sent to the
- * login page. This is the cheap first gate — the backend remains the source of
- * truth and rejects any request with an invalid/expired session regardless.
+ * Guards the authenticated workspaces: a visitor without a session cookie is sent
+ * to the login page. This is the cheap first gate — the backend remains the source
+ * of truth and rejects any request with an invalid/expired session, and the
+ * client-side shell enforces per-workspace capability access.
  *
  * `proxy` is the Next.js 16 replacement for the deprecated `middleware` export.
  */
@@ -17,8 +18,8 @@ export function proxy(request: NextRequest): NextResponse {
   return NextResponse.next();
 }
 
-// Guard the dashboard and (future) dossier pages. The login page and /api proxy
+// Guard the entry point and every workspace path. The login page and /api proxy
 // are intentionally excluded so they remain reachable without a session.
 export const config = {
-  matcher: ["/", "/dossiers/:path*"],
+  matcher: ["/", "/dri/:path*", "/dcm/:path*", "/drc/:path*", "/admin/:path*"],
 };

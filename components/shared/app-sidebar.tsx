@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FileText, LogOut } from "lucide-react";
-import { ROUTES } from "@/lib/constants";
-import { logout, useSession } from "@/components/modules/identity";
+import { Check, ChevronsUpDown, LogOut } from "lucide-react";
+import { useLogout, useSession } from "@/components/modules/identity";
+import type { WorkspaceConfig } from "./workspace-registry";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -19,33 +25,65 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-const NAV = [{ label: "Dossiers", href: ROUTES.DASHBOARD, icon: FileText }];
+interface AppSidebarProps {
+  /** The workspace currently being viewed. */
+  active: WorkspaceConfig;
+  /** All workspaces the user may switch to (drives the header switcher). */
+  workspaces: WorkspaceConfig[];
+}
 
-export function AppSidebar() {
+/**
+ * Config-driven workspace sidebar: header shows the active workspace (with a
+ * switcher when the user belongs to more than one), the navigation is read from the
+ * workspace registry, and the footer carries the user identity and logout. One
+ * sidebar serves every direction and the admin console.
+ */
+export function AppSidebar({ active, workspaces }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useSession();
-
-  async function onLogout() {
-    await logout();
-    router.push(ROUTES.LOGIN);
-    router.refresh();
-  }
+  const logout = useLogout();
+  const canSwitch = workspaces.length > 1;
 
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="px-2 py-1.5">
-          <p className="text-base font-semibold tracking-tight">Nimba</p>
-          <p className="text-xs text-muted-foreground">Espace analyste DRI</p>
-        </div>
+        {canSwitch ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left hover:bg-sidebar-accent"
+              >
+                <span>
+                  <span className="block text-base font-semibold tracking-tight">{active.label}</span>
+                  <span className="block text-xs text-muted-foreground">{active.subtitle}</span>
+                </span>
+                <ChevronsUpDown className="size-4 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width)">
+              {workspaces.map((workspace) => (
+                <DropdownMenuItem key={workspace.key} onSelect={() => router.push(workspace.basePath)}>
+                  <span className="flex-1">{workspace.label}</span>
+                  {workspace.key === active.key && <Check className="size-4" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <div className="px-2 py-1.5">
+            <p className="text-base font-semibold tracking-tight">{active.label}</p>
+            <p className="text-xs text-muted-foreground">{active.subtitle}</p>
+          </div>
+        )}
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV.map((item) => (
+              {active.nav.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton asChild isActive={pathname === item.href}>
                     <Link href={item.href}>
@@ -62,7 +100,7 @@ export function AppSidebar() {
       <SidebarFooter>
         <div className="flex items-center justify-between gap-2 px-2 py-1.5">
           <span className="truncate text-sm text-muted-foreground">{user?.fullName ?? "—"}</span>
-          <Button variant="ghost" size="sm" onClick={onLogout}>
+          <Button variant="ghost" size="sm" onClick={() => logout.mutate()} disabled={logout.isPending}>
             <LogOut />
             <span className="sr-only">Se déconnecter</span>
           </Button>
