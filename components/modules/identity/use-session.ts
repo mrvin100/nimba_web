@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchMe } from "../services/auth";
-import type { MeResponse } from "../auth-schemas";
+import { fetchMe } from "./auth-service";
+import type { MeResponse } from "./auth-schemas";
 
 interface SessionState {
   loading: boolean;
@@ -11,8 +11,8 @@ interface SessionState {
 
 /**
  * Light client-side session hook: reads the current analyst from /auth/me once.
- * No cache library is needed — the session does not change in the background
- * during a page's lifetime (layer-omission rule, backlog 1.11).
+ * No server-state cache library is used — the session does not change in the
+ * background during a page's lifetime (Nimba layer-omission rule).
  */
 export function useSession(): SessionState {
   const [state, setState] = useState<SessionState>({ loading: true, user: null });
