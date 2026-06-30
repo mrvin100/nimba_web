@@ -1,16 +1,8 @@
-import { AppHeader } from "@/components/shared/app-header";
-
 /**
- * Layout for the DRI analyst workspace. The `(dri)` route group gives this role
- * its own layout without adding a URL segment, so further roles can be added as
- * sibling groups later. The header self-hides when there is no session, so the
- * login page (which lives in this group) renders cleanly.
+ * The DRI route group has no shared chrome of its own: the login page renders
+ * bare, and the authenticated area gets its sidebar from the nested (workspace)
+ * layout. This keeps the group as an organizational boundary without a URL segment.
  */
 export default function DriLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <div className="min-h-screen">
-      <AppHeader />
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }
