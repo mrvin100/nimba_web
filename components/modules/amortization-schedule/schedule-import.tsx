@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Settings2, Upload } from "lucide-react";
+import { CheckCircle2, Info, Settings2, Upload } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
+import { FileDropzone } from "@/components/shared/file-dropzone";
 import { useGenerateTrades, usePreviewSchedule, useUploadSchedule } from "./useAmortizationSchedule";
 import {
   DEFAULT_OFFSETS,
@@ -52,8 +53,8 @@ export function ScheduleImport({ caseId }: { caseId: string }) {
     setUploaded(null);
   }
 
-  function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setFile(event.target.files?.[0] ?? null);
+  function onFileSelect(next: File | null) {
+    setFile(next);
     setPreview(null);
     setErrors([]);
     setUploaded(null);
@@ -127,16 +128,21 @@ export function ScheduleImport({ caseId }: { caseId: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="schedule-file">Fichier CSV</Label>
-          <Input id="schedule-file" type="file" accept=".csv,text/csv" onChange={onFileChange} className="max-w-sm" />
-        </div>
-        <Button onClick={onPreview} disabled={!file || previewMutation.isPending}>
-          <Upload />
-          {previewMutation.isPending ? "Analyse…" : "Prévisualiser"}
-        </Button>
-      </div>
+      <Alert>
+        <Info />
+        <AlertTitle>Import de l&apos;échéancier</AlertTitle>
+        <AlertDescription>
+          Déposez le fichier CSV de l&apos;échéancier. L&apos;aperçu vérifie le format avant l&apos;import définitif, puis
+          vous générez les trades.
+        </AlertDescription>
+      </Alert>
+
+      <FileDropzone file={file} onFile={onFileSelect} accept=".csv,text/csv" hint="Fichier .csv de l'échéancier" />
+
+      <Button onClick={onPreview} disabled={!file || previewMutation.isPending}>
+        <Upload />
+        {previewMutation.isPending ? "Analyse…" : "Prévisualiser"}
+      </Button>
 
       <Collapsible>
         <CollapsibleTrigger asChild>

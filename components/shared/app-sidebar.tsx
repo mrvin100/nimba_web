@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, ChevronsUpDown, LogOut } from "lucide-react";
-import { useLogout, useSession } from "@/components/modules/identity";
+import { Check, ChevronsUpDown } from "lucide-react";
 import type { WorkspaceConfig } from "./workspace-registry";
-import { Button } from "@/components/ui/button";
+import { UserMenu } from "./user-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,8 +40,6 @@ interface AppSidebarProps {
 export function AppSidebar({ active, workspaces }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useSession();
-  const logout = useLogout();
   const canSwitch = workspaces.length > 1;
 
   return (
@@ -82,7 +79,7 @@ export function AppSidebar({ active, workspaces }: AppSidebarProps) {
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1.5">
               {active.nav.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton asChild isActive={pathname === item.href}>
@@ -98,13 +95,7 @@ export function AppSidebar({ active, workspaces }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center justify-between gap-2 px-2 py-1.5">
-          <span className="truncate text-sm text-muted-foreground">{user?.fullName ?? "—"}</span>
-          <Button variant="ghost" size="sm" onClick={() => logout.mutate()} disabled={logout.isPending}>
-            <LogOut />
-            <span className="sr-only">Se déconnecter</span>
-          </Button>
-        </div>
+        <UserMenu />
       </SidebarFooter>
     </Sidebar>
   );

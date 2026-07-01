@@ -6,8 +6,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
+import { PasswordInput } from "@/components/shared/password-input";
 import { login } from "./auth-service";
 import { landingPath } from "./auth-access";
+import { useBootstrapStatus, useOrganizationName } from "./useIdentity";
 import { loginSchema, type LoginInput } from "./schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +18,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export function LoginForm() {
   const router = useRouter();
+  const bootstrap = useBootstrapStatus();
+  const organization = useOrganizationName();
   const {
     register,
     handleSubmit,
@@ -43,7 +47,7 @@ export function LoginForm() {
     <Card className="w-full max-w-sm">
       <CardHeader>
         <CardTitle>Connexion</CardTitle>
-        <CardDescription>Plateforme Nimba</CardDescription>
+        <CardDescription>{organization.data?.organizationName ?? "Nimba"}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
@@ -54,9 +58,8 @@ export function LoginForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Mot de passe</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               autoComplete="current-password"
               aria-invalid={!!errors.password}
               {...register("password")}
@@ -67,12 +70,18 @@ export function LoginForm() {
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Connexion…" : "Se connecter"}
           </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            Première installation ?{" "}
-            <Link href={ROUTES.BOOTSTRAP} className="underline underline-offset-4">
-              Initialiser l&apos;administrateur
-            </Link>
-          </p>
+          {bootstrap.data?.available ? (
+            <p className="text-center text-xs text-muted-foreground">
+              Première installation ?{" "}
+              <Link href={ROUTES.BOOTSTRAP} className="underline underline-offset-4">
+                Initialiser l&apos;administrateur
+              </Link>
+            </p>
+          ) : (
+            <p className="text-center text-xs text-muted-foreground">
+              Pas d&apos;accès ou un problème de connexion ? Contactez la DSI (administration).
+            </p>
+          )}
         </form>
       </CardContent>
     </Card>

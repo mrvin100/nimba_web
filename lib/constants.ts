@@ -3,6 +3,7 @@ export const ROUTES = {
   LOGIN: "/login",
   BOOTSTRAP: "/bootstrap",
   SET_PASSWORD: "/set-password",
+  PROFILE: "/profile",
   DRI: "/dri",
   DCM: "/dcm",
   DRC: "/drc",

@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Download, Upload, Users } from "lucide-react";
+import { Download, Info, Upload, Users } from "lucide-react";
 import { ApiError, getErrorMessage } from "@/lib/api-error";
+import { FileDropzone } from "@/components/shared/file-dropzone";
 import { useImportBulkUsers, usePreviewBulkUsers } from "./useAdmin";
 import { bulkTemplatePath } from "./admin-service";
 import type { BulkPreviewResponse } from "./schema";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +20,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
@@ -38,8 +39,8 @@ export function BulkImportDialog() {
     setPreview(null);
   }
 
-  function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setFile(event.target.files?.[0] ?? null);
+  function onFileSelect(next: File | null) {
+    setFile(next);
     setPreview(null);
   }
 
@@ -86,33 +87,40 @@ export function BulkImportDialog() {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Import en masse</DialogTitle>
-          <DialogDescription>
-            Téléchargez le modèle, remplissez-le, puis importez-le. Chaque compte créé recevra une invitation.
-          </DialogDescription>
+          <DialogDescription>Créez plusieurs comptes à partir d&apos;un fichier CSV.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <Button variant="outline" size="sm" asChild>
-            <a href={bulkTemplatePath()} download>
-              <Download />
-              Télécharger le modèle CSV
-            </a>
-          </Button>
+          <Alert>
+            <Info />
+            <AlertTitle>Comment procéder</AlertTitle>
+            <AlertDescription>
+              Une ligne par utilisateur — colonnes <code>fullName, email, department, role, admin</code>. Laissez
+              direction/rôle vides pour un administrateur. Chaque compte créé reçoit une invitation.
+              <div className="mt-2">
+                <Button variant="outline" size="sm" asChild>
+                  <a href={bulkTemplatePath()} download>
+                    <Download />
+                    Télécharger le modèle CSV
+                  </a>
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
 
-          <div className="flex flex-wrap items-end gap-3">
-            <Input type="file" accept=".csv,text/csv" onChange={onFileChange} className="max-w-sm" />
-            <Button onClick={onPreview} disabled={!file || previewBulk.isPending}>
-              <Upload />
-              {previewBulk.isPending ? "Analyse…" : "Prévisualiser"}
-            </Button>
-          </div>
+          <FileDropzone file={file} onFile={onFileSelect} accept=".csv,text/csv" hint="Fichier .csv (max 2 Mo)" />
+
+          <Button onClick={onPreview} disabled={!file || previewBulk.isPending}>
+            <Upload />
+            {previewBulk.isPending ? "Analyse…" : "Prévisualiser"}
+          </Button>
 
           {preview && (
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
                 {preview.validCount} valide(s), {preview.invalidCount} en erreur.
               </p>
-              <div className="max-h-80 overflow-auto rounded-md border">
+              <div className="max-h-72 overflow-auto rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>

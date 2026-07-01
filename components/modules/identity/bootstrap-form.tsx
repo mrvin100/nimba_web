@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/shared/password-input";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
@@ -103,13 +104,7 @@ export function BootstrapForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Mot de passe</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    type="password"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="new-password"
-                  />
+                  <PasswordInput {...field} id={field.name} aria-invalid={fieldState.invalid} autoComplete="new-password" />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}

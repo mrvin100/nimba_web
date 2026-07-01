@@ -3,7 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ROUTES } from "@/lib/constants";
-import { bootstrap, bootstrapStatus, fetchInvitation, fetchMe, logout, setPassword } from "./auth-service";
+import {
+  bootstrap,
+  bootstrapStatus,
+  fetchInvitation,
+  fetchMe,
+  fetchPublicOrganization,
+  logout,
+  setPassword,
+  updateProfile,
+} from "./auth-service";
 import { hasDepartment, isAdmin, isManager, primaryDepartment, userDepartments } from "./auth-access";
 import type { Department, MeResponse } from "./schema";
 
@@ -75,6 +84,26 @@ export function useInvitation(token: string) {
 /** Sets the account password from an invitation token. */
 export function useSetPassword() {
   return useMutation({ mutationFn: setPassword });
+}
+
+/** Updates the current user's profile and refreshes the cached session. */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateProfile,
+    onSuccess: (data) => {
+      queryClient.setQueryData(sessionKeys.me, data);
+    },
+  });
+}
+
+/** Public organisation name (used by the login screen and the shell). */
+export function useOrganizationName() {
+  return useQuery({
+    queryKey: ["public-organization"],
+    queryFn: fetchPublicOrganization,
+    staleTime: 5 * 60 * 1000,
+  });
 }
 
 /** Ends the session, clears the cached session, and returns to the login page. */

@@ -31,6 +31,7 @@ export const adminUserColumns: ColumnDef<AdminUser>[] = [
   {
     id: "actions",
     header: "",
+    enableHiding: false,
     cell: ({ row }) => (
       <div className="text-right">
         <AdminUserActions user={row.original} />

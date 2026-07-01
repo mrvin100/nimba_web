@@ -22,7 +22,7 @@ export function OrganizationForm() {
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
   } = useForm<OrganizationInput>({
     resolver: zodResolver(organizationSchema),
     defaultValues: { organizationName: "", senderName: "", senderEmail: "" },
@@ -37,6 +37,7 @@ export function OrganizationForm() {
   async function onSubmit(values: OrganizationInput) {
     try {
       await update.mutateAsync(values);
+      reset(values);
       toast.success("Paramètres enregistrés");
     } catch (error) {
       setError("root", {
@@ -98,9 +99,14 @@ export function OrganizationForm() {
             />
             {errors.root && <FieldError errors={[errors.root]} />}
           </FieldGroup>
-          <Button type="submit" className="mt-6" disabled={isSubmitting}>
-            {isSubmitting ? "Enregistrement…" : "Enregistrer"}
-          </Button>
+          <div className="mt-6 flex items-center gap-2">
+            <Button type="submit" disabled={!isDirty || isSubmitting}>
+              {isSubmitting ? "Enregistrement…" : "Enregistrer"}
+            </Button>
+            <Button type="button" variant="outline" disabled={!isDirty} onClick={() => data && reset(data)}>
+              Annuler
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

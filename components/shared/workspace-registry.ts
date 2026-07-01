@@ -1,6 +1,6 @@
 import { Building2, FileText, LayoutDashboard, Users, type LucideIcon } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
-import { hasDepartment, isAdmin, type Department, type MeResponse } from "@/components/modules/identity";
+import { DEPARTMENT_LABELS, hasDepartment, isAdmin, type Department, type MeResponse } from "@/components/modules/identity";
 
 /**
  * Config-driven workspace registry. Each top-level area (the three directions plus
@@ -33,7 +33,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     key: "dri",
     department: "DRI",
     label: "DRI",
-    subtitle: "Direction des risques",
+    subtitle: DEPARTMENT_LABELS.DRI,
     basePath: ROUTES.DRI,
     nav: [{ label: "Dossiers", href: ROUTES.DRI, icon: FileText }],
   },
@@ -41,7 +41,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     key: "dcm",
     department: "DCM",
     label: "DCM",
-    subtitle: "Espace de travail",
+    subtitle: DEPARTMENT_LABELS.DCM,
     basePath: ROUTES.DCM,
     nav: [{ label: "Tableau de bord", href: ROUTES.DCM, icon: LayoutDashboard }],
   },
@@ -49,7 +49,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     key: "drc",
     department: "DRC",
     label: "DRC",
-    subtitle: "Espace de travail",
+    subtitle: DEPARTMENT_LABELS.DRC,
     basePath: ROUTES.DRC,
     nav: [{ label: "Tableau de bord", href: ROUTES.DRC, icon: LayoutDashboard }],
   },

@@ -1,6 +1,7 @@
 export { LoginForm } from "./login-form";
 export { BootstrapForm } from "./bootstrap-form";
 export { SetPasswordForm } from "./set-password-form";
+export { ProfileView } from "./profile-view";
 export {
   useSession,
   useLogout,
@@ -8,10 +9,12 @@ export {
   useBootstrap,
   useInvitation,
   useSetPassword,
+  useUpdateProfile,
+  useOrganizationName,
   sessionKeys,
 } from "./useIdentity";
 export { login, logout, fetchMe } from "./auth-service";
-export { loginSchema, DEPARTMENTS, DEPARTMENT_ROLES } from "./schema";
+export { loginSchema, DEPARTMENTS, DEPARTMENT_ROLES, DEPARTMENT_LABELS } from "./schema";
 export type {
   LoginInput,
   MeResponse,

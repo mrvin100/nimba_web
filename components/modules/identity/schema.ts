@@ -12,6 +12,13 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export const DEPARTMENTS = ["DRI", "DCM", "DRC"] as const;
 export type Department = (typeof DEPARTMENTS)[number];
 
+/** Human-readable direction names (single source for every label in the UI). */
+export const DEPARTMENT_LABELS: Record<Department, string> = {
+  DRI: "Direction Recherches et Investissement",
+  DCM: "Direction Crédit et Marketing",
+  DRC: "Direction Risque et Conformité",
+};
+
 /** Role held within a direction (a manager inherits member access). */
 export const DEPARTMENT_ROLES = ["MANAGER", "MEMBER"] as const;
 export type DepartmentRole = (typeof DEPARTMENT_ROLES)[number];
@@ -66,4 +73,16 @@ export type SetPasswordInput = z.infer<typeof setPasswordSchema>;
 export interface InvitationInfo {
   fullName: string;
   email: string;
+}
+
+/** Self-service profile edit (display name). */
+export const updateProfileSchema = z.object({
+  fullName: z.string().min(1, "Nom complet requis").max(200, "200 caractères maximum"),
+});
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+/** Public organisation identity (name only). */
+export interface PublicOrganization {
+  organizationName: string;
 }

@@ -7,8 +7,9 @@ import { useCreditCases } from "./useCreditCase";
 import { creditCaseColumns } from "./credit-case-columns";
 import { DataTable } from "@/components/shared/data-table";
 import { Pager } from "@/components/shared/pager";
+import { FolderOpen } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
 export function CreditCaseList() {
   const router = useRouter();
@@ -31,8 +32,11 @@ export function CreditCaseList() {
 
   if (data.content.length === 0 && page === 0) {
     return (
-      <Empty>
+      <Empty className="border border-dashed">
         <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <FolderOpen />
+          </EmptyMedia>
           <EmptyTitle>Aucun dossier</EmptyTitle>
           <EmptyDescription>Créez votre premier dossier de crédit avec « Nouveau dossier ».</EmptyDescription>
         </EmptyHeader>
@@ -46,6 +50,8 @@ export function CreditCaseList() {
         columns={creditCaseColumns}
         data={data.content}
         emptyMessage="Aucun dossier."
+        searchable
+        searchPlaceholder="Rechercher un dossier…"
         onRowClick={(creditCase) => router.push(caseDetailPath(creditCase.id))}
       />
       <Pager

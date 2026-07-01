@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { ApiError } from "@/lib/api-error";
+import { DEPARTMENT_LABELS } from "@/components/modules/identity";
 import { useCreateUser } from "./useAdmin";
 import {
   createUserSchema,
@@ -37,9 +38,9 @@ const ROLE_LABELS: Record<RoleChoice, string> = {
 };
 
 const DEPARTMENT_FIELDS = [
-  { name: "dri", label: "DRI — Direction des risques" },
-  { name: "dcm", label: "DCM" },
-  { name: "drc", label: "DRC" },
+  { name: "dri", label: `DRI — ${DEPARTMENT_LABELS.DRI}` },
+  { name: "dcm", label: `DCM — ${DEPARTMENT_LABELS.DCM}` },
+  { name: "drc", label: `DRC — ${DEPARTMENT_LABELS.DRC}` },
 ] as const;
 
 const DEFAULTS: CreateUserInput = {
