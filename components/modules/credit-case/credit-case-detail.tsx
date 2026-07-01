@@ -5,6 +5,7 @@ import { ROUTES } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { useCreditCase } from "./useCreditCase";
 import { CreditCaseStatusBadge } from "./credit-case-status-badge";
+import { EditCaseDialog } from "./edit-case-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -55,8 +56,13 @@ export function CreditCaseDetail({ caseId }: { caseId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{data.caseNumber}</CardTitle>
-        <CardDescription>{data.clientName}</CardDescription>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <CardTitle>{data.caseNumber}</CardTitle>
+            <CardDescription>{data.clientName}</CardDescription>
+          </div>
+          <EditCaseDialog creditCase={data} />
+        </div>
       </CardHeader>
       <CardContent>
         <DetailRow label="Type de produit">{data.productType}</DetailRow>

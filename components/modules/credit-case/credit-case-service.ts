@@ -15,3 +15,8 @@ export function getCreditCase(id: string): Promise<CreditCase> {
 export function createCreditCase(input: CreateCaseInput): Promise<CreditCase> {
   return api.post("credit-cases", { json: input }).json<CreditCase>();
 }
+
+/** Updates a case's general information (client, product, currency) and returns it. */
+export function updateCreditCase(id: string, input: CreateCaseInput): Promise<CreditCase> {
+  return api.put(`credit-cases/${id}`, { json: input }).json<CreditCase>();
+}

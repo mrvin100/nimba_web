@@ -47,7 +47,7 @@ export function OrganizationForm() {
   }
 
   if (isPending) {
-    return <Skeleton className="h-64 w-full max-w-lg" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError) {
@@ -55,10 +55,10 @@ export function OrganizationForm() {
   }
 
   return (
-    <Card className="max-w-lg">
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>Organisation</CardTitle>
-        <CardDescription>Identité de l&apos;organisation et expéditeur des e-mails d&apos;invitation.</CardDescription>
+        <CardTitle>Identité &amp; expéditeur</CardTitle>
+        <CardDescription>Nom de l&apos;organisation et expéditeur des e-mails d&apos;invitation.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>

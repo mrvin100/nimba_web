@@ -100,6 +100,7 @@ export interface OrganizationSettings {
   organizationName: string;
   senderName: string;
   senderEmail: string;
+  hasLogo: boolean;
   updatedAt: string;
 }
 
@@ -110,3 +111,19 @@ export const organizationSchema = z.object({
 });
 
 export type OrganizationInput = z.infer<typeof organizationSchema>;
+
+/** Aggregate user counts for the admin dashboard. */
+export interface UserStats {
+  total: number;
+  active: number;
+  pending: number;
+  suspended: number;
+  revoked: number;
+  byDepartment: { department: "DRI" | "DCM" | "DRC"; count: number }[];
+}
+
+/** Aggregate credit-case counts for the admin dashboard. */
+export interface DossierStats {
+  total: number;
+  byStatus: { status: "EN_ATTENTE_AMORTISSEMENT" | "TRADES_GENERES"; count: number }[];
+}

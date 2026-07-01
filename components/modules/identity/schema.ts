@@ -83,7 +83,8 @@ export const updateProfileSchema = z.object({
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
-/** Public organisation identity (name only). */
+/** Public organisation identity (name and whether a logo is configured). */
 export interface PublicOrganization {
   organizationName: string;
+  hasLogo: boolean;
 }

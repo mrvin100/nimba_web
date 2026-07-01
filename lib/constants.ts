@@ -8,6 +8,7 @@ export const ROUTES = {
   DCM: "/dcm",
   DRC: "/drc",
   ADMIN: "/admin",
+  ADMIN_USERS: "/admin/users",
   ADMIN_ORGANIZATION: "/admin/organization",
   ADMIN_AUDIT: "/admin/audit",
 } as const;

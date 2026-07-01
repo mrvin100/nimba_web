@@ -3,12 +3,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createUser,
+  deleteOrganizationLogo,
+  getDossierStats,
   getOrganization,
+  getUserStats,
   importBulkUsers,
   listUsers,
   previewBulkUsers,
   setUserStatus,
   updateOrganization,
+  uploadOrganizationLogo,
 } from "./admin-service";
 import type { UserStatusAction } from "./schema";
 
@@ -17,6 +21,8 @@ export const adminKeys = {
   all: ["admin-users"] as const,
   list: (page: number, size: number) => ["admin-users", "list", page, size] as const,
   organization: ["admin-organization"] as const,
+  userStats: ["admin-stats", "users"] as const,
+  dossierStats: ["admin-stats", "dossiers"] as const,
 };
 
 /** Paginated list of managed users (server state). */
@@ -65,6 +71,22 @@ export function useImportBulkUsers() {
   });
 }
 
+/** Aggregate user counts for the admin dashboard (server state). */
+export function useUserStats() {
+  return useQuery({
+    queryKey: adminKeys.userStats,
+    queryFn: getUserStats,
+  });
+}
+
+/** Aggregate credit-case counts for the admin dashboard (server state). */
+export function useDossierStats() {
+  return useQuery({
+    queryKey: adminKeys.dossierStats,
+    queryFn: getDossierStats,
+  });
+}
+
 /** Organisation settings (server state). */
 export function useOrganization() {
   return useQuery({
@@ -78,6 +100,28 @@ export function useUpdateOrganization() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateOrganization,
+    onSuccess: (data) => {
+      queryClient.setQueryData(adminKeys.organization, data);
+    },
+  });
+}
+
+/** Uploads the organisation logo and refreshes the cached settings. */
+export function useUploadOrganizationLogo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: uploadOrganizationLogo,
+    onSuccess: (data) => {
+      queryClient.setQueryData(adminKeys.organization, data);
+    },
+  });
+}
+
+/** Removes the organisation logo and refreshes the cached settings. */
+export function useDeleteOrganizationLogo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteOrganizationLogo,
     onSuccess: (data) => {
       queryClient.setQueryData(adminKeys.organization, data);
     },

@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
 import { PasswordInput } from "@/components/shared/password-input";
-import { login } from "./auth-service";
+import { login, publicOrganizationLogoPath } from "./auth-service";
 import { landingPath } from "./auth-access";
 import { useBootstrapStatus, useOrganizationName, useSession } from "./useIdentity";
 import { loginSchema, type LoginInput } from "./schema";
@@ -67,6 +67,14 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
+        {organization.data?.hasLogo && (
+          // eslint-disable-next-line @next/next/no-img-element -- backend-served binary, not a static asset
+          <img
+            src={publicOrganizationLogoPath()}
+            alt={organization.data.organizationName}
+            className="mb-2 h-12 w-auto self-start object-contain"
+          />
+        )}
         <CardTitle>Connexion</CardTitle>
         <CardDescription>{organization.data?.organizationName ?? "Nimba"}</CardDescription>
       </CardHeader>

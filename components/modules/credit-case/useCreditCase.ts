@@ -1,7 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createCreditCase, getCreditCase, listCreditCases } from "./credit-case-service";
+import { createCreditCase, getCreditCase, listCreditCases, updateCreditCase } from "./credit-case-service";
+import type { CreateCaseInput } from "./schema";
 
 /** Query keys for the credit-case domain (single source for cache invalidation). */
 export const creditCaseKeys = {
@@ -33,6 +34,18 @@ export function useCreateCreditCase() {
     mutationFn: createCreditCase,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: creditCaseKeys.all });
+    },
+  });
+}
+
+/** Updates a case and refreshes its detail + the list cache on success. */
+export function useUpdateCreditCase(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateCaseInput) => updateCreditCase(id, input),
+    onSuccess: (data) => {
+      queryClient.setQueryData(creditCaseKeys.detail(id), data);
+      queryClient.invalidateQueries({ queryKey: creditCaseKeys.list(0, 20) });
     },
   });
 }

@@ -50,9 +50,14 @@ export function updateProfile(input: UpdateProfileInput): Promise<MeResponse> {
   return api.put("auth/profile", { json: input }).json<MeResponse>();
 }
 
-/** Public organisation name (no auth required). */
+/** Public organisation identity (no auth required). */
 export function fetchPublicOrganization(): Promise<PublicOrganization> {
   return api.get("auth/organization").json<PublicOrganization>();
+}
+
+/** Same-origin URL of the public organisation logo (for an `<img>` source on the login screen). */
+export function publicOrganizationLogoPath(): string {
+  return `${env.apiBasePath}/auth/organization/logo`;
 }
 
 /** Uploads the current user's avatar image. */

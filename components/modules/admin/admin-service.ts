@@ -6,8 +6,10 @@ import type {
   BulkImportResult,
   BulkPreviewResponse,
   CreateUserPayload,
+  DossierStats,
   OrganizationInput,
   OrganizationSettings,
+  UserStats,
   UserStatusAction,
 } from "./schema";
 
@@ -53,4 +55,31 @@ export function getOrganization(): Promise<OrganizationSettings> {
 /** Updates the organisation settings. */
 export function updateOrganization(payload: OrganizationInput): Promise<OrganizationSettings> {
   return api.put("admin/organization", { json: payload }).json<OrganizationSettings>();
+}
+
+/** Uploads the organisation logo image (used on generated documents and the login screen). */
+export function uploadOrganizationLogo(file: File): Promise<OrganizationSettings> {
+  const body = new FormData();
+  body.append("file", file);
+  return api.post("admin/organization/logo", { body }).json<OrganizationSettings>();
+}
+
+/** Removes the organisation logo. */
+export function deleteOrganizationLogo(): Promise<OrganizationSettings> {
+  return api.delete("admin/organization/logo").json<OrganizationSettings>();
+}
+
+/** Same-origin URL of the organisation logo image (for an `<img>` source). */
+export function organizationLogoPath(): string {
+  return `${env.apiBasePath}/admin/organization/logo`;
+}
+
+/** Aggregate user counts for the admin dashboard. */
+export function getUserStats(): Promise<UserStats> {
+  return api.get("admin/stats/users").json<UserStats>();
+}
+
+/** Aggregate credit-case counts for the admin dashboard. */
+export function getDossierStats(): Promise<DossierStats> {
+  return api.get("admin/stats/dossiers").json<DossierStats>();
 }

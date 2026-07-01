@@ -68,10 +68,11 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     key: "admin",
     department: null,
     label: "Administration",
-    subtitle: "Gestion des utilisateurs",
+    subtitle: "Pilotage de la plateforme",
     basePath: ROUTES.ADMIN,
     nav: [
-      { label: "Utilisateurs", href: ROUTES.ADMIN, icon: Users },
+      { label: "Tableau de bord", href: ROUTES.ADMIN, icon: LayoutDashboard },
+      { label: "Utilisateurs", href: ROUTES.ADMIN_USERS, icon: Users },
       { label: "Journal d'audit", href: ROUTES.ADMIN_AUDIT, icon: ScrollText },
       { label: "Organisation", href: ROUTES.ADMIN_ORGANIZATION, icon: Building2 },
     ],
