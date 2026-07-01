@@ -1,4 +1,5 @@
 export { AdminUsersDashboard } from "./admin-users-dashboard";
+export { AdminStatsDashboard } from "./admin-stats-dashboard";
 export { AdminUsersTable } from "./admin-users-table";
 export { CreateUserDialog } from "./create-user-dialog";
 export { BulkImportDialog } from "./bulk-import-dialog";

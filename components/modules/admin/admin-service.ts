@@ -6,8 +6,10 @@ import type {
   BulkImportResult,
   BulkPreviewResponse,
   CreateUserPayload,
+  DossierStats,
   OrganizationInput,
   OrganizationSettings,
+  UserStats,
   UserStatusAction,
 } from "./schema";
 
@@ -70,4 +72,14 @@ export function deleteOrganizationLogo(): Promise<OrganizationSettings> {
 /** Same-origin URL of the organisation logo image (for an `<img>` source). */
 export function organizationLogoPath(): string {
   return `${env.apiBasePath}/admin/organization/logo`;
+}
+
+/** Aggregate user counts for the admin dashboard. */
+export function getUserStats(): Promise<UserStats> {
+  return api.get("admin/stats/users").json<UserStats>();
+}
+
+/** Aggregate credit-case counts for the admin dashboard. */
+export function getDossierStats(): Promise<DossierStats> {
+  return api.get("admin/stats/dossiers").json<DossierStats>();
 }
