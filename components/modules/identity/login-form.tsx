@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -9,15 +10,17 @@ import { ROUTES } from "@/lib/constants";
 import { PasswordInput } from "@/components/shared/password-input";
 import { login } from "./auth-service";
 import { landingPath } from "./auth-access";
-import { useBootstrapStatus, useOrganizationName } from "./useIdentity";
+import { useBootstrapStatus, useOrganizationName, useSession } from "./useIdentity";
 import { loginSchema, type LoginInput } from "./schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 export function LoginForm() {
   const router = useRouter();
+  const session = useSession();
   const bootstrap = useBootstrapStatus();
   const organization = useOrganizationName();
   const {
@@ -26,6 +29,14 @@ export function LoginForm() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+
+  // Already signed in? Don't show the login form — forward to the workspace. Only a
+  // visitor without an active session should stay on this page.
+  useEffect(() => {
+    if (!session.loading && session.user) {
+      router.replace(landingPath(session.user));
+    }
+  }, [session.loading, session.user, router]);
 
   async function onSubmit(values: LoginInput) {
     try {
@@ -41,6 +52,16 @@ export function LoginForm() {
             : "Une erreur est survenue. Veuillez réessayer.";
       setError("root", { message });
     }
+  }
+
+  // While the session resolves, or once we know the visitor is signed in and are
+  // redirecting, show a spinner rather than briefly flashing the credentials form.
+  if (session.loading || session.user) {
+    return (
+      <div className="flex min-h-40 items-center justify-center" aria-busy>
+        <Spinner className="size-6 text-muted-foreground" />
+      </div>
+    );
   }
 
   return (

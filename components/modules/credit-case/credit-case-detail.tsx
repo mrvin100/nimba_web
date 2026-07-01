@@ -21,7 +21,24 @@ export function CreditCaseDetail({ caseId }: { caseId: string }) {
   const { data, isPending, isError } = useCreditCase(caseId);
 
   if (isPending) {
-    return <Skeleton className="h-56 w-full" />;
+    // Mirror the loaded card's structure (header + four rows) so nothing shifts or
+    // reflows when the data arrives — same chrome, same paddings, same row spacing.
+    return (
+      <Card>
+        <CardHeader className="space-y-2">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-56" />
+        </CardHeader>
+        <CardContent>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="flex items-center justify-between gap-4 border-b py-2 last:border-b-0">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
   }
 
   if (isError || !data) {
