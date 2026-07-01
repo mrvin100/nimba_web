@@ -9,6 +9,7 @@ export const ROUTES = {
   DRC: "/drc",
   ADMIN: "/admin",
   ADMIN_ORGANIZATION: "/admin/organization",
+  ADMIN_AUDIT: "/admin/audit",
 } as const;
 
 /** The DRI dossier list lives at the DRI workspace root. */

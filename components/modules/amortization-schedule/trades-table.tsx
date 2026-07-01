@@ -1,10 +1,10 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Download } from "lucide-react";
+import { Download, FileText } from "lucide-react";
 import type { Trade } from "./schema";
 import { formatDate, formatMoney } from "@/lib/format";
-import { tradesExportPath } from "./amortization-service";
+import { tradesDocxExportPath, tradesExportPath } from "./amortization-service";
 import { DataTable } from "@/components/shared/data-table";
 import { Button } from "@/components/ui/button";
 
@@ -39,12 +39,20 @@ export function TradesTable({ caseId, trades }: { caseId: string; trades: Trade[
         <p className="text-sm text-muted-foreground">
           {trades.length} trade{trades.length > 1 ? "s" : ""} généré{trades.length > 1 ? "s" : ""}
         </p>
-        <Button variant="outline" size="sm" asChild>
-          <a href={tradesExportPath(caseId)} download>
-            <Download />
-            Exporter en CSV
-          </a>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <a href={tradesDocxExportPath(caseId)} download>
+              <FileText />
+              Traités (Word)
+            </a>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <a href={tradesExportPath(caseId)} download>
+              <Download />
+              CSV
+            </a>
+          </Button>
+        </div>
       </div>
       <DataTable columns={tradeColumns} data={trades} emptyMessage="Aucun trade." />
     </div>

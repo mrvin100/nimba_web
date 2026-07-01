@@ -44,3 +44,8 @@ export function listTrades(caseId: string): Promise<Trade[]> {
 export function tradesExportPath(caseId: string): string {
   return `${env.apiBasePath}/${basePath(caseId)}/trades/export`;
 }
+
+/** Same-origin URL of the Word (.docx) traités export (NIMBA-27). */
+export function tradesDocxExportPath(caseId: string): string {
+  return `${env.apiBasePath}/${basePath(caseId)}/trades/export/docx`;
+}
