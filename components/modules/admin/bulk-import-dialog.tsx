@@ -84,19 +84,20 @@ export function BulkImportDialog() {
           Importer en masse
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-h-[85vh] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Import en masse</DialogTitle>
           <DialogDescription>Créez plusieurs comptes à partir d&apos;un fichier CSV.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Alert>
             <Info />
             <AlertTitle>Comment procéder</AlertTitle>
             <AlertDescription>
               Une ligne par utilisateur — colonnes <code>fullName, email, department, role, admin</code>. Laissez
-              direction/rôle vides pour un administrateur. Chaque compte créé reçoit une invitation.
+              direction/rôle vides pour un administrateur. Depuis Excel, enregistrez en{" "}
+              <strong>CSV UTF-8</strong> (virgule ou point-virgule acceptés). Chaque compte créé reçoit une invitation.
               <div className="mt-2">
                 <Button variant="outline" size="sm" asChild>
                   <a href={bulkTemplatePath()} download>

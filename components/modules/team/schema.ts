@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Department } from "@/components/modules/identity";
+import type { AccountStatus, Department, Membership } from "@/components/modules/identity";
 
 /** Manager invite form: a manager provisions a member of their direction. */
 export const inviteMemberSchema = z.object({
@@ -19,3 +19,18 @@ export interface InvitedMember {
   email: string;
   fullName: string;
 }
+
+/** A member managed by a direction manager. */
+export interface TeamMember {
+  id: string;
+  fullName: string;
+  email: string;
+  status: AccountStatus;
+  pending: boolean;
+  admin: boolean;
+  memberships: Membership[];
+  createdAt: string;
+}
+
+/** Lifecycle transitions a manager can apply to a member. */
+export type MemberStatusAction = "suspend" | "reactivate" | "revoke";

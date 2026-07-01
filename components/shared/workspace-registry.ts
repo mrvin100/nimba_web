@@ -16,6 +16,8 @@ export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  /** Only shown to a manager of the workspace's direction. */
+  managerOnly?: boolean;
 }
 
 export interface WorkspaceConfig {
@@ -35,7 +37,10 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     label: "DRI",
     subtitle: DEPARTMENT_LABELS.DRI,
     basePath: ROUTES.DRI,
-    nav: [{ label: "Dossiers", href: ROUTES.DRI, icon: FileText }],
+    nav: [
+      { label: "Dossiers", href: ROUTES.DRI, icon: FileText },
+      { label: "Membres", href: `${ROUTES.DRI}/equipe`, icon: Users, managerOnly: true },
+    ],
   },
   {
     key: "dcm",
@@ -43,7 +48,10 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     label: "DCM",
     subtitle: DEPARTMENT_LABELS.DCM,
     basePath: ROUTES.DCM,
-    nav: [{ label: "Tableau de bord", href: ROUTES.DCM, icon: LayoutDashboard }],
+    nav: [
+      { label: "Tableau de bord", href: ROUTES.DCM, icon: LayoutDashboard },
+      { label: "Membres", href: `${ROUTES.DCM}/equipe`, icon: Users, managerOnly: true },
+    ],
   },
   {
     key: "drc",
@@ -51,7 +59,10 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     label: "DRC",
     subtitle: DEPARTMENT_LABELS.DRC,
     basePath: ROUTES.DRC,
-    nav: [{ label: "Tableau de bord", href: ROUTES.DRC, icon: LayoutDashboard }],
+    nav: [
+      { label: "Tableau de bord", href: ROUTES.DRC, icon: LayoutDashboard },
+      { label: "Membres", href: `${ROUTES.DRC}/equipe`, icon: Users, managerOnly: true },
+    ],
   },
   {
     key: "admin",

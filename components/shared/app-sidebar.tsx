@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { useSession } from "@/components/modules/identity";
 import type { WorkspaceConfig } from "./workspace-registry";
 import { UserMenu } from "./user-menu";
 import {
@@ -40,7 +41,11 @@ interface AppSidebarProps {
 export function AppSidebar({ active, workspaces }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const session = useSession();
   const canSwitch = workspaces.length > 1;
+  const navItems = active.nav.filter(
+    (item) => !item.managerOnly || (active.department != null && session.isManager(active.department)),
+  );
 
   return (
     <Sidebar>
@@ -80,7 +85,7 @@ export function AppSidebar({ active, workspaces }: AppSidebarProps) {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
-              {active.nav.map((item) => (
+              {navItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton asChild isActive={pathname === item.href}>
                     <Link href={item.href}>

@@ -1,3 +1,4 @@
 export { InviteMemberDialog } from "./invite-member-dialog";
-export { useInviteMember } from "./useTeam";
-export type { InviteMemberInput, InviteMemberPayload, InvitedMember } from "./schema";
+export { TeamMembersView } from "./team-members-view";
+export { useInviteMember, useTeamMembers, useSetMemberStatus, teamKeys } from "./useTeam";
+export type { InviteMemberInput, InviteMemberPayload, InvitedMember, TeamMember, MemberStatusAction } from "./schema";
