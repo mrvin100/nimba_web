@@ -21,7 +21,7 @@ export const adminUserColumns: ColumnDef<AdminUser>[] = [
   {
     accessorKey: "status",
     header: "Statut",
-    cell: ({ row }) => <AccountStatusBadge status={row.original.status} />,
+    cell: ({ row }) => <AccountStatusBadge status={row.original.status} pending={row.original.pending} />,
   },
   {
     accessorKey: "createdAt",

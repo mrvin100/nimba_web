@@ -1,4 +1,4 @@
-import { FileText, LayoutDashboard, Users, type LucideIcon } from "lucide-react";
+import { Building2, FileText, LayoutDashboard, Users, type LucideIcon } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { hasDepartment, isAdmin, type Department, type MeResponse } from "@/components/modules/identity";
 
@@ -59,7 +59,10 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     label: "Administration",
     subtitle: "Gestion des utilisateurs",
     basePath: ROUTES.ADMIN,
-    nav: [{ label: "Utilisateurs", href: ROUTES.ADMIN, icon: Users }],
+    nav: [
+      { label: "Utilisateurs", href: ROUTES.ADMIN, icon: Users },
+      { label: "Organisation", href: ROUTES.ADMIN_ORGANIZATION, icon: Building2 },
+    ],
   },
 ];
 

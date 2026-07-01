@@ -45,7 +45,6 @@ const DEPARTMENT_FIELDS = [
 const DEFAULTS: CreateUserInput = {
   fullName: "",
   email: "",
-  password: "",
   admin: false,
   dri: "NONE",
   dcm: "NONE",
@@ -70,7 +69,7 @@ export function CreateUserDialog() {
     }
     try {
       const created = await createUser.mutateAsync(toCreateUserPayload(values));
-      toast.success(`Utilisateur ${created.fullName} créé`);
+      toast.success(`Invitation envoyée à ${created.email}`);
       setOpen(false);
       reset(DEFAULTS);
     } catch (error) {
@@ -91,7 +90,9 @@ export function CreateUserDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Nouvel utilisateur</DialogTitle>
-          <DialogDescription>Créez un compte et attribuez ses accès.</DialogDescription>
+          <DialogDescription>
+            Créez un compte et attribuez ses accès. Un e-mail d&apos;invitation lui permettra de définir son mot de passe.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <FieldGroup>
@@ -114,24 +115,6 @@ export function CreateUserDialog() {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Adresse e-mail</FieldLabel>
                   <Input {...field} id={field.name} type="email" aria-invalid={fieldState.invalid} autoComplete="off" />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="password"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Mot de passe provisoire</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    type="password"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="new-password"
-                  />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}

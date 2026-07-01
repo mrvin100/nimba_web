@@ -12,9 +12,14 @@ const ROLE_LABELS: Record<DepartmentRole, string> = {
   MEMBER: "Membre",
 };
 
-export function AccountStatusBadge({ status }: { status: AccountStatus }) {
+export function AccountStatusBadge({ status, pending }: { status: AccountStatus; pending?: boolean }) {
   const { label, variant } = STATUS_LABELS[status];
-  return <Badge variant={variant}>{label}</Badge>;
+  return (
+    <div className="flex flex-wrap gap-1">
+      <Badge variant={variant}>{label}</Badge>
+      {pending && <Badge variant="outline">Invité</Badge>}
+    </div>
+  );
 }
 
 /** Renders a user's access as small chips: each direction/role plus the admin flag. */

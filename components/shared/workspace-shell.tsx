@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { landingPath, useSession } from "@/components/modules/identity";
+import { InviteMemberDialog } from "@/components/modules/team";
 import { AppSidebar } from "./app-sidebar";
 import {
   accessibleWorkspaces,
@@ -24,7 +25,8 @@ import { ROUTES } from "@/lib/constants";
 export function WorkspaceShell({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const router = useRouter();
-  const { loading, user } = useSession();
+  const session = useSession();
+  const { loading, user } = session;
   const active = workspaceForPath(pathname);
   const allowed = Boolean(user && active && canAccessWorkspace(user, active));
 
@@ -55,6 +57,11 @@ export function WorkspaceShell({ children }: Readonly<{ children: React.ReactNod
       <SidebarInset>
         <header className="flex h-14 items-center gap-2 border-b px-4">
           <SidebarTrigger />
+          {active.department && session.isManager(active.department) && (
+            <div className="ml-auto">
+              <InviteMemberDialog department={active.department} />
+            </div>
+          )}
         </header>
         {children}
       </SidebarInset>

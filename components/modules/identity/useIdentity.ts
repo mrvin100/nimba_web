@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ROUTES } from "@/lib/constants";
-import { fetchMe, logout } from "./auth-service";
+import { bootstrap, bootstrapStatus, fetchInvitation, fetchMe, logout, setPassword } from "./auth-service";
 import { hasDepartment, isAdmin, isManager, primaryDepartment, userDepartments } from "./auth-access";
 import type { Department, MeResponse } from "./schema";
 
@@ -46,6 +46,35 @@ export function useSession(): Session {
     hasDepartment: (dept) => (user ? hasDepartment(user, dept) : false),
     isManager: (dept) => (user ? isManager(user, dept) : false),
   };
+}
+
+/** Whether the one-time first-admin bootstrap is still available. */
+export function useBootstrapStatus() {
+  return useQuery({
+    queryKey: ["bootstrap", "status"],
+    queryFn: bootstrapStatus,
+    staleTime: 0,
+  });
+}
+
+/** Creates the first platform administrator. */
+export function useBootstrap() {
+  return useMutation({ mutationFn: bootstrap });
+}
+
+/** Validates an invitation token (for the set-password page). */
+export function useInvitation(token: string) {
+  return useQuery({
+    queryKey: ["invitation", token],
+    queryFn: () => fetchInvitation(token),
+    retry: false,
+    enabled: token.length > 0,
+  });
+}
+
+/** Sets the account password from an invitation token. */
+export function useSetPassword() {
+  return useMutation({ mutationFn: setPassword });
 }
 
 /** Ends the session, clears the cached session, and returns to the login page. */

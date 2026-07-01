@@ -1,12 +1,22 @@
 import { api } from "@/lib/api-client";
-import type { AdminUser, AdminUserPage, CreateUserPayload, UserStatusAction } from "./schema";
+import { env } from "@/lib/env";
+import type {
+  AdminUser,
+  AdminUserPage,
+  BulkImportResult,
+  BulkPreviewResponse,
+  CreateUserPayload,
+  OrganizationInput,
+  OrganizationSettings,
+  UserStatusAction,
+} from "./schema";
 
 /** Lists managed users, newest first (paginated). */
 export function listUsers(page = 0, size = 20): Promise<AdminUserPage> {
   return api.get("admin/users", { searchParams: { page, size } }).json<AdminUserPage>();
 }
 
-/** Creates a user with its memberships and admin flag. */
+/** Creates a user (invited); returns the pending account. */
 export function createUser(payload: CreateUserPayload): Promise<AdminUser> {
   return api.post("admin/users", { json: payload }).json<AdminUser>();
 }
@@ -14,4 +24,33 @@ export function createUser(payload: CreateUserPayload): Promise<AdminUser> {
 /** Applies a lifecycle transition (suspend / reactivate / revoke). */
 export function setUserStatus(id: string, action: UserStatusAction): Promise<AdminUser> {
   return api.post(`admin/users/${id}/${action}`).json<AdminUser>();
+}
+
+/** Same-origin URL of the bulk import CSV template (used as an anchor href). */
+export function bulkTemplatePath(): string {
+  return `${env.apiBasePath}/admin/users/import/template`;
+}
+
+/** Parses and validates a bulk import CSV without persisting. */
+export function previewBulkUsers(file: File): Promise<BulkPreviewResponse> {
+  const body = new FormData();
+  body.append("file", file);
+  return api.post("admin/users/import/preview", { body }).json<BulkPreviewResponse>();
+}
+
+/** Commits a bulk import (all-or-nothing); each created account is invited. */
+export function importBulkUsers(file: File): Promise<BulkImportResult> {
+  const body = new FormData();
+  body.append("file", file);
+  return api.post("admin/users/import", { body }).json<BulkImportResult>();
+}
+
+/** Reads the organisation settings. */
+export function getOrganization(): Promise<OrganizationSettings> {
+  return api.get("admin/organization").json<OrganizationSettings>();
+}
+
+/** Updates the organisation settings. */
+export function updateOrganization(payload: OrganizationInput): Promise<OrganizationSettings> {
+  return api.put("admin/organization", { json: payload }).json<OrganizationSettings>();
 }

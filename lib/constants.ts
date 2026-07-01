@@ -1,10 +1,13 @@
 /** All application routes — never hardcode route strings inline. */
 export const ROUTES = {
   LOGIN: "/login",
+  BOOTSTRAP: "/bootstrap",
+  SET_PASSWORD: "/set-password",
   DRI: "/dri",
   DCM: "/dcm",
   DRC: "/drc",
   ADMIN: "/admin",
+  ADMIN_ORGANIZATION: "/admin/organization",
 } as const;
 
 /** The DRI dossier list lives at the DRI workspace root. */

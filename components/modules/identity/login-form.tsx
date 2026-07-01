@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@/lib/api-error";
+import { ROUTES } from "@/lib/constants";
 import { login } from "./auth-service";
 import { landingPath } from "./auth-access";
 import { loginSchema, type LoginInput } from "./schema";
@@ -65,6 +67,12 @@ export function LoginForm() {
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Connexion…" : "Se connecter"}
           </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            Première installation ?{" "}
+            <Link href={ROUTES.BOOTSTRAP} className="underline underline-offset-4">
+              Initialiser l&apos;administrateur
+            </Link>
+          </p>
         </form>
       </CardContent>
     </Card>

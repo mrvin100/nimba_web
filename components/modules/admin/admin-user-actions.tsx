@@ -3,6 +3,7 @@
 import { toast } from "sonner";
 import { MoreHorizontal } from "lucide-react";
 import { ApiError } from "@/lib/api-error";
+import { useSession } from "@/components/modules/identity";
 import { useSetUserStatus } from "./useAdmin";
 import type { AdminUser, UserStatusAction } from "./schema";
 import { Button } from "@/components/ui/button";
@@ -33,8 +34,15 @@ function actionsFor(user: AdminUser): UserStatusAction[] {
 
 /** Row action menu for a managed user (suspend / reactivate / revoke). */
 export function AdminUserActions({ user }: { user: AdminUser }) {
+  const { user: currentUser } = useSession();
   const setStatus = useSetUserStatus();
   const actions = actionsFor(user);
+
+  // An admin cannot act on their own account (matches the backend guard); the
+  // menu is simply hidden for the current user's own row.
+  if (currentUser?.userId === user.id) {
+    return null;
+  }
 
   async function run(action: UserStatusAction) {
     try {

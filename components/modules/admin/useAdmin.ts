@@ -1,13 +1,22 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createUser, listUsers, setUserStatus } from "./admin-service";
+import {
+  createUser,
+  getOrganization,
+  importBulkUsers,
+  listUsers,
+  previewBulkUsers,
+  setUserStatus,
+  updateOrganization,
+} from "./admin-service";
 import type { UserStatusAction } from "./schema";
 
-/** Query keys for the admin user domain (single source for cache invalidation). */
+/** Query keys for the admin domain (single source for cache invalidation). */
 export const adminKeys = {
   all: ["admin-users"] as const,
   list: (page: number, size: number) => ["admin-users", "list", page, size] as const,
+  organization: ["admin-organization"] as const,
 };
 
 /** Paginated list of managed users (server state). */
@@ -36,6 +45,41 @@ export function useSetUserStatus() {
     mutationFn: ({ id, action }: { id: string; action: UserStatusAction }) => setUserStatus(id, action),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.all });
+    },
+  });
+}
+
+/** Previews a bulk import CSV (no persistence). */
+export function usePreviewBulkUsers() {
+  return useMutation({ mutationFn: previewBulkUsers });
+}
+
+/** Commits a bulk import and refreshes the list on success. */
+export function useImportBulkUsers() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: importBulkUsers,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.all });
+    },
+  });
+}
+
+/** Organisation settings (server state). */
+export function useOrganization() {
+  return useQuery({
+    queryKey: adminKeys.organization,
+    queryFn: getOrganization,
+  });
+}
+
+/** Updates organisation settings and refreshes the cache. */
+export function useUpdateOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateOrganization,
+    onSuccess: (data) => {
+      queryClient.setQueryData(adminKeys.organization, data);
     },
   });
 }
