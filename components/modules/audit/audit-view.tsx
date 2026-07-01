@@ -4,15 +4,25 @@ import { useState } from "react";
 import { ScrollText } from "lucide-react";
 import { useAuditEvents } from "./useAudit";
 import { auditColumns } from "./audit-columns";
+import { AuditFiltersBar } from "./audit-filters";
+import type { AuditFilters } from "./schema";
 import { DataTable } from "@/components/shared/data-table";
 import { Pager } from "@/components/shared/pager";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
-/** Admin audit trail: paginated list of recorded actions. */
+/** Admin audit trail: paginated list of recorded actions with server-side filters. */
 export function AuditView() {
   const [page, setPage] = useState(0);
-  const { data, isPending, isError } = useAuditEvents(page);
+  const [filters, setFilters] = useState<AuditFilters>({});
+  const { data, isPending, isError } = useAuditEvents(page, filters);
+
+  function onFiltersChange(next: AuditFilters) {
+    setFilters(next);
+    setPage(0);
+  }
+
+  const filtered = Boolean(filters.from || filters.to || filters.method || filters.status != null);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-6 py-10">
@@ -20,6 +30,8 @@ export function AuditView() {
         <h1 className="text-2xl font-semibold tracking-tight">Journal d&apos;audit</h1>
         <p className="text-sm text-muted-foreground">Traçabilité des actions effectuées sur la plateforme</p>
       </div>
+
+      <AuditFiltersBar filters={filters} onChange={onFiltersChange} />
 
       {isPending ? (
         <div className="space-y-2" aria-busy>
@@ -35,8 +47,10 @@ export function AuditView() {
             <EmptyMedia variant="icon">
               <ScrollText />
             </EmptyMedia>
-            <EmptyTitle>Aucune entrée</EmptyTitle>
-            <EmptyDescription>Les actions apparaîtront ici au fur et à mesure.</EmptyDescription>
+            <EmptyTitle>{filtered ? "Aucun résultat" : "Aucune entrée"}</EmptyTitle>
+            <EmptyDescription>
+              {filtered ? "Aucune action ne correspond à ces filtres." : "Les actions apparaîtront ici au fur et à mesure."}
+            </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
@@ -47,6 +61,7 @@ export function AuditView() {
             searchable
             searchPlaceholder="Rechercher (action, acteur, chemin)…"
             emptyMessage="Aucune entrée."
+            initialColumnVisibility={{ request: false }}
           />
           <Pager
             hasPrevious={data.hasPrevious}

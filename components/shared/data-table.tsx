@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type RowData,
   type SortingState,
   type VisibilityState,
   flexRender,
@@ -12,6 +13,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+
+declare module "@tanstack/react-table" {
+  // Human-readable column label, used by the column-visibility menu.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- generics must match the augmented interface
+  interface ColumnMeta<TData extends RowData, TValue> {
+    label?: string;
+  }
+}
 import { ArrowUpDown, Search, SlidersHorizontal } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -32,6 +41,18 @@ interface DataTableProps<TData, TValue> {
   /** Show the toolbar (search box + column visibility). */
   searchable?: boolean;
   searchPlaceholder?: string;
+  /** Columns hidden by default (keyed by column id); still toggleable in the menu. */
+  initialColumnVisibility?: VisibilityState;
+  /** Extra toolbar content (e.g. filters) rendered before the column-visibility menu. */
+  toolbar?: React.ReactNode;
+}
+
+/** A human-readable label a column may carry for the visibility menu. */
+function columnLabel<TData, TValue>(column: {
+  id: string;
+  columnDef: ColumnDef<TData, TValue>;
+}): string {
+  return column.columnDef.meta?.label ?? column.id;
 }
 
 /**
@@ -46,11 +67,13 @@ export function DataTable<TData, TValue>({
   onRowClick,
   searchable = false,
   searchPlaceholder = "Rechercher…",
+  initialColumnVisibility,
+  toolbar,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(initialColumnVisibility ?? {});
 
   const table = useReactTable({
     data,
@@ -69,7 +92,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-3">
       {searchable && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="relative max-w-sm flex-1">
             <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -79,6 +102,7 @@ export function DataTable<TData, TValue>({
               className="pl-8"
             />
           </div>
+          {toolbar}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="ml-auto">
@@ -94,11 +118,10 @@ export function DataTable<TData, TValue>({
                 .map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
-                    className="capitalize"
                     checked={column.getIsVisible()}
                     onCheckedChange={(value) => column.toggleVisibility(!!value)}
                   >
-                    {column.id}
+                    {columnLabel(column)}
                   </DropdownMenuCheckboxItem>
                 ))}
             </DropdownMenuContent>

@@ -13,3 +13,11 @@ export interface AuditEvent {
 }
 
 export type AuditPage = PagedResponse<AuditEvent>;
+
+/** Server-side audit filters. Dates are ISO calendar days (yyyy-MM-dd), inclusive. */
+export interface AuditFilters {
+  from?: string;
+  to?: string;
+  method?: string;
+  status?: number;
+}
