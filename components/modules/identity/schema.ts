@@ -39,6 +39,7 @@ export interface MeResponse {
   email: string;
   status: AccountStatus;
   admin: boolean;
+  hasAvatar: boolean;
   memberships: Membership[];
 }
 

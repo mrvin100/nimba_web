@@ -6,12 +6,14 @@ import { ROUTES } from "@/lib/constants";
 import {
   bootstrap,
   bootstrapStatus,
+  deleteAvatar,
   fetchInvitation,
   fetchMe,
   fetchPublicOrganization,
   logout,
   setPassword,
   updateProfile,
+  uploadAvatar,
 } from "./auth-service";
 import { hasDepartment, isAdmin, isManager, primaryDepartment, userDepartments } from "./auth-access";
 import type { Department, MeResponse } from "./schema";
@@ -91,6 +93,28 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateProfile,
+    onSuccess: (data) => {
+      queryClient.setQueryData(sessionKeys.me, data);
+    },
+  });
+}
+
+/** Uploads the current user's avatar and refreshes the cached session. */
+export function useUploadAvatar() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: uploadAvatar,
+    onSuccess: (data) => {
+      queryClient.setQueryData(sessionKeys.me, data);
+    },
+  });
+}
+
+/** Removes the current user's avatar and refreshes the cached session. */
+export function useDeleteAvatar() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAvatar,
     onSuccess: (data) => {
       queryClient.setQueryData(sessionKeys.me, data);
     },

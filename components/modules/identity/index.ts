@@ -13,7 +13,11 @@ export {
   useOrganizationName,
   sessionKeys,
 } from "./useIdentity";
-export { login, logout, fetchMe } from "./auth-service";
+export {
+  useUploadAvatar,
+  useDeleteAvatar,
+} from "./useIdentity";
+export { login, logout, fetchMe, avatarPath } from "./auth-service";
 export { loginSchema, DEPARTMENTS, DEPARTMENT_ROLES, DEPARTMENT_LABELS } from "./schema";
 export type {
   LoginInput,

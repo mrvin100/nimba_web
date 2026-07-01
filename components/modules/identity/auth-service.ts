@@ -1,4 +1,5 @@
 import { api } from "@/lib/api-client";
+import { env } from "@/lib/env";
 import type {
   BootstrapInput,
   BootstrapStatus,
@@ -52,4 +53,21 @@ export function updateProfile(input: UpdateProfileInput): Promise<MeResponse> {
 /** Public organisation name (no auth required). */
 export function fetchPublicOrganization(): Promise<PublicOrganization> {
   return api.get("auth/organization").json<PublicOrganization>();
+}
+
+/** Uploads the current user's avatar image. */
+export function uploadAvatar(file: File): Promise<MeResponse> {
+  const body = new FormData();
+  body.append("file", file);
+  return api.post("auth/profile/avatar", { body }).json<MeResponse>();
+}
+
+/** Removes the current user's avatar. */
+export function deleteAvatar(): Promise<MeResponse> {
+  return api.delete("auth/profile/avatar").json<MeResponse>();
+}
+
+/** Same-origin URL of the current user's avatar image (for an <img> source). */
+export function avatarPath(): string {
+  return `${env.apiBasePath}/auth/profile/avatar`;
 }

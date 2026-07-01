@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
-import { ApiError } from "@/lib/api-error";
+import { ArrowLeft, Camera, Trash2 } from "lucide-react";
+import { ApiError, getErrorMessage } from "@/lib/api-error";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { useSession, useUpdateProfile } from "./useIdentity";
+import { useDeleteAvatar, useSession, useUpdateProfile, useUploadAvatar } from "./useIdentity";
+import { avatarPath } from "./auth-service";
 import { DEPARTMENT_LABELS, updateProfileSchema, type UpdateProfileInput } from "./schema";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +35,32 @@ const ROLE_LABELS = { MANAGER: "Manager", MEMBER: "Membre" } as const;
 export function ProfileView() {
   const { user, loading } = useSession();
   const updateProfile = useUpdateProfile();
+  const uploadAvatar = useUploadAvatar();
+  const removeAvatar = useDeleteAvatar();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [avatarVersion, setAvatarVersion] = useState(0);
+
+  async function onPickAvatar(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      await uploadAvatar.mutateAsync(file);
+      setAvatarVersion(Date.now());
+      toast.success("Photo mise à jour");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "L'image n'a pas pu être envoyée."));
+    }
+  }
+
+  async function onRemoveAvatar() {
+    try {
+      await removeAvatar.mutateAsync();
+      toast.success("Photo supprimée");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  }
   const {
     control,
     handleSubmit,
@@ -85,12 +112,33 @@ export function ProfileView() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center gap-4">
-            <Avatar className="size-14">
-              <AvatarFallback>{initials(user.fullName)}</AvatarFallback>
+            <Avatar className="size-16">
+              {user.hasAvatar && (
+                <AvatarImage src={`${avatarPath()}${avatarVersion ? `?v=${avatarVersion}` : ""}`} alt={user.fullName} />
+              )}
+              <AvatarFallback className="text-lg">{initials(user.fullName)}</AvatarFallback>
             </Avatar>
-            <div className="text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">{user.email}</p>
-              <p>Import de photo à venir.</p>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{user.email}</p>
+              <div className="flex items-center gap-2">
+                <input ref={fileRef} type="file" accept="image/*" className="sr-only" onChange={onPickAvatar} />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploadAvatar.isPending}
+                >
+                  <Camera />
+                  {uploadAvatar.isPending ? "Envoi…" : "Changer la photo"}
+                </Button>
+                {user.hasAvatar && (
+                  <Button type="button" variant="ghost" size="sm" onClick={onRemoveAvatar} disabled={removeAvatar.isPending}>
+                    <Trash2 />
+                    Supprimer
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { Building2, LogOut, Moon, Sun, UserRound } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ROUTES } from "@/lib/constants";
-import { useLogout, useSession } from "@/components/modules/identity";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { avatarPath, useLogout, useSession } from "@/components/modules/identity";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,6 +38,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-auto w-full justify-start gap-2 px-2 py-1.5">
           <Avatar className="size-7">
+            {user?.hasAvatar && <AvatarImage src={avatarPath()} alt={user.fullName} />}
             <AvatarFallback className="text-xs">{initials(user?.fullName)}</AvatarFallback>
           </Avatar>
           <span className="flex-1 truncate text-left text-sm">{user?.fullName ?? "—"}</span>
