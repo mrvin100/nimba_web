@@ -100,6 +100,7 @@ export interface OrganizationSettings {
   organizationName: string;
   senderName: string;
   senderEmail: string;
+  hasLogo: boolean;
   updatedAt: string;
 }
 
