@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { ImageIcon, Trash2, Upload } from "lucide-react";
+import { ImageIcon, Trash2, UploadCloud } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ApiError } from "@/lib/api-error";
 import { useDeleteOrganizationLogo, useOrganization, useUploadOrganizationLogo } from "./useAdmin";
 import { organizationLogoPath } from "./admin-service";
@@ -11,10 +12,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Organisation logo management: upload/replace/remove the image that is printed on
- * generated documents (traités) and shown on the login screen. Mirrors the profile
- * avatar flow — an image picker uploading to the settings singleton, cache-busted on
- * change so the new logo shows immediately.
+ * Organisation logo management: drag-and-drop (or click) to upload/replace, plus
+ * remove. The image is printed on generated documents (traités) and shown on the
+ * login screen. The preview doubles as the drop target, cache-busted on change so the
+ * new logo shows immediately.
  */
 export function OrganizationLogoCard() {
   const { data, isPending, isError } = useOrganization();
@@ -22,11 +23,14 @@ export function OrganizationLogoCard() {
   const remove = useDeleteOrganizationLogo();
   const fileRef = useRef<HTMLInputElement>(null);
   const [version, setVersion] = useState(0);
+  const [dragging, setDragging] = useState(false);
 
-  async function onPick(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
+  async function uploadFile(file: File | null | undefined) {
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Le logo doit être une image (PNG ou JPEG).");
+      return;
+    }
     try {
       await upload.mutateAsync(file);
       setVersion(Date.now());
@@ -46,48 +50,80 @@ export function OrganizationLogoCard() {
   }
 
   if (isPending) {
-    return <Skeleton className="h-48 w-full max-w-lg" />;
+    return <Skeleton className="h-52 w-full" />;
   }
 
   if (isError || !data) {
     return <p className="text-sm text-destructive">Impossible de charger le logo. Veuillez réessayer.</p>;
   }
 
+  const busy = upload.isPending;
+
   return (
-    <Card className="max-w-lg">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Logo</CardTitle>
         <CardDescription>Imprimé sur les documents générés (traités) et affiché sur l&apos;écran de connexion.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-4">
-          <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/30">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div
+            role="button"
+            tabIndex={0}
+            aria-disabled={busy}
+            onClick={() => !busy && fileRef.current?.click()}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                if (!busy) fileRef.current?.click();
+              }
+            }}
+            onDragOver={(event) => {
+              event.preventDefault();
+              if (!busy) setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDragging(false);
+              if (!busy) void uploadFile(event.dataTransfer.files?.[0]);
+            }}
+            className={cn(
+              "flex min-h-36 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 text-center transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+              dragging ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-muted-foreground/40",
+              busy && "pointer-events-none opacity-60",
+            )}
+          >
             {data.hasLogo ? (
               // eslint-disable-next-line @next/next/no-img-element -- backend-served binary, not a static asset
               <img
                 src={`${organizationLogoPath()}${version ? `?v=${version}` : ""}`}
                 alt={`Logo ${data.organizationName}`}
-                className="size-full object-contain"
+                className="max-h-24 w-auto object-contain"
               />
             ) : (
-              <ImageIcon className="size-8 text-muted-foreground" />
+              <div className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <ImageIcon className="size-5" />
+              </div>
             )}
+            <p className="text-sm">
+              <span className="font-medium text-foreground">Cliquez pour choisir</span> ou glissez-déposez une image
+            </p>
+            <p className="text-xs text-muted-foreground">{busy ? "Envoi…" : "PNG ou JPEG, fond transparent de préférence"}</p>
           </div>
-          <div className="space-y-2">
-            <input ref={fileRef} type="file" accept="image/*" className="sr-only" onChange={onPick} />
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={upload.isPending}>
-                <Upload />
-                {upload.isPending ? "Envoi…" : data.hasLogo ? "Remplacer" : "Ajouter un logo"}
+
+          <div className="flex shrink-0 gap-2 sm:flex-col">
+            <input ref={fileRef} type="file" accept="image/*" className="sr-only" onChange={(event) => void uploadFile(event.target.files?.[0])} />
+            <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={busy}>
+              <UploadCloud />
+              {data.hasLogo ? "Remplacer" : "Ajouter"}
+            </Button>
+            {data.hasLogo && (
+              <Button type="button" variant="ghost" size="sm" onClick={onRemove} disabled={remove.isPending}>
+                <Trash2 />
+                Supprimer
               </Button>
-              {data.hasLogo && (
-                <Button type="button" variant="ghost" size="sm" onClick={onRemove} disabled={remove.isPending}>
-                  <Trash2 />
-                  Supprimer
-                </Button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">PNG ou JPEG, fond transparent de préférence.</p>
+            )}
           </div>
         </div>
       </CardContent>
