@@ -1,6 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useApiMutation } from "@/lib/mutation";
 import { creditCaseKeys } from "@/components/modules/credit-case";
 import { generateTrades, listTrades, previewSchedule, uploadSchedule } from "./amortization-service";
 import type { OffsetsInput } from "./schema";
@@ -35,12 +36,8 @@ export function useUploadSchedule(caseId: string) {
 
 /** Generates trades, then refreshes the trades list and the case (its status changes). */
 export function useGenerateTrades(caseId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: () => generateTrades(caseId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: amortizationKeys.trades(caseId) });
-      queryClient.invalidateQueries({ queryKey: creditCaseKeys.all });
-    },
+    invalidate: [amortizationKeys.trades(caseId), creditCaseKeys.all],
   });
 }

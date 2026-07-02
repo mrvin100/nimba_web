@@ -1,6 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useApiMutation } from "@/lib/mutation";
+import { queryKeys } from "@/lib/query-keys";
 import {
   createUser,
   deleteOrganizationLogo,
@@ -18,8 +20,7 @@ import type { UserStatusAction } from "./schema";
 
 /** Query keys for the admin domain (single source for cache invalidation). */
 export const adminKeys = {
-  all: ["admin-users"] as const,
-  list: (page: number, size: number) => ["admin-users", "list", page, size] as const,
+  ...queryKeys("admin-users"),
   organization: ["admin-organization"] as const,
   userStats: ["admin-stats", "users"] as const,
   dossierStats: ["admin-stats", "dossiers"] as const,
@@ -35,23 +36,17 @@ export function useAdminUsers(page: number, size = 20) {
 
 /** Creates a user and refreshes the list on success. */
 export function useCreateUser() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: createUser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.all });
-    },
+    invalidate: [adminKeys.all],
   });
 }
 
 /** Applies a lifecycle transition and refreshes the list on success. */
 export function useSetUserStatus() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: ({ id, action }: { id: string; action: UserStatusAction }) => setUserStatus(id, action),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.all });
-    },
+    invalidate: [adminKeys.all],
   });
 }
 
@@ -62,12 +57,9 @@ export function usePreviewBulkUsers() {
 
 /** Commits a bulk import and refreshes the list on success. */
 export function useImportBulkUsers() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: importBulkUsers,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.all });
-    },
+    invalidate: [adminKeys.all],
   });
 }
 

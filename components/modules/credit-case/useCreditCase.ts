@@ -1,21 +1,22 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useApiMutation } from "@/lib/mutation";
+import { queryKeys } from "@/lib/query-keys";
+import { usePagedQuery } from "@/lib/use-paged-query";
 import { createCreditCase, getCreditCase, listCreditCases, updateCreditCase } from "./credit-case-service";
-import type { CreateCaseInput } from "./schema";
+import type { CaseFormInput } from "./schema";
 
 /** Query keys for the credit-case domain (single source for cache invalidation). */
-export const creditCaseKeys = {
-  all: ["credit-cases"] as const,
-  list: (page: number, size: number) => ["credit-cases", "list", page, size] as const,
-  detail: (id: string) => ["credit-cases", "detail", id] as const,
-};
+export const creditCaseKeys = queryKeys("credit-cases");
 
 /** Paginated list of credit cases (server state). */
 export function useCreditCases(page: number, size = 20) {
-  return useQuery({
-    queryKey: creditCaseKeys.list(page, size),
-    queryFn: () => listCreditCases(page, size),
+  return usePagedQuery({
+    keys: creditCaseKeys,
+    page,
+    size,
+    fetch: (p, s) => listCreditCases(p, s),
   });
 }
 
@@ -27,25 +28,24 @@ export function useCreditCase(id: string) {
   });
 }
 
-/** Creates a credit case and invalidates the list cache on success. */
+/** Creates a credit case; refreshes the list and confirms with the case number. */
 export function useCreateCreditCase() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: createCreditCase,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: creditCaseKeys.all });
-    },
+    invalidate: [creditCaseKeys.all],
+    successToast: (created) => `Dossier ${created.caseNumber} créé`,
   });
 }
 
-/** Updates a case and refreshes its detail + the list cache on success. */
+/** Updates a case; refreshes its detail and the list. */
 export function useUpdateCreditCase(id: string) {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: CreateCaseInput) => updateCreditCase(id, input),
+  return useApiMutation({
+    mutationFn: (input: CaseFormInput) => updateCreditCase(id, input),
+    invalidate: [creditCaseKeys.lists()],
+    successToast: "Dossier mis à jour",
     onSuccess: (data) => {
       queryClient.setQueryData(creditCaseKeys.detail(id), data);
-      queryClient.invalidateQueries({ queryKey: creditCaseKeys.list(0, 20) });
     },
   });
 }

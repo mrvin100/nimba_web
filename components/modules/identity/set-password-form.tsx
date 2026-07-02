@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
 import { useInvitation, useSetPassword } from "./useIdentity";
 import { setPasswordSchema, type SetPasswordInput } from "./schema";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -98,9 +99,9 @@ export function SetPasswordForm({ token }: { token: string }) {
             />
             {errors.root && <FieldError errors={[errors.root]} />}
           </FieldGroup>
-          <Button type="submit" className="mt-6 w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Enregistrement…" : "Définir le mot de passe"}
-          </Button>
+          <SubmitButton formState={{ isSubmitting }} className="mt-6 w-full" pendingLabel="Enregistrement…">
+            Définir le mot de passe
+          </SubmitButton>
         </form>
       </CardContent>
     </Card>

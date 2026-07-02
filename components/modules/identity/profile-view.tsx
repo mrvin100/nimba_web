@@ -13,6 +13,7 @@ import { avatarPath } from "./auth-service";
 import { DEPARTMENT_LABELS, updateProfileSchema, type UpdateProfileInput } from "./schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -160,9 +161,9 @@ export function ProfileView() {
               {errors.root && <FieldError errors={[errors.root]} />}
             </FieldGroup>
             <div className="mt-4 flex items-center gap-2">
-              <Button type="submit" disabled={!isDirty || isSubmitting}>
-                {isSubmitting ? "Enregistrement…" : "Enregistrer"}
-              </Button>
+              <SubmitButton formState={{ isSubmitting, isDirty }} requireDirty pendingLabel="Enregistrement…">
+                Enregistrer
+              </SubmitButton>
               <Button type="button" variant="outline" disabled={!isDirty} onClick={() => reset({ fullName: user.fullName })}>
                 Annuler
               </Button>

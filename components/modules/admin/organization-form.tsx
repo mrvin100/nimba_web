@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ApiError } from "@/lib/api-error";
 import { useOrganization, useUpdateOrganization } from "./useAdmin";
 import { organizationSchema, type OrganizationInput } from "./schema";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -100,9 +101,9 @@ export function OrganizationForm() {
             {errors.root && <FieldError errors={[errors.root]} />}
           </FieldGroup>
           <div className="mt-6 flex items-center gap-2">
-            <Button type="submit" disabled={!isDirty || isSubmitting}>
-              {isSubmitting ? "Enregistrement…" : "Enregistrer"}
-            </Button>
+            <SubmitButton formState={{ isSubmitting, isDirty }} requireDirty pendingLabel="Enregistrement…">
+              Enregistrer
+            </SubmitButton>
             <Button type="button" variant="outline" disabled={!isDirty} onClick={() => data && reset(data)}>
               Annuler
             </Button>

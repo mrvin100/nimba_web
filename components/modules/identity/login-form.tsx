@@ -12,7 +12,7 @@ import { login, publicOrganizationLogoPath } from "./auth-service";
 import { landingPath } from "./auth-access";
 import { useBootstrapStatus, useOrganizationName, useSession } from "./useIdentity";
 import { loginSchema, type LoginInput } from "./schema";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,9 +96,9 @@ export function LoginForm() {
             {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
           </div>
           {errors.root && <p className="text-sm text-destructive">{errors.root.message}</p>}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Connexion…" : "Se connecter"}
-          </Button>
+          <SubmitButton formState={{ isSubmitting }} className="w-full" pendingLabel="Connexion…">
+            Se connecter
+          </SubmitButton>
           {bootstrap.data?.available ? (
             <p className="text-center text-xs text-muted-foreground">
               Première installation ?{" "}

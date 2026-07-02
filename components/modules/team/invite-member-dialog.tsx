@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api-error";
 import type { Department } from "@/components/modules/identity";
 import { useInviteMember } from "./useTeam";
 import { inviteMemberSchema, type InviteMemberInput } from "./schema";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -98,9 +99,9 @@ export function InviteMemberDialog({ department }: { department: Department }) {
                 Annuler
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Envoi…" : "Envoyer l'invitation"}
-            </Button>
+            <SubmitButton formState={{ isSubmitting }} pendingLabel="Envoi…">
+              Envoyer l'invitation
+            </SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

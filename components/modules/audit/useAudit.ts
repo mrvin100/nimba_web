@@ -1,17 +1,20 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
+import { usePagedQuery } from "@/lib/use-paged-query";
 import { listAuditEvents } from "./audit-service";
 import type { AuditFilters } from "./schema";
 
-export const auditKeys = {
-  list: (page: number, size: number, filters: AuditFilters) => ["audit", "list", page, size, filters] as const,
-};
+/** Query keys for the audit domain. */
+export const auditKeys = queryKeys<AuditFilters>("audit");
 
 /** Paginated audit trail with optional server-side filters (server state). */
 export function useAuditEvents(page: number, filters: AuditFilters = {}, size = 30) {
-  return useQuery({
-    queryKey: auditKeys.list(page, size, filters),
-    queryFn: () => listAuditEvents(page, size, filters),
+  return usePagedQuery({
+    keys: auditKeys,
+    page,
+    size,
+    filters,
+    fetch: (p, s, f) => listAuditEvents(p, s, f),
   });
 }

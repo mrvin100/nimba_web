@@ -10,6 +10,9 @@ export { ThemeProvider } from "./theme-provider";
 export { ThemeToggle } from "./theme-toggle";
 export { UserMenu } from "./user-menu";
 export { QueryProvider } from "./query-provider";
+export { SubmitButton } from "./submit-button";
+export { StatusActionMenu } from "./status-action-menu";
+export type { LifecycleAction, LifecycleStatus } from "./status-action-menu";
 export {
   WORKSPACES,
   accessibleWorkspaces,

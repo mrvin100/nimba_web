@@ -15,6 +15,7 @@ import {
   type CreateUserInput,
   type RoleChoice,
 } from "./schema";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -170,9 +171,9 @@ export function CreateUserDialog() {
                 Annuler
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Création…" : "Créer l'utilisateur"}
-            </Button>
+            <SubmitButton formState={{ isSubmitting }} pendingLabel="Création…">
+              Créer l'utilisateur
+            </SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

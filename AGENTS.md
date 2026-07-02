@@ -9,7 +9,7 @@ Next.js 16 (App Router) + TypeScript, consuming the versioned REST API from the 
 > **Architecture & patterns** follow the sibling **Tûm web** project's conventions
 > (structure, module layout, best practices). **Tooling/stack choices stay Nimba's** —
 > see "Stack (Nimba tools)" below. In particular: **no Better Auth** (the backend owns
-> auth), **no TanStack Query / Zustand by default**, **no i18n**, **no PWA**.
+> auth), **no Zustand by default**, **no i18n**, **no PWA**.
 
 ## Stack (Nimba tools — do not substitute)
 
@@ -17,11 +17,12 @@ Next.js 16 (App Router) + TypeScript, consuming the versioned REST API from the 
 |---|---|
 | Framework | Next.js 16 App Router, React 19, TypeScript strict |
 | Styling | Tailwind CSS v4 |
-| UI primitives | shadcn/ui (added on demand via CLI; `components.json` style new-york, base slate) |
+| UI primitives | shadcn/ui (added on demand via CLI; `components.json` style radix-mira; `radix-ui` is the only primitive library) |
 | Forms | React Hook Form + Zod (`zodResolver`) |
 | HTTP | ky — shared client in `lib/api-client.ts` |
 | Auth | **Backend Spring Security session cookie** — the frontend only relays it (same-origin proxy + `credentials: include`). No frontend auth library. |
-| Server state | Light hooks over the ky client; **TanStack Query is NOT installed** — apply the layer-omission rule (backlog 1.11). Introduce only if a concrete story needs background refresh. |
+| Server state | **TanStack Query** — all reads/writes go through each module's `use<Module>.ts` hook file (keys, queries, mutations, invalidation). Components never call the service layer directly. |
+| Tables | TanStack Table via the shared `DataTable` |
 | Client/UI state | `useState`; **Zustand only if a story truly needs shared client state.** |
 
 ## Project structure (no `src/` — App Router at root)
@@ -37,21 +38,46 @@ lib/                       # cn(), api-client, api-error, constants, env, env.se
 proxy.ts                   # Next.js 16 middleware replacement (export `proxy`)
 ```
 
-## Patterns (from Tûm)
+## Patterns (the canonical module shape)
+
+Every feature module in `components/modules/<domain>/` has exactly these layers:
+
+```
+schema.ts             Zod schemas + z.infer types (mirrors the backend contract)
+<domain>-service.ts   thin ky calls, typed .json<T>() — no logic
+use<Domain>.ts        ONE hook file: `queryKeys(domain)` factory + queries +
+                      mutations (via `useApiMutation`) + cache invalidation
+<feature>.tsx         view/dialog components, one per file, "use client" only when needed
+index.ts              barrel
+```
 
 - **`page.tsx` is a thin shell** — render the feature component, set metadata, do
   server-side redirects. No form logic, no hooks, no JSX beyond the component call.
-- **Feature logic lives in `components/modules/<domain>/`** — one file per component,
-  flat (no nested `components/`/`hooks/`/`services/` folders), exported via `index.ts`.
-  e.g. `identity/{login-form.tsx, use-session.ts, auth-service.ts, auth-schemas.ts, index.ts}`.
-- **Server Components by default**; add `"use client"` only for state/effects/browser APIs.
+- **Rendering strategy**: RSC is for structure, never for authenticated data — all
+  private data flows through TanStack Query client-side (session cookie, no SSR
+  cookie forwarding). Public pages (login, bootstrap, set-password) stay Server
+  Components with a client form island.
+- **Server state plumbing (lib/)**: `queryKeys()` key factory, `usePagedQuery`
+  for server-paginated lists, `useApiMutation` for writes (invalidation +
+  optional toast in one place). Write-through cache updates
+  (`queryClient.setQueryData`) stay in the hook when the endpoint returns the
+  fresh entity.
 - **Forms**: React Hook Form + Zod; `Controller` for controlled inputs;
-  `form.setError("root", …)` for API errors; field errors via `formState.errors`.
+  `form.setError("root", …)` for API errors; field errors via `formState.errors`;
+  **the submit button is always `<SubmitButton>`** (disabled while submitting;
+  `requireDirty` on edit forms). Create and edit dialogs share one
+  `<X>FormFields` component so they can never diverge.
+- **Destructive actions** (revoke, delete) always confirm through an
+  `AlertDialog` — never fire straight from a menu item. Account lifecycle rows
+  use the shared `StatusActionMenu`.
 - **Every screen has loading / empty / error states.**
 - **shadcn on demand**: `pnpm dlx shadcn@latest add <component>`; never `add --all`.
-  `components/ui/` is external — excluded from lint/format/test.
+  `components/ui/` is external — excluded from lint/format/test. Unused
+  primitives are removed, not kept "just in case".
 - **Promote** a component to `components/ui/` only when reused across modules; to
   `components/shared/` for cross-cutting app components.
+- **Naming**: module hook file `use<Domain>.ts`; everything else kebab-case;
+  query keys `<domain>Keys`; schemas `xxxSchema` with `type Xxx = z.infer<…>`.
 
 ## API & auth
 
