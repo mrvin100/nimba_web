@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { ApiError } from "@/lib/api-error";
+import { getErrorMessage } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
 import { useBootstrap, useBootstrapStatus } from "./useIdentity";
 import { bootstrapSchema, type BootstrapInput } from "./schema";
@@ -42,9 +42,7 @@ export function BootstrapForm() {
       toast.success("Administrateur créé. Vous pouvez vous connecter.");
       router.replace(ROUTES.LOGIN);
     } catch (error) {
-      setError("root", {
-        message: error instanceof ApiError ? error.message : "Une erreur est survenue. Veuillez réessayer.",
-      });
+      setError("root", { message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer.") });
     }
   }
 

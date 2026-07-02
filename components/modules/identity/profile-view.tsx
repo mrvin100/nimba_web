@@ -6,7 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ArrowLeft, Camera, Trash2 } from "lucide-react";
-import { ApiError, getErrorMessage } from "@/lib/api-error";
+import { getErrorMessage } from "@/lib/api-error";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useDeleteAvatar, useSession, useUpdateProfile, useUploadAvatar } from "./useIdentity";
 import { avatarPath } from "./auth-service";
@@ -83,9 +83,7 @@ export function ProfileView() {
       reset({ fullName: updated.fullName });
       toast.success("Profil mis à jour");
     } catch (error) {
-      setError("root", {
-        message: error instanceof ApiError ? error.message : "Une erreur est survenue. Veuillez réessayer.",
-      });
+      setError("root", { message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer.") });
     }
   }
 
