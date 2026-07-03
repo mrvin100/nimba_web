@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Camera, Trash2 } from "lucide-react";
+import { Camera, Trash2 } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useDeleteAvatar, useSession, useUpdateProfile, useUploadAvatar } from "./useIdentity";
@@ -64,7 +63,7 @@ export function ProfileView() {
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-lg px-6 py-8">
+      <div className="mx-auto w-full max-w-5xl px-6 py-8">
         <Skeleton className="h-96 w-full" />
       </div>
     );
@@ -75,14 +74,7 @@ export function ProfileView() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-lg space-y-6 px-6 py-8">
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link href="/">
-          <ArrowLeft />
-          Retour
-        </Link>
-      </Button>
-
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8">
       <Card>
         <CardHeader>
           <CardTitle>Profil</CardTitle>

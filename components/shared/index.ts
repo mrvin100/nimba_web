@@ -22,4 +22,4 @@ export {
   canAccessWorkspace,
   workspaceForPath,
 } from "./workspace-registry";
-export type { WorkspaceConfig, WorkspaceKey, NavItem } from "./workspace-registry";
+export type { WorkspaceConfig, WorkspaceKey, NavItem, NavSubItem } from "./workspace-registry";
