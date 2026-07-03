@@ -17,11 +17,12 @@ export function useTeamMembers() {
   });
 }
 
-/** Invites a member into a managed direction and refreshes the member list. */
+/** Invites a member into a managed direction, refreshes the list, and confirms. */
 export function useInviteMember() {
   return useApiMutation({
     mutationFn: inviteMember,
     invalidate: [teamKeys.all],
+    successToast: (invited) => `Invitation envoyée à ${invited.email}`,
   });
 }
 

@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
 /** Members management for a direction manager: list + invite + row actions. */
-export function TeamMembersView({ department }: { department: Department }) {
+export function TeamMembersView({ department }: Readonly<{ department: Department }>) {
   const { data, isPending, isError } = useTeamMembers();
   const members = (data ?? []).filter((member) => member.memberships.some((m) => m.department === department));
 

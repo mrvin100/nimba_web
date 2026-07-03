@@ -5,7 +5,7 @@ import { useSetMemberStatus } from "./useTeam";
 import type { TeamMember } from "./schema";
 
 /** Row actions for a managed member (suspend / reactivate / revoke). */
-export function MemberActions({ member }: { member: TeamMember }) {
+export function MemberActions({ member }: Readonly<{ member: TeamMember }>) {
   const setStatus = useSetMemberStatus();
 
   return (

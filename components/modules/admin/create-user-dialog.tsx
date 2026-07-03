@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
 import { DEPARTMENT_LABELS } from "@/components/modules/identity";
@@ -61,24 +60,21 @@ export function CreateUserDialog() {
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<CreateUserInput>({ resolver: zodResolver(createUserSchema), defaultValues: DEFAULTS });
 
-  async function onSubmit(values: CreateUserInput) {
+  function onSubmit(values: CreateUserInput) {
     if (!hasAnyAssignment(values)) {
       setError("root", { message: "Attribuez au moins une direction ou le rôle administrateur." });
       return;
     }
-    try {
-      const created = await createUser.mutateAsync(toCreateUserPayload(values));
-      toast.success(`Invitation envoyée à ${created.email}`);
-      setOpen(false);
-      reset(DEFAULTS);
-    } catch (error) {
-      setError("root", {
-        message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer."),
-      });
-    }
+    createUser.mutate(toCreateUserPayload(values), {
+      onSuccess: () => {
+        setOpen(false);
+        reset(DEFAULTS);
+      },
+      onError: (error) => setError("root", { message: getErrorMessage(error) }),
+    });
   }
 
   return (
@@ -171,7 +167,7 @@ export function CreateUserDialog() {
                 Annuler
               </Button>
             </DialogClose>
-            <SubmitButton formState={{ isSubmitting }} pendingLabel="Création…">
+            <SubmitButton formState={{ isSubmitting: createUser.isPending }} pendingLabel="Création…">
               Créer l'utilisateur
             </SubmitButton>
           </DialogFooter>

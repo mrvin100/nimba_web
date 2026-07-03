@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/api-error";
 import { useOrganization, useUpdateOrganization } from "./useAdmin";
 import { organizationSchema, type OrganizationInput } from "./schema";
@@ -23,7 +22,7 @@ export function OrganizationForm() {
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isDirty, isSubmitting },
+    formState: { errors, isDirty },
   } = useForm<OrganizationInput>({
     resolver: zodResolver(organizationSchema),
     defaultValues: { organizationName: "", senderName: "", senderEmail: "" },
@@ -35,16 +34,11 @@ export function OrganizationForm() {
     }
   }, [data, reset]);
 
-  async function onSubmit(values: OrganizationInput) {
-    try {
-      await update.mutateAsync(values);
-      reset(values);
-      toast.success("Paramètres enregistrés");
-    } catch (error) {
-      setError("root", {
-        message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer."),
-      });
-    }
+  function onSubmit(values: OrganizationInput) {
+    update.mutate(values, {
+      onSuccess: () => reset(values),
+      onError: (error) => setError("root", { message: getErrorMessage(error) }),
+    });
   }
 
   if (isPending) {
@@ -101,7 +95,7 @@ export function OrganizationForm() {
             {errors.root && <FieldError errors={[errors.root]} />}
           </FieldGroup>
           <div className="mt-6 flex items-center gap-2">
-            <SubmitButton formState={{ isSubmitting, isDirty }} requireDirty pendingLabel="Enregistrement…">
+            <SubmitButton formState={{ isSubmitting: update.isPending, isDirty }} requireDirty pendingLabel="Enregistrement…">
               Enregistrer
             </SubmitButton>
             <Button type="button" variant="outline" disabled={!isDirty} onClick={() => data && reset(data)}>

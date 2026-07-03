@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { creditCaseKeys } from "@/components/modules/credit-case";
 import { generateTrades, listTrades, previewSchedule, uploadSchedule } from "./amortization-schedule.service";
@@ -20,24 +20,29 @@ export function useTrades(caseId: string) {
   });
 }
 
-/** Previews an uploaded CSV (no persistence). */
+/** Previews an uploaded CSV (no persistence); an unreadable file is toasted. */
 export function usePreviewSchedule(caseId: string) {
-  return useMutation({
+  return useApiMutation({
     mutationFn: (file: File) => previewSchedule(caseId, file),
+    errorToast: true,
   });
 }
 
-/** Persists a schedule definitively. */
+/** Persists a schedule definitively and reports the outcome. */
 export function useUploadSchedule(caseId: string) {
-  return useMutation({
+  return useApiMutation({
     mutationFn: ({ file, offsets }: { file: File; offsets: OffsetsInput }) => uploadSchedule(caseId, file, offsets),
+    successToast: (result) => `Échéancier importé (version ${result.versionNumber}, ${result.lineCount} lignes)`,
+    errorToast: true,
   });
 }
 
-/** Generates trades, then refreshes the trades list and the case (its status changes). */
+/** Generates trades, refreshes the trades list and the case (its status changes), and confirms. */
 export function useGenerateTrades(caseId: string) {
   return useApiMutation({
     mutationFn: () => generateTrades(caseId),
     invalidate: [amortizationKeys.trades(caseId), creditCaseKeys.all],
+    successToast: "Trades générés",
+    errorToast: true,
   });
 }

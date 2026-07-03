@@ -1,10 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { ImageIcon, Trash2, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getErrorMessage } from "@/lib/api-error";
 import { useDeleteOrganizationLogo, useOrganization, useUploadOrganizationLogo } from "./useAdmin";
 import { organizationLogoPath } from "./admin.service";
 import { Button } from "@/components/ui/button";
@@ -25,28 +25,14 @@ export function OrganizationLogoCard() {
   const [version, setVersion] = useState(0);
   const [dragging, setDragging] = useState(false);
 
-  async function uploadFile(file: File | null | undefined) {
+  // Pre-flight validation only; feedback (toasts) lives in the hooks.
+  function uploadFile(file: File | null | undefined) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Le logo doit être une image (PNG ou JPEG).");
       return;
     }
-    try {
-      await upload.mutateAsync(file);
-      setVersion(Date.now());
-      toast.success("Logo mis à jour");
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Le logo n'a pas pu être envoyé."));
-    }
-  }
-
-  async function onRemove() {
-    try {
-      await remove.mutateAsync();
-      toast.success("Logo supprimé");
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Le logo n'a pas pu être supprimé."));
-    }
+    upload.mutate(file, { onSuccess: () => setVersion(Date.now()) });
   }
 
   if (isPending) {
@@ -86,7 +72,7 @@ export function OrganizationLogoCard() {
             onDrop={(event) => {
               event.preventDefault();
               setDragging(false);
-              if (!busy) void uploadFile(event.dataTransfer.files?.[0]);
+              if (!busy) uploadFile(event.dataTransfer.files?.[0]);
             }}
             className={cn(
               "flex min-h-36 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 text-center transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
@@ -95,10 +81,14 @@ export function OrganizationLogoCard() {
             )}
           >
             {data.hasLogo ? (
-              // eslint-disable-next-line @next/next/no-img-element -- backend-served binary, not a static asset
-              <img
+              // Backend-served binary behind the session proxy: Next's optimizer
+              // cannot fetch it, so serve it as-is.
+              <Image
                 src={`${organizationLogoPath()}${version ? `?v=${version}` : ""}`}
                 alt={`Logo ${data.organizationName}`}
+                width={240}
+                height={96}
+                unoptimized
                 className="max-h-24 w-auto object-contain"
               />
             ) : (
@@ -113,13 +103,13 @@ export function OrganizationLogoCard() {
           </div>
 
           <div className="flex shrink-0 gap-2 sm:flex-col">
-            <input ref={fileRef} type="file" accept="image/*" className="sr-only" onChange={(event) => void uploadFile(event.target.files?.[0])} />
+            <input ref={fileRef} type="file" accept="image/*" className="sr-only" onChange={(event) => uploadFile(event.target.files?.[0])} />
             <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={busy}>
               <UploadCloud />
               {data.hasLogo ? "Remplacer" : "Ajouter"}
             </Button>
             {data.hasLogo && (
-              <Button type="button" variant="ghost" size="sm" onClick={onRemove} disabled={remove.isPending}>
+              <Button type="button" variant="ghost" size="sm" onClick={() => remove.mutate()} disabled={remove.isPending}>
                 <Trash2 />
                 Supprimer
               </Button>

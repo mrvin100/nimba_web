@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle2, Eye, Info, Settings2, Upload } from "lucide-react";
-import { getErrorMessage } from "@/lib/api-error";
 import { ScheduleRejectedError } from "./amortization-schedule.service";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { useGenerateTrades, usePreviewSchedule, useUploadSchedule } from "./useAmortizationSchedule";
@@ -72,49 +71,44 @@ export function ScheduleImport({ caseId }: { caseId: string }) {
     setUploaded(null);
   }
 
-  async function onPreview() {
+  function onPreview() {
     if (!file) return;
-    try {
-      const result = await previewMutation.mutateAsync(file);
-      setPreview(result);
-      setErrors(result.errors);
-      setPreviewOpen(true);
-    } catch (error) {
-      setPreview(null);
-      setPreviewOpen(false);
-      toast.error(getErrorMessage(error, "Le fichier n'a pas pu être lu."));
-    }
+    previewMutation.mutate(file, {
+      onSuccess: (result) => {
+        setPreview(result);
+        setErrors(result.errors);
+        setPreviewOpen(true);
+      },
+      onError: () => {
+        setPreview(null);
+        setPreviewOpen(false);
+      },
+    });
   }
 
-  async function onUpload() {
+  function onUpload() {
     if (!file) return;
     const parsed = offsetsSchema.safeParse(offsets);
     if (!parsed.success) {
       toast.error("Paramètres de génération invalides.");
       return;
     }
-    try {
-      const result = await uploadMutation.mutateAsync({ file, offsets: parsed.data });
-      setUploaded(result);
-      setErrors([]);
-      setPreviewOpen(false);
-      toast.success(`Échéancier importé (version ${result.versionNumber}, ${result.lineCount} lignes)`);
-    } catch (error) {
-      if (error instanceof ScheduleRejectedError) {
-        setErrors(error.errors);
-      } else {
-        toast.error(getErrorMessage(error));
-      }
-    }
-  }
-
-  async function onGenerate() {
-    try {
-      await generateMutation.mutateAsync();
-      toast.success("Trades générés");
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    }
+    uploadMutation.mutate(
+      { file, offsets: parsed.data },
+      {
+        onSuccess: (result) => {
+          setUploaded(result);
+          setErrors([]);
+          setPreviewOpen(false);
+        },
+        onError: (error) => {
+          if (error instanceof ScheduleRejectedError) {
+            setErrors(error.errors);
+            setPreviewOpen(false);
+          }
+        },
+      },
+    );
   }
 
   if (uploaded) {
@@ -129,7 +123,7 @@ export function ScheduleImport({ caseId }: { caseId: string }) {
           </AlertDescription>
         </Alert>
         <div className="flex items-center gap-2">
-          <Button onClick={onGenerate} disabled={generateMutation.isPending}>
+          <Button onClick={() => generateMutation.mutate()} disabled={generateMutation.isPending}>
             {generateMutation.isPending ? "Génération…" : "Générer les trades"}
           </Button>
           <Button variant="outline" onClick={reset}>

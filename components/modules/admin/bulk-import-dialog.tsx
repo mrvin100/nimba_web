@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import { Download, Info, Upload, Users } from "lucide-react";
-import { getErrorMessage } from "@/lib/api-error";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { useImportBulkUsers, usePreviewBulkUsers } from "./useAdmin";
 import { bulkTemplatePath, BulkImportRejectedError } from "./admin.service";
@@ -44,30 +42,22 @@ export function BulkImportDialog() {
     setPreview(null);
   }
 
-  async function onPreview() {
+  function onPreview() {
     if (!file) return;
-    try {
-      setPreview(await previewBulk.mutateAsync(file));
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Le fichier n'a pas pu être lu."));
-    }
+    previewBulk.mutate(file, { onSuccess: setPreview });
   }
 
-  async function onImport() {
+  function onImport() {
     if (!file) return;
-    try {
-      const result = await importBulk.mutateAsync(file);
-      toast.success(`${result.created} compte(s) créé(s) et invité(s)`);
-      setOpen(false);
-      reset();
-    } catch (error) {
-      if (error instanceof BulkImportRejectedError) {
-        setPreview(error.preview);
-        toast.error(error.message);
-      } else {
-        toast.error(getErrorMessage(error));
-      }
-    }
+    importBulk.mutate(file, {
+      onSuccess: () => {
+        setOpen(false);
+        reset();
+      },
+      onError: (error) => {
+        if (error instanceof BulkImportRejectedError) setPreview(error.preview);
+      },
+    });
   }
 
   return (

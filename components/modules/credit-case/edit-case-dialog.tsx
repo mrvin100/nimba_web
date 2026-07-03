@@ -48,13 +48,11 @@ export function EditCaseDialog({ creditCase }: { creditCase: CreditCase }) {
     setOpen(next);
   }
 
-  async function onSubmit(values: CaseFormInput) {
-    try {
-      await update.mutateAsync(values);
-      setOpen(false);
-    } catch (error) {
-      form.setError("root", { message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer.") });
-    }
+  function onSubmit(values: CaseFormInput) {
+    update.mutate(values, {
+      onSuccess: () => setOpen(false),
+      onError: (error) => form.setError("root", { message: getErrorMessage(error) }),
+    });
   }
 
   return (
@@ -86,7 +84,7 @@ export function EditCaseDialog({ creditCase }: { creditCase: CreditCase }) {
                 Annuler
               </Button>
             </DialogClose>
-            <SubmitButton formState={form.formState} requireDirty pendingLabel="Enregistrement…">
+            <SubmitButton formState={{ isSubmitting: update.isPending, isDirty: form.formState.isDirty }} requireDirty pendingLabel="Enregistrement…">
               Enregistrer
             </SubmitButton>
           </DialogFooter>

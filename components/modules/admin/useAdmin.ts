@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { queryKeys } from "@/lib/query-keys";
 import {
@@ -34,11 +34,12 @@ export function useAdminUsers(page: number, size = 20) {
   });
 }
 
-/** Creates a user and refreshes the list on success. */
+/** Creates a user (invited), refreshes the list, and confirms. */
 export function useCreateUser() {
   return useApiMutation({
     mutationFn: createUser,
     invalidate: [adminKeys.all],
+    successToast: (created) => `Invitation envoyée à ${created.email}`,
   });
 }
 
@@ -50,16 +51,18 @@ export function useSetUserStatus() {
   });
 }
 
-/** Previews a bulk import CSV (no persistence). */
+/** Previews a bulk import CSV (no persistence); an unreadable file is toasted. */
 export function usePreviewBulkUsers() {
-  return useMutation({ mutationFn: previewBulkUsers });
+  return useApiMutation({ mutationFn: previewBulkUsers, errorToast: true });
 }
 
-/** Commits a bulk import and refreshes the list on success. */
+/** Commits a bulk import, refreshes the list, and reports the outcome. */
 export function useImportBulkUsers() {
   return useApiMutation({
     mutationFn: importBulkUsers,
     invalidate: [adminKeys.all],
+    successToast: (result) => `${result.created} compte(s) créé(s) et invité(s)`,
+    errorToast: true,
   });
 }
 
@@ -87,33 +90,38 @@ export function useOrganization() {
   });
 }
 
-/** Updates organisation settings and refreshes the cache. */
+/** Updates organisation settings, refreshes the cache, and confirms. */
 export function useUpdateOrganization() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: updateOrganization,
+    successToast: "Paramètres enregistrés",
     onSuccess: (data) => {
       queryClient.setQueryData(adminKeys.organization, data);
     },
   });
 }
 
-/** Uploads the organisation logo and refreshes the cached settings. */
+/** Uploads the organisation logo, refreshes the cached settings, and reports the outcome. */
 export function useUploadOrganizationLogo() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: uploadOrganizationLogo,
+    successToast: "Logo mis à jour",
+    errorToast: true,
     onSuccess: (data) => {
       queryClient.setQueryData(adminKeys.organization, data);
     },
   });
 }
 
-/** Removes the organisation logo and refreshes the cached settings. */
+/** Removes the organisation logo, refreshes the cached settings, and reports the outcome. */
 export function useDeleteOrganizationLogo() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: deleteOrganizationLogo,
+    successToast: "Logo supprimé",
+    errorToast: true,
     onSuccess: (data) => {
       queryClient.setQueryData(adminKeys.organization, data);
     },

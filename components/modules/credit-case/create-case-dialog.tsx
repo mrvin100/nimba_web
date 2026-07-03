@@ -33,15 +33,15 @@ export function CreateCaseDialog() {
     defaultValues: { clientName: "", productType: "LEASING", currency: "GNF", accountNumber: "" },
   });
 
-  async function onSubmit(values: CaseFormInput) {
-    try {
-      const created = await createCase.mutateAsync(values);
-      setOpen(false);
-      form.reset();
-      router.push(caseDetailPath(created.id));
-    } catch (error) {
-      form.setError("root", { message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer.") });
-    }
+  function onSubmit(values: CaseFormInput) {
+    createCase.mutate(values, {
+      onSuccess: (created) => {
+        setOpen(false);
+        form.reset();
+        router.push(caseDetailPath(created.id));
+      },
+      onError: (error) => form.setError("root", { message: getErrorMessage(error) }),
+    });
   }
 
   return (
@@ -73,7 +73,7 @@ export function CreateCaseDialog() {
                 Annuler
               </Button>
             </DialogClose>
-            <SubmitButton formState={form.formState} pendingLabel="Création…">
+            <SubmitButton formState={{ isSubmitting: createCase.isPending }} pendingLabel="Création…">
               Créer le dossier
             </SubmitButton>
           </DialogFooter>

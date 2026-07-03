@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
 import type { Department } from "@/components/modules/identity";
@@ -25,7 +24,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input";
 
 /** Manager action: invite a member into the given direction. */
-export function InviteMemberDialog({ department }: { department: Department }) {
+export function InviteMemberDialog({ department }: Readonly<{ department: Department }>) {
   const [open, setOpen] = useState(false);
   const invite = useInviteMember();
   const {
@@ -33,23 +32,23 @@ export function InviteMemberDialog({ department }: { department: Department }) {
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<InviteMemberInput>({
     resolver: zodResolver(inviteMemberSchema),
     defaultValues: { fullName: "", email: "" },
   });
 
-  async function onSubmit(values: InviteMemberInput) {
-    try {
-      const invited = await invite.mutateAsync({ ...values, department });
-      toast.success(`Invitation envoyée à ${invited.email}`);
-      setOpen(false);
-      reset();
-    } catch (error) {
-      setError("root", {
-        message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer."),
-      });
-    }
+  function onSubmit(values: InviteMemberInput) {
+    invite.mutate(
+      { ...values, department },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          reset();
+        },
+        onError: (error) => setError("root", { message: getErrorMessage(error) }),
+      },
+    );
   }
 
   return (
@@ -62,7 +61,7 @@ export function InviteMemberDialog({ department }: { department: Department }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Inviter un membre — {department}</DialogTitle>
+          <DialogTitle>Inviter un membre | {department}</DialogTitle>
           <DialogDescription>
             Le membre recevra une invitation pour définir son mot de passe et rejoindre la direction {department}.
           </DialogDescription>
@@ -99,8 +98,8 @@ export function InviteMemberDialog({ department }: { department: Department }) {
                 Annuler
               </Button>
             </DialogClose>
-            <SubmitButton formState={{ isSubmitting }} pendingLabel="Envoi…">
-              Envoyer l'invitation
+            <SubmitButton formState={{ isSubmitting: invite.isPending }} pendingLabel="Envoi…">
+              Envoyer
             </SubmitButton>
           </DialogFooter>
         </form>
