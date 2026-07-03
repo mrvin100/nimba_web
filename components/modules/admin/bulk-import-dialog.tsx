@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Download, Info, Upload, Users } from "lucide-react";
-import { ApiError, getErrorMessage } from "@/lib/api-error";
+import { getErrorMessage } from "@/lib/api-error";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { useImportBulkUsers, usePreviewBulkUsers } from "./useAdmin";
-import { bulkTemplatePath } from "./admin-service";
+import { bulkTemplatePath, BulkImportRejectedError } from "./admin.service";
 import type { BulkPreviewResponse } from "./schema";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -61,9 +61,9 @@ export function BulkImportDialog() {
       setOpen(false);
       reset();
     } catch (error) {
-      if (error instanceof ApiError && error.status === 422) {
-        setPreview(error.problem as unknown as BulkPreviewResponse);
-        toast.error("Certaines lignes sont invalides. Corrigez le fichier.");
+      if (error instanceof BulkImportRejectedError) {
+        setPreview(error.preview);
+        toast.error(error.message);
       } else {
         toast.error(getErrorMessage(error));
       }

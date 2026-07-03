@@ -3,7 +3,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { creditCaseKeys } from "@/components/modules/credit-case";
-import { generateTrades, listTrades, previewSchedule, uploadSchedule } from "./amortization-service";
+import { generateTrades, listTrades, previewSchedule, uploadSchedule } from "./amortization-schedule.service";
 import type { OffsetsInput } from "./schema";
 
 /** Query keys for the amortization-schedule domain. */

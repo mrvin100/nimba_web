@@ -1,9 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Building2, Check, ChevronsUpDown } from "lucide-react";
-import { useOrganizationName } from "@/components/modules/identity";
-import { publicOrganizationLogoPath } from "@/components/modules/identity/auth-service";
+import { publicOrganizationLogoPath, useOrganizationName } from "@/components/modules/identity";
 import type { WorkspaceConfig } from "./workspace-registry";
 import {
   DropdownMenu,
@@ -33,8 +33,9 @@ export function WorkspaceSwitcher({ active, workspaces }: Readonly<WorkspaceSwit
   const orgName = organization.data?.organizationName ?? "Nimba";
 
   const logo = organization.data?.hasLogo ? (
-    // eslint-disable-next-line @next/next/no-img-element -- backend-served binary, not a static asset
-    <img src={publicOrganizationLogoPath()} alt="" className="size-4 object-contain" />
+    // Backend-served binary behind the session proxy: Next's optimizer cannot
+    // fetch it (and it is already small), so serve it as-is.
+    <Image src={publicOrganizationLogoPath()} alt="" width={16} height={16} unoptimized className="size-4 object-contain" />
   ) : (
     <Building2 className="size-4" />
   );

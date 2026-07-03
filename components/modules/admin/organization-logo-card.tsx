@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { ImageIcon, Trash2, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ApiError } from "@/lib/api-error";
+import { getErrorMessage } from "@/lib/api-error";
 import { useDeleteOrganizationLogo, useOrganization, useUploadOrganizationLogo } from "./useAdmin";
-import { organizationLogoPath } from "./admin-service";
+import { organizationLogoPath } from "./admin.service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,7 +36,7 @@ export function OrganizationLogoCard() {
       setVersion(Date.now());
       toast.success("Logo mis à jour");
     } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Le logo n'a pas pu être envoyé.");
+      toast.error(getErrorMessage(error, "Le logo n'a pas pu être envoyé."));
     }
   }
 
@@ -45,7 +45,7 @@ export function OrganizationLogoCard() {
       await remove.mutateAsync();
       toast.success("Logo supprimé");
     } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Le logo n'a pas pu être supprimé.");
+      toast.error(getErrorMessage(error, "Le logo n'a pas pu être supprimé."));
     }
   }
 

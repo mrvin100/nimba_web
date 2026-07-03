@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
 import { useBootstrap, useBootstrapStatus } from "./useIdentity";
@@ -30,20 +29,17 @@ export function BootstrapForm() {
     control,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<BootstrapInput>({
     resolver: zodResolver(bootstrapSchema),
     defaultValues: { fullName: "", email: "", password: "" },
   });
 
-  async function onSubmit(values: BootstrapInput) {
-    try {
-      await createAdmin.mutateAsync(values);
-      toast.success("Administrateur créé. Vous pouvez vous connecter.");
-      router.replace(ROUTES.LOGIN);
-    } catch (error) {
-      setError("root", { message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer.") });
-    }
+  function onSubmit(values: BootstrapInput) {
+    createAdmin.mutate(values, {
+      onSuccess: () => router.replace(ROUTES.LOGIN),
+      onError: (error) => setError("root", { message: getErrorMessage(error) }),
+    });
   }
 
   if (status.isPending) {
@@ -110,7 +106,7 @@ export function BootstrapForm() {
             />
             {errors.root && <FieldError errors={[errors.root]} />}
           </FieldGroup>
-          <SubmitButton formState={{ isSubmitting }} className="mt-6 w-full" pendingLabel="Création…">
+          <SubmitButton formState={{ isSubmitting: createAdmin.isPending }} className="mt-6 w-full" pendingLabel="Création…">
             Créer l'administrateur
           </SubmitButton>
         </form>

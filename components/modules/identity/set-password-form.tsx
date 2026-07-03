@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
 import { useInvitation, useSetPassword } from "./useIdentity";
@@ -20,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  * Activates an invited account: validates the token, then lets the user choose a
  * password. An invalid/expired token shows a notice rather than the form.
  */
-export function SetPasswordForm({ token }: { token: string }) {
+export function SetPasswordForm({ token }: Readonly<{ token: string }>) {
   const router = useRouter();
   const invitation = useInvitation(token);
   const setPassword = useSetPassword();
@@ -28,20 +27,20 @@ export function SetPasswordForm({ token }: { token: string }) {
     control,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SetPasswordInput>({
     resolver: zodResolver(setPasswordSchema),
     defaultValues: { password: "", confirm: "" },
   });
 
-  async function onSubmit(values: SetPasswordInput) {
-    try {
-      await setPassword.mutateAsync({ token, password: values.password });
-      toast.success("Mot de passe défini. Vous pouvez vous connecter.");
-      router.replace(ROUTES.LOGIN);
-    } catch (error) {
-      setError("root", { message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer.") });
-    }
+  function onSubmit(values: SetPasswordInput) {
+    setPassword.mutate(
+      { token, password: values.password },
+      {
+        onSuccess: () => router.replace(ROUTES.LOGIN),
+        onError: (error) => setError("root", { message: getErrorMessage(error) }),
+      },
+    );
   }
 
   if (invitation.isPending) {
@@ -97,7 +96,7 @@ export function SetPasswordForm({ token }: { token: string }) {
             />
             {errors.root && <FieldError errors={[errors.root]} />}
           </FieldGroup>
-          <SubmitButton formState={{ isSubmitting }} className="mt-6 w-full" pendingLabel="Enregistrement…">
+          <SubmitButton formState={{ isSubmitting: setPassword.isPending }} className="mt-6 w-full" pendingLabel="Enregistrement…">
             Définir le mot de passe
           </SubmitButton>
         </form>

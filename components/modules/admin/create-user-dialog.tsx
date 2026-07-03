@@ -5,7 +5,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import { ApiError } from "@/lib/api-error";
+import { getErrorMessage } from "@/lib/api-error";
 import { DEPARTMENT_LABELS } from "@/components/modules/identity";
 import { useCreateUser } from "./useAdmin";
 import {
@@ -76,7 +76,7 @@ export function CreateUserDialog() {
       reset(DEFAULTS);
     } catch (error) {
       setError("root", {
-        message: error instanceof ApiError ? error.message : "Une erreur est survenue. Veuillez réessayer.",
+        message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer."),
       });
     }
   }

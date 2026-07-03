@@ -1,4 +1,5 @@
 import { api } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { env } from "@/lib/env";
 import type {
   BootstrapInput,
@@ -10,9 +11,27 @@ import type {
   UpdateProfileInput,
 } from "./schema";
 
+/**
+ * All identity-scoped endpoints (auth, session, bootstrap, invitation, profile,
+ * avatar, public organisation). This is the module's single entry point to the
+ * backend: it shapes payloads, and it is the ONE place where an identity API
+ * failure is translated into a user-ready error — callers just display
+ * `error.message`, never inspect HTTP statuses themselves.
+ */
+
 /** Authenticates and establishes the session cookie; returns the analyst. */
-export function login(input: LoginInput): Promise<MeResponse> {
-  return api.post("auth/login", { json: input }).json<MeResponse>();
+export async function login(input: LoginInput): Promise<MeResponse> {
+  try {
+    return await api.post("auth/login", { json: input }).json<MeResponse>();
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 429) {
+      throw new Error("Trop de tentatives de connexion. Veuillez réessayer plus tard.");
+    }
+    if (error instanceof ApiError && error.status === 401) {
+      throw new Error("Identifiants invalides.");
+    }
+    throw new Error("Une erreur est survenue. Veuillez réessayer.");
+  }
 }
 
 /** Invalidates the session. */

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { ApiError } from "@/lib/api-error";
 
 /** One parsed row of the uploaded schedule, transcribed raw for the preview. */
 export interface PreviewLine {
@@ -73,16 +72,3 @@ export const DEFAULT_OFFSETS: OffsetsInput = {
   vrOffsetMonths: 2,
   fixedDayOfMonth: 5,
 };
-
-/**
- * A rejected definitive upload (422) carries the same error list as the preview.
- * Returns the errors when the failure is a validation rejection, or null for any
- * other error (which the caller should surface generically).
- */
-export function scheduleErrorsFrom(error: unknown): ScheduleError[] | null {
-  if (error instanceof ApiError && error.status === 422) {
-    const body = error.problem as unknown as { errors?: ScheduleError[] };
-    return body.errors ?? [];
-  }
-  return null;
-}

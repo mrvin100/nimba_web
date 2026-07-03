@@ -20,17 +20,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-
-/** Initials for the avatar fallback (first letters of the first two words). */
-function initials(name: string | undefined): string {
-  if (!name) return "–";
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
+import { initials } from "@/lib/format";
 
 /** Account menu in the sidebar footer (sidebar-07 pattern). */
 export function UserMenu() {

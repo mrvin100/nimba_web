@@ -5,7 +5,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
-import { ApiError } from "@/lib/api-error";
+import { getErrorMessage } from "@/lib/api-error";
 import type { Department } from "@/components/modules/identity";
 import { useInviteMember } from "./useTeam";
 import { inviteMemberSchema, type InviteMemberInput } from "./schema";
@@ -47,7 +47,7 @@ export function InviteMemberDialog({ department }: { department: Department }) {
       reset();
     } catch (error) {
       setError("root", {
-        message: error instanceof ApiError ? error.message : "Une erreur est survenue. Veuillez réessayer.",
+        message: getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer."),
       });
     }
   }

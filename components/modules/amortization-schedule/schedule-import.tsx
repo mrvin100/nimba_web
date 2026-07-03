@@ -4,12 +4,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle2, Eye, Info, Settings2, Upload } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
+import { ScheduleRejectedError } from "./amortization-schedule.service";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { useGenerateTrades, usePreviewSchedule, useUploadSchedule } from "./useAmortizationSchedule";
 import {
   DEFAULT_OFFSETS,
   offsetsSchema,
-  scheduleErrorsFrom,
   type OffsetsInput,
   type PreviewResponse,
   type ScheduleError,
@@ -100,9 +100,8 @@ export function ScheduleImport({ caseId }: { caseId: string }) {
       setPreviewOpen(false);
       toast.success(`Échéancier importé (version ${result.versionNumber}, ${result.lineCount} lignes)`);
     } catch (error) {
-      const rejected = scheduleErrorsFrom(error);
-      if (rejected) {
-        setErrors(rejected);
+      if (error instanceof ScheduleRejectedError) {
+        setErrors(error.errors);
       } else {
         toast.error(getErrorMessage(error));
       }

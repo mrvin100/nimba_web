@@ -2,7 +2,7 @@
 
 import { queryKeys } from "@/lib/query-keys";
 import { usePagedQuery } from "@/lib/use-paged-query";
-import { listAuditEvents } from "./audit-service";
+import { listAuditEvents } from "./audit.service";
 import type { AuditFilters } from "./schema";
 
 /** Query keys for the audit domain. */

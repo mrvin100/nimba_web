@@ -15,7 +15,7 @@ import {
   setUserStatus,
   updateOrganization,
   uploadOrganizationLogo,
-} from "./admin-service";
+} from "./admin.service";
 import type { UserStatusAction } from "./schema";
 
 /** Query keys for the admin domain (single source for cache invalidation). */

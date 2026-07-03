@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { queryKeys } from "@/lib/query-keys";
-import { inviteMember, listMembers, setMemberStatus } from "./team-service";
+import { inviteMember, listMembers, setMemberStatus } from "./team.service";
 import type { MemberStatusAction } from "./schema";
 
 /** Query keys for the team domain. */

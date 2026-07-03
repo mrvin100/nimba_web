@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { queryKeys } from "@/lib/query-keys";
 import { usePagedQuery } from "@/lib/use-paged-query";
-import { createCreditCase, getCreditCase, listCreditCases, updateCreditCase } from "./credit-case-service";
+import { createCreditCase, getCreditCase, listCreditCases, updateCreditCase } from "./credit-case.service";
 import type { CaseFormInput } from "./schema";
 
 /** Query keys for the credit-case domain (single source for cache invalidation). */
