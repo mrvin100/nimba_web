@@ -29,7 +29,12 @@ export interface CreditCaseSummary {
   productType: ProductType;
   status: CreditCaseStatus;
   createdAt: string;
+  /** When an administrator archived the case; null while it is active. */
+  archivedAt: string | null;
 }
+
+/** List visibility filter: active (default view), archived, or everything. */
+export type CaseListFilter = "active" | "archived" | "all";
 
 /** Full case (detail + create response). */
 export interface CreditCase extends CreditCaseSummary {

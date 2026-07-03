@@ -5,11 +5,13 @@ import type { PagedResponse } from "@/lib/pagination";
 import type {
   AmortizationOverview,
   AmortizationTableRow,
+  LatestSchedule,
   OffsetsInput,
   OverviewRange,
   PaymentStatus,
   PreviewResponse,
   ScheduleError,
+  TableSort,
   Trade,
   UploadResponse,
 } from "./schema";
@@ -59,6 +61,11 @@ export async function uploadSchedule(caseId: string, file: File, offsets: Offset
   }
 }
 
+/** Current schedule state of the case (latest version + trades freshness); 404 while nothing is imported. */
+export function getLatestSchedule(caseId: string): Promise<LatestSchedule> {
+  return api.get(basePath(caseId)).json<LatestSchedule>();
+}
+
 /** Generates the trades from the active schedule (NIMBA-23). */
 export function generateTrades(caseId: string): Promise<Trade[]> {
   return api.post(`${basePath(caseId)}/trades`).json<Trade[]>();
@@ -72,13 +79,17 @@ export function getAmortizationOverview(caseId: string, range: OverviewRange = {
   return api.get(`${basePath(caseId)}/overview`, { searchParams }).json<AmortizationOverview>();
 }
 
-/** Detailed table, paginated server-side and loaded lazily by the screen. */
+/** Detailed table, paginated and sorted server-side, loaded lazily by the screen. */
 export function getAmortizationTable(
   caseId: string,
-  params: { page: number; size: number; status?: PaymentStatus },
+  params: { page: number; size: number; status?: PaymentStatus; sort?: TableSort },
 ): Promise<PagedResponse<AmortizationTableRow>> {
   const searchParams: Record<string, string | number> = { page: params.page, size: params.size };
   if (params.status) searchParams.status = params.status;
+  if (params.sort) {
+    searchParams.sortBy = params.sort.field;
+    searchParams.sort = params.sort.direction;
+  }
   return api.get(`${basePath(caseId)}/table`, { searchParams }).json<PagedResponse<AmortizationTableRow>>();
 }
 

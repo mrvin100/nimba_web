@@ -1,9 +1,15 @@
 import { api } from "@/lib/api-client";
-import type { CaseFormInput, CreditCase, CreditCaseSummary, PagedResponse } from "./schema";
+import type { CaseFormInput, CaseListFilter, CreditCase, CreditCaseSummary, PagedResponse } from "./schema";
 
-/** Lists credit cases, newest first (paginated). */
-export function listCreditCases(page = 0, size = 20): Promise<PagedResponse<CreditCaseSummary>> {
-  return api.get("credit-cases", { searchParams: { page, size } }).json<PagedResponse<CreditCaseSummary>>();
+/** Lists credit cases, newest first (paginated); "all" skips the archived filter. */
+export function listCreditCases(
+  page = 0,
+  size = 20,
+  filter: CaseListFilter = "active",
+): Promise<PagedResponse<CreditCaseSummary>> {
+  const searchParams: Record<string, string | number | boolean> = { page, size };
+  if (filter !== "all") searchParams.archived = filter === "archived";
+  return api.get("credit-cases", { searchParams }).json<PagedResponse<CreditCaseSummary>>();
 }
 
 /** Resolves a single case by id. */
@@ -19,4 +25,19 @@ export function createCreditCase(input: CaseFormInput): Promise<CreditCase> {
 /** Updates a case's general information and returns it. */
 export function updateCreditCase(id: string, input: CaseFormInput): Promise<CreditCase> {
   return api.put(`credit-cases/${id}`, { json: input }).json<CreditCase>();
+}
+
+/** Archives a case out of the active list (admin act; nothing is destroyed). */
+export function archiveCreditCase(id: string): Promise<CreditCase> {
+  return api.post(`credit-cases/${id}/archive`).json<CreditCase>();
+}
+
+/** Puts an archived case back into the active list (admin act). */
+export function unarchiveCreditCase(id: string): Promise<CreditCase> {
+  return api.post(`credit-cases/${id}/unarchive`).json<CreditCase>();
+}
+
+/** Definitively deletes a case with its schedules and trades (admin act, irreversible). */
+export async function deleteCreditCase(id: string): Promise<void> {
+  await api.delete(`credit-cases/${id}`);
 }

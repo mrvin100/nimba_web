@@ -1,18 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
-import { CalendarClock, ChevronsUpDown, TrendingDown } from "lucide-react";
+import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, XAxis, YAxis } from "recharts";
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarClock, ChevronsUpDown, TrendingDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { formatAmount, formatDate, formatMoney } from "@/lib/format";
 import { useCreditCase } from "@/components/modules/credit-case";
 import { useAmortizationOverview, useAmortizationTable } from "./useAmortizationSchedule";
-import type { AmortizationOverview as Overview, OverviewRange, PaymentStatus } from "./schema";
+import type {
+  AmortizationOverview as Overview,
+  OverviewRange,
+  PaymentStatus,
+  TableSort,
+  TableSortField,
+} from "./schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
@@ -140,7 +149,8 @@ export function AmortizationOverview({ caseId }: Readonly<{ caseId: string }>) {
               </CardTitle>
               <CardDescription>
                 Période {overview.timeline.currentPeriod} sur{" "}
-                {overview.timeline.currentPeriod + overview.timeline.remainingPeriods}
+                {overview.timeline.currentPeriod + overview.timeline.remainingPeriods} — la zone ombrée couvre les
+                échéances déjà remboursées ({overview.status.completion} % au {formatDate(overview.timeline.today)})
               </CardDescription>
             </div>
             <div className="flex items-end gap-2">
@@ -181,6 +191,18 @@ export function AmortizationOverview({ caseId }: Readonly<{ caseId: string }>) {
             <LineChart data={overview.chart} margin={{ left: 12, right: 12 }}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="period" tickLine={false} axisLine={false} tickMargin={8} />
+              {/* Shaded band = the settled portion as of today (bounds clamped to
+                  the visible range when a date filter narrows the chart). */}
+              {overview.chart.length > 0 &&
+                overview.timeline.currentPeriod > overview.chart[0].period && (
+                  <ReferenceArea
+                    x1={overview.chart[0].period}
+                    x2={Math.min(overview.timeline.currentPeriod, overview.chart[overview.chart.length - 1].period)}
+                    fill="var(--color-paidCapital)"
+                    fillOpacity={0.09}
+                    ifOverflow="hidden"
+                  />
+                )}
               <YAxis
                 tickLine={false}
                 axisLine={false}
@@ -220,6 +242,7 @@ export function AmortizationOverview({ caseId }: Readonly<{ caseId: string }>) {
                 dot={false}
               />
               <Line dataKey="paidCapital" type="monotone" stroke="var(--color-paidCapital)" strokeWidth={2} dot={false} />
+              <ChartLegend content={<ChartLegendContent />} />
             </LineChart>
           </ChartContainer>
         </CardContent>
@@ -230,13 +253,63 @@ export function AmortizationOverview({ caseId }: Readonly<{ caseId: string }>) {
   );
 }
 
+const DEFAULT_SORT: TableSort = { field: "PERIODE", direction: "asc" };
+
+/**
+ * Header cell of a sortable column: click toggles the direction (a new column
+ * starts ascending). The sort is applied by the backend — this only carries the
+ * requested state, like the status filter next to it.
+ */
+function SortableHead({
+  field,
+  sort,
+  onSort,
+  align,
+  children,
+}: Readonly<{
+  field: TableSortField;
+  sort: TableSort;
+  onSort: (field: TableSortField) => void;
+  align?: "right";
+  children: React.ReactNode;
+}>) {
+  const active = sort.field === field;
+  const Icon = active ? (sort.direction === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
+  return (
+    <TableHead className={align === "right" ? "text-right" : undefined}>
+      <button
+        type="button"
+        onClick={() => onSort(field)}
+        className={cn(
+          "inline-flex items-center gap-1 hover:text-foreground",
+          align === "right" && "w-full justify-end",
+          active && "text-foreground",
+        )}
+      >
+        {children}
+        <Icon className="size-3.5 text-muted-foreground" />
+      </button>
+    </TableHead>
+  );
+}
+
 /** Detailed table, fetched ONLY once the user expands the section (lazy). */
 function AmortizationTableSection({ caseId, currency }: Readonly<{ caseId: string; currency: string }>) {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState<PaymentStatus | undefined>(undefined);
+  const [sort, setSort] = useState<TableSort>(DEFAULT_SORT);
   const size = 25;
-  const { data, isPending } = useAmortizationTable(caseId, { page, size, status }, open);
+  const { data, isPending } = useAmortizationTable(caseId, { page, size, status, sort }, open);
+
+  function onSort(field: TableSortField) {
+    setSort((current) =>
+      current.field === field
+        ? { field, direction: current.direction === "asc" ? "desc" : "asc" }
+        : { field, direction: "asc" },
+    );
+    setPage(0);
+  }
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -281,11 +354,21 @@ function AmortizationTableSection({ caseId, currency }: Readonly<{ caseId: strin
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Période</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="text-right">Capital</TableHead>
-                        <TableHead className="text-right">Intérêts</TableHead>
-                        <TableHead className="text-right">Mensualité</TableHead>
+                        <SortableHead field="PERIODE" sort={sort} onSort={onSort}>
+                          Période
+                        </SortableHead>
+                        <SortableHead field="DATE" sort={sort} onSort={onSort}>
+                          Date
+                        </SortableHead>
+                        <SortableHead field="CAPITAL" sort={sort} onSort={onSort} align="right">
+                          Capital
+                        </SortableHead>
+                        <SortableHead field="INTERET" sort={sort} onSort={onSort} align="right">
+                          Intérêts
+                        </SortableHead>
+                        <SortableHead field="MENSUALITE" sort={sort} onSort={onSort} align="right">
+                          Mensualité
+                        </SortableHead>
                         <TableHead className="text-right">Capital restant</TableHead>
                         <TableHead>Statut</TableHead>
                       </TableRow>

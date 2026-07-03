@@ -4,19 +4,28 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { queryKeys } from "@/lib/query-keys";
 import { usePagedQuery } from "@/lib/use-paged-query";
-import { createCreditCase, getCreditCase, listCreditCases, updateCreditCase } from "./credit-case.service";
-import type { CaseFormInput } from "./schema";
+import {
+  archiveCreditCase,
+  createCreditCase,
+  deleteCreditCase,
+  getCreditCase,
+  listCreditCases,
+  unarchiveCreditCase,
+  updateCreditCase,
+} from "./credit-case.service";
+import type { CaseFormInput, CaseListFilter } from "./schema";
 
 /** Query keys for the credit-case domain (single source for cache invalidation). */
-export const creditCaseKeys = queryKeys("credit-cases");
+export const creditCaseKeys = queryKeys<CaseListFilter>("credit-cases");
 
-/** Paginated list of credit cases (server state). */
-export function useCreditCases(page: number, size = 20) {
+/** Paginated list of credit cases (server state); archived ones are hidden by default. */
+export function useCreditCases(page: number, size = 20, filter: CaseListFilter = "active") {
   return usePagedQuery({
     keys: creditCaseKeys,
     page,
     size,
-    fetch: (p, s) => listCreditCases(p, s),
+    filters: filter,
+    fetch: (p, s) => listCreditCases(p, s, filter),
   });
 }
 
@@ -47,5 +56,33 @@ export function useUpdateCreditCase(id: string) {
     onSuccess: (data) => {
       queryClient.setQueryData(creditCaseKeys.detail(id), data);
     },
+  });
+}
+
+/**
+ * Archives or restores a case (admin act). One mutation for the pair: the row
+ * menu offers exactly one of the two depending on the case's current state.
+ */
+export function useArchiveCreditCase() {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: ({ id, archive }: { id: string; archive: boolean }) =>
+      archive ? archiveCreditCase(id) : unarchiveCreditCase(id),
+    invalidate: [creditCaseKeys.lists()],
+    successToast: (data) => `Dossier ${data.caseNumber} ${data.archivedAt ? "archivé" : "restauré"}`,
+    errorToast: true,
+    onSuccess: (data) => {
+      queryClient.setQueryData(creditCaseKeys.detail(data.id), data);
+    },
+  });
+}
+
+/** Definitively deletes a case with everything attached to it (admin act). */
+export function useDeleteCreditCase() {
+  return useApiMutation({
+    mutationFn: (id: string) => deleteCreditCase(id),
+    invalidate: [creditCaseKeys.all],
+    successToast: "Dossier supprimé",
+    errorToast: true,
   });
 }

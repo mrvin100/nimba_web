@@ -45,8 +45,36 @@ export interface UploadResponse {
   fixedDayOfMonth: number;
 }
 
+/**
+ * Current schedule state of a case: the latest uploaded version, plus whether the
+ * active trades were generated from THIS version (`tradesUpToDate` is false right
+ * after an upload, or after a re-import supersedes the generated trades' source).
+ * Server state — this is what the échéancier screen derives its workflow from,
+ * so a page refresh can never lose the "imported, generate the trades" step.
+ */
+export interface LatestSchedule {
+  id: string;
+  versionNumber: number;
+  originalFilename: string;
+  uploadedAt: string;
+  lineCount: number;
+  ordinaryOffsetMonths: number;
+  vrOffsetMonths: number;
+  fixedDayOfMonth: number;
+  tradesUpToDate: boolean;
+}
+
 /** Payment state of one échéance relative to today (computed by the backend). */
 export type PaymentStatus = "PAYE" | "EN_COURS" | "A_VENIR";
+
+/** Sortable columns of the detailed table (mirrors the backend enum). */
+export type TableSortField = "PERIODE" | "DATE" | "CAPITAL" | "INTERET" | "MENSUALITE" | "CAPITAL_RESTANT";
+
+/** One sort state of the detailed table (column + direction). */
+export interface TableSort {
+  field: TableSortField;
+  direction: "asc" | "desc";
+}
 
 export interface AmortizationSummary {
   loanAmount: number;

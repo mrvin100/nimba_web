@@ -2,17 +2,16 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Eye, Info, Settings2, Upload } from "lucide-react";
+import { Eye, Info, Settings2, Upload } from "lucide-react";
 import { ScheduleRejectedError } from "./amortization-schedule.service";
 import { FileDropzone } from "@/components/shared/file-dropzone";
-import { useGenerateTrades, usePreviewSchedule, useUploadSchedule } from "./useAmortizationSchedule";
+import { usePreviewSchedule, useUploadSchedule } from "./useAmortizationSchedule";
 import {
   DEFAULT_OFFSETS,
   offsetsSchema,
   type OffsetsInput,
   type PreviewResponse,
   type ScheduleError,
-  type UploadResponse,
 } from "./schema";
 import { ScheduleErrors } from "./schedule-errors";
 import { SchedulePreviewTable } from "./schedule-preview-table";
@@ -38,37 +37,28 @@ const OFFSET_FIELDS = [
 ] as const;
 
 /**
- * The upload workflow for a case without trades: choose a CSV, preview it (parse +
- * consistency, no persistence), import it definitively, then generate the trades.
- * Errors from both the preview (200, valid:false) and a rejected upload (422) are
- * shown in the same place.
+ * The upload workflow: choose a CSV, preview it (parse + consistency, no
+ * persistence), then import it definitively. What follows an import (generate
+ * the trades, regenerate after a re-import) is the panel's business — it reads
+ * the resulting state from the server, so nothing here survives a refresh nor
+ * needs to. Errors from both the preview (200, valid:false) and a rejected
+ * upload (422) are shown in the same place.
  */
-export function ScheduleImport({ caseId }: { caseId: string }) {
+export function ScheduleImport({ caseId, onUploaded }: { caseId: string; onUploaded?: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<PreviewResponse | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [errors, setErrors] = useState<ScheduleError[]>([]);
-  const [uploaded, setUploaded] = useState<UploadResponse | null>(null);
   const [offsets, setOffsets] = useState<OffsetsInput>(DEFAULT_OFFSETS);
 
   const previewMutation = usePreviewSchedule(caseId);
   const uploadMutation = useUploadSchedule(caseId);
-  const generateMutation = useGenerateTrades(caseId);
-
-  function reset() {
-    setFile(null);
-    setPreview(null);
-    setPreviewOpen(false);
-    setErrors([]);
-    setUploaded(null);
-  }
 
   function onFileSelect(next: File | null) {
     setFile(next);
     setPreview(null);
     setPreviewOpen(false);
     setErrors([]);
-    setUploaded(null);
   }
 
   function onPreview() {
@@ -96,10 +86,11 @@ export function ScheduleImport({ caseId }: { caseId: string }) {
     uploadMutation.mutate(
       { file, offsets: parsed.data },
       {
-        onSuccess: (result) => {
-          setUploaded(result);
-          setErrors([]);
-          setPreviewOpen(false);
+        onSuccess: () => {
+          // The panel re-renders from the refreshed server state ("imported,
+          // generate the trades"); this workflow just cleans up after itself.
+          onFileSelect(null);
+          onUploaded?.();
         },
         onError: (error) => {
           if (error instanceof ScheduleRejectedError) {
@@ -108,29 +99,6 @@ export function ScheduleImport({ caseId }: { caseId: string }) {
           }
         },
       },
-    );
-  }
-
-  if (uploaded) {
-    return (
-      <div className="space-y-4">
-        <Alert>
-          <CheckCircle2 />
-          <AlertTitle>Échéancier importé</AlertTitle>
-          <AlertDescription>
-            Version {uploaded.versionNumber} · {uploaded.lineCount} lignes · échéance ordinaire +
-            {uploaded.ordinaryOffsetMonths} mois, VR +{uploaded.vrOffsetMonths} mois, jour {uploaded.fixedDayOfMonth}.
-          </AlertDescription>
-        </Alert>
-        <div className="flex items-center gap-2">
-          <Button onClick={() => generateMutation.mutate()} disabled={generateMutation.isPending}>
-            {generateMutation.isPending ? "Génération…" : "Générer les trades"}
-          </Button>
-          <Button variant="outline" onClick={reset}>
-            Importer un autre fichier
-          </Button>
-        </div>
-      </div>
     );
   }
 
