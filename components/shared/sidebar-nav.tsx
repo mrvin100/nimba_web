@@ -2,13 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import type { NavItem } from "./workspace-registry";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 
 interface SidebarNavProps {
@@ -16,7 +22,12 @@ interface SidebarNavProps {
   groupLabel?: string;
 }
 
-/** Flat workspace navigation with active-state resolution and icon-mode tooltips. */
+/**
+ * Workspace navigation with active-state resolution, icon-mode tooltips and
+ * contextual sub-entries (sidebar-07 NavMain pattern): when an item resolves
+ * sub-items for the current path (e.g. the open dossier's tabs), it expands
+ * into a collapsible sub-menu while the parent stays a plain link to its list.
+ */
 export function SidebarNav({ items, groupLabel = "Navigation" }: Readonly<SidebarNavProps>) {
   const pathname = usePathname();
 
@@ -31,16 +42,48 @@ export function SidebarNav({ items, groupLabel = "Navigation" }: Readonly<Sideba
     <SidebarGroup>
       <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <SidebarMenuItem key={item.href}>
+        {items.map((item) => {
+          const subItems = item.subItems?.(pathname) ?? [];
+          const button = (
             <SidebarMenuButton asChild isActive={item.href === activeHref} tooltip={item.label}>
               <Link href={item.href}>
                 <item.icon />
                 <span>{item.label}</span>
               </Link>
             </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
+          );
+
+          if (subItems.length === 0) {
+            return <SidebarMenuItem key={item.href}>{button}</SidebarMenuItem>;
+          }
+
+          return (
+            <Collapsible key={item.href} asChild defaultOpen className="group/collapsible">
+              <SidebarMenuItem>
+                {button}
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuAction className="data-[state=open]:rotate-90 transition-transform duration-200">
+                    <ChevronRight />
+                    <span className="sr-only">Déplier</span>
+                  </SidebarMenuAction>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {subItems.map((sub) => (
+                      <SidebarMenuSubItem key={sub.href}>
+                        <SidebarMenuSubButton asChild>
+                          <Link href={sub.href}>
+                            <span>{sub.label}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );

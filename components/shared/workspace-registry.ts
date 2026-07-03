@@ -12,12 +12,22 @@ import { DEPARTMENT_LABELS, hasDepartment, isAdmin, type Department, type MeResp
 
 export type WorkspaceKey = "dri" | "dcm" | "drc" | "admin";
 
+export interface NavSubItem {
+  label: string;
+  href: string;
+}
+
 export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
   /** Only shown to a manager of the workspace's direction. */
   managerOnly?: boolean;
+  /**
+   * Contextual sub-entries resolved from the current path (e.g. the open
+   * dossier's tabs). Empty ⇒ the item renders as a plain link.
+   */
+  subItems?: (pathname: string) => NavSubItem[];
 }
 
 export interface WorkspaceConfig {
@@ -38,7 +48,21 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     subtitle: DEPARTMENT_LABELS.DRI,
     basePath: ROUTES.DRI,
     nav: [
-      { label: "Dossiers", href: ROUTES.DRI, icon: FileText },
+      {
+        label: "Dossiers",
+        href: ROUTES.DRI,
+        icon: FileText,
+        // When a dossier is open, expose its tabs as sub-navigation; the parent
+        // stays a link to the full list.
+        subItems: (pathname) => {
+          const match = pathname.match(/^\/dri\/dossiers\/[^/]+/);
+          if (!match) return [];
+          return [
+            { label: "Aperçu du dossier", href: `${match[0]}?tab=apercu` },
+            { label: "Amortissement", href: `${match[0]}?tab=amortissement` },
+          ];
+        },
+      },
       { label: "Membres", href: `${ROUTES.DRI}/equipe`, icon: Users, managerOnly: true },
     ],
   },
