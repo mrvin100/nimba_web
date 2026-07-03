@@ -1,7 +1,18 @@
 import { api } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-error";
 import { env } from "@/lib/env";
-import type { OffsetsInput, PreviewResponse, ScheduleError, Trade, UploadResponse } from "./schema";
+import type { PagedResponse } from "@/lib/pagination";
+import type {
+  AmortizationOverview,
+  AmortizationTableRow,
+  OffsetsInput,
+  OverviewRange,
+  PaymentStatus,
+  PreviewResponse,
+  ScheduleError,
+  Trade,
+  UploadResponse,
+} from "./schema";
 
 const basePath = (caseId: string) => `credit-cases/${caseId}/amortization-schedule`;
 
@@ -51,6 +62,24 @@ export async function uploadSchedule(caseId: string, file: File, offsets: Offset
 /** Generates the trades from the active schedule (NIMBA-23). */
 export function generateTrades(caseId: string): Promise<Trade[]> {
   return api.post(`${basePath(caseId)}/trades`).json<Trade[]>();
+}
+
+/** Server-computed overview (summary, timeline, chart, progression) in one call. */
+export function getAmortizationOverview(caseId: string, range: OverviewRange = {}): Promise<AmortizationOverview> {
+  const searchParams: Record<string, string> = {};
+  if (range.from) searchParams.from = range.from;
+  if (range.to) searchParams.to = range.to;
+  return api.get(`${basePath(caseId)}/overview`, { searchParams }).json<AmortizationOverview>();
+}
+
+/** Detailed table, paginated server-side and loaded lazily by the screen. */
+export function getAmortizationTable(
+  caseId: string,
+  params: { page: number; size: number; status?: PaymentStatus },
+): Promise<PagedResponse<AmortizationTableRow>> {
+  const searchParams: Record<string, string | number> = { page: params.page, size: params.size };
+  if (params.status) searchParams.status = params.status;
+  return api.get(`${basePath(caseId)}/table`, { searchParams }).json<PagedResponse<AmortizationTableRow>>();
 }
 
 /** The active generation's trades (NIMBA-26). */

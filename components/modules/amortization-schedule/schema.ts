@@ -45,6 +45,67 @@ export interface UploadResponse {
   fixedDayOfMonth: number;
 }
 
+/** Payment state of one échéance relative to today (computed by the backend). */
+export type PaymentStatus = "PAYE" | "EN_COURS" | "A_VENIR";
+
+export interface AmortizationSummary {
+  loanAmount: number;
+  paidPrincipal: number;
+  remainingPrincipal: number;
+  interestPaid: number;
+  durationMonths: number;
+  nextPaymentDate: string | null;
+  nextPaymentAmount: number | null;
+}
+
+export interface AmortizationTimeline {
+  startDate: string | null;
+  endDate: string | null;
+  today: string;
+  /** Number of settled périodes — where the "today" marker sits on the chart. */
+  currentPeriod: number;
+  remainingPeriods: number;
+}
+
+export interface AmortizationChartPoint {
+  period: number;
+  date: string | null;
+  remainingCapital: number;
+  paidCapital: number;
+  paidPercentage: number;
+}
+
+export interface AmortizationProgress {
+  completedPayments: number;
+  remainingPayments: number;
+  completion: number;
+}
+
+/** Everything the dossier overview screen needs, in one backend response. */
+export interface AmortizationOverview {
+  summary: AmortizationSummary;
+  timeline: AmortizationTimeline;
+  chart: AmortizationChartPoint[];
+  status: AmortizationProgress;
+}
+
+/** Optional chart date range; the backend filters, the frontend only renders. */
+export interface OverviewRange {
+  from?: string;
+  to?: string;
+}
+
+/** Row of the lazily-loaded detailed table. */
+export interface AmortizationTableRow {
+  period: string;
+  date: string | null;
+  capital: number;
+  interet: number;
+  mensualite: number;
+  capitalRestantDu: number | null;
+  status: PaymentStatus;
+}
+
 /** A generated trade (bill of exchange). */
 export interface Trade {
   id: string;
