@@ -35,7 +35,9 @@ export function WorkspaceShell({ children }: Readonly<{ children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   const { loading, user } = useSession();
-  const active = workspaceForPath(pathname);
+  // Cross-workspace pages (e.g. /profile) have no path segment of their own:
+  // they render inside the user's landing workspace so the shell stays present.
+  const active = workspaceForPath(pathname) ?? (user ? workspaceForPath(landingPath(user)) : undefined);
   const allowed = Boolean(user && active && canAccessWorkspace(user, active));
 
   useEffect(() => {

@@ -66,7 +66,16 @@ export function AmortizationOverview({ caseId }: Readonly<{ caseId: string }>) {
   const currency = useCreditCase(caseId).data?.currency ?? "GNF";
 
   if (isPending) {
-    return <Skeleton className="h-64 w-full" />;
+    // Mirror the loaded layout (two cards + chart) so nothing jumps on arrival.
+    return (
+      <div className="space-y-4" aria-busy>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Skeleton className="h-56 w-full" />
+          <Skeleton className="h-56 w-full" />
+        </div>
+        <Skeleton className="h-80 w-full" />
+      </div>
+    );
   }
 
   if (!overview) {

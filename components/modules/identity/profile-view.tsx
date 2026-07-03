@@ -63,7 +63,11 @@ export function ProfileView() {
   }
 
   if (loading) {
-    return <Skeleton className="h-96 w-full max-w-lg" />;
+    return (
+      <div className="mx-auto w-full max-w-lg px-6 py-8">
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
   }
 
   if (!user) {
@@ -71,7 +75,7 @@ export function ProfileView() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-lg space-y-6">
+    <div className="mx-auto w-full max-w-lg space-y-6 px-6 py-8">
       <Button asChild variant="ghost" size="sm" className="-ml-2">
         <Link href="/">
           <ArrowLeft />

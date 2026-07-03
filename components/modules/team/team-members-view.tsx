@@ -16,7 +16,7 @@ export function TeamMembersView({ department }: Readonly<{ department: Departmen
   const members = (data ?? []).filter((member) => member.memberships.some((m) => m.department === department));
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-6 py-10">
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8">
       <PageHeader title="Membres" description={DEPARTMENT_LABELS[department]}>
         <InviteMemberDialog department={department} />
       </PageHeader>

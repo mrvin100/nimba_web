@@ -14,6 +14,7 @@ import { loginSchema, type LoginInput } from "./schema";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
 /**
  * Credentials form — UI and validation only. The session redirect for an
@@ -44,14 +45,15 @@ export function LoginForm() {
             alt={organization.data.organizationName}
             width={160}
             height={48}
-            // Backend-served binary behind the session proxy: Next's optimizer
-            // cannot fetch it (and it is already small), so serve it as-is.
             unoptimized
-            className="mb-2 h-12 w-auto self-start object-contain"
+            className="mb-2 h-8 w-auto self-start object-fit mx-auto"
           />
         )}
-        <CardTitle>Connexion</CardTitle>
-        <CardDescription>{organization.data?.organizationName ?? "Nimba"}</CardDescription>
+        <Separator className="my-2" />
+        <div className="flex gap-2 justify-between">
+          <CardTitle className="text-center flex">Connexion</CardTitle>
+          <CardDescription className="text-center flex">{organization.data?.organizationName ?? "Nimba"}</CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
