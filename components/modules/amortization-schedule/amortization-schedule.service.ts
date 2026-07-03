@@ -106,7 +106,12 @@ export function tradesExportPath(caseId: string): string {
   return `${env.apiBasePath}/${basePath(caseId)}/trades/export`;
 }
 
-/** Same-origin URL of the Word (.docx) traités export (NIMBA-27). */
-export function tradesDocxExportPath(caseId: string): string {
-  return `${env.apiBasePath}/${basePath(caseId)}/trades/export/docx`;
+/**
+ * Same-origin URL of the Word (.docx) traités export (NIMBA-27). The optional
+ * signature date (ISO) is printed on every traité's acceptance line; omitted,
+ * the backend dates the document the day it is produced.
+ */
+export function tradesDocxExportPath(caseId: string, signatureDate?: string): string {
+  const path = `${env.apiBasePath}/${basePath(caseId)}/trades/export/docx`;
+  return signatureDate ? `${path}?signatureDate=${signatureDate}` : path;
 }
