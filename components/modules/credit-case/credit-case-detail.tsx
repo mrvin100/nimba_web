@@ -31,7 +31,7 @@ export function CreditCaseDetail({ caseId }: { caseId: string }) {
           <Skeleton className="h-4 w-56" />
         </CardHeader>
         <CardContent>
-          {Array.from({ length: 4 }).map((_, index) => (
+          {Array.from({ length: 5 }).map((_, index) => (
             <div key={index} className="flex items-center justify-between gap-4 border-b py-2 last:border-b-0">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-4 w-24" />
@@ -67,6 +67,7 @@ export function CreditCaseDetail({ caseId }: { caseId: string }) {
       <CardContent>
         <DetailRow label="Type de produit">{data.productType}</DetailRow>
         <DetailRow label="Devise">{data.currency}</DetailRow>
+        <DetailRow label="N° de compte">{data.accountNumber ?? "—"}</DetailRow>
         <DetailRow label="Statut">
           <CreditCaseStatusBadge status={data.status} />
         </DetailRow>

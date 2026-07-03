@@ -6,6 +6,7 @@ import { useAuditEvents } from "./useAudit";
 import { auditColumns } from "./audit-columns";
 import { AuditFiltersBar } from "./audit-filters";
 import type { AuditFilters } from "./schema";
+import { PageHeader } from "@/components/shared/page-header";
 import { DataTable } from "@/components/shared/data-table";
 import { Pager } from "@/components/shared/pager";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,11 +26,8 @@ export function AuditView() {
   const filtered = Boolean(filters.from || filters.to || filters.method || filters.status != null);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-6 py-10">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Journal d&apos;audit</h1>
-        <p className="text-sm text-muted-foreground">Traçabilité des actions effectuées sur la plateforme</p>
-      </div>
+    <div className="mx-auto w-full max-w-6xl space-y-6 px-6 py-8">
+      <PageHeader title="Journal d'audit" description="Traçabilité des actions effectuées sur la plateforme" />
 
       <AuditFiltersBar filters={filters} onChange={onFiltersChange} />
 

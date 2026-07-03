@@ -59,6 +59,7 @@ export function CreditCaseList() {
         hasNext={data.hasNext}
         onPrevious={() => setPage((p) => Math.max(0, p - 1))}
         onNext={() => setPage((p) => p + 1)}
+        label={`${data.totalElements} dossier${data.totalElements > 1 ? "s" : ""} · page ${data.page + 1}/${Math.max(1, data.totalPages)}`}
       />
     </div>
   );

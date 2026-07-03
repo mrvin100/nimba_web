@@ -29,3 +29,14 @@ export function formatAmount(value: number): string {
 export function formatMoney(value: number, currency: string): string {
   return `${formatAmount(value)} ${currency}`;
 }
+
+/** Initials for an avatar fallback (first letters of the first two words). */
+export function initials(name: string | undefined): string {
+  if (!name) return "–";
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}

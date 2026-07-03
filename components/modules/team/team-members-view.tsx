@@ -6,23 +6,20 @@ import { useTeamMembers } from "./useTeam";
 import { teamMemberColumns } from "./team-columns";
 import { InviteMemberDialog } from "./invite-member-dialog";
 import { DataTable } from "@/components/shared/data-table";
+import { PageHeader } from "@/components/shared/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
 /** Members management for a direction manager: list + invite + row actions. */
-export function TeamMembersView({ department }: { department: Department }) {
+export function TeamMembersView({ department }: Readonly<{ department: Department }>) {
   const { data, isPending, isError } = useTeamMembers();
   const members = (data ?? []).filter((member) => member.memberships.some((m) => m.department === department));
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-6 py-10">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Membres</h1>
-          <p className="text-sm text-muted-foreground">{DEPARTMENT_LABELS[department]}</p>
-        </div>
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8">
+      <PageHeader title="Membres" description={DEPARTMENT_LABELS[department]}>
         <InviteMemberDialog department={department} />
-      </div>
+      </PageHeader>
 
       {isPending ? (
         <div className="space-y-2" aria-busy>

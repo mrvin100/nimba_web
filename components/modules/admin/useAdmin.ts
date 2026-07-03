@@ -1,6 +1,8 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useApiMutation } from "@/lib/mutation";
+import { queryKeys } from "@/lib/query-keys";
 import {
   createUser,
   deleteOrganizationLogo,
@@ -13,13 +15,12 @@ import {
   setUserStatus,
   updateOrganization,
   uploadOrganizationLogo,
-} from "./admin-service";
+} from "./admin.service";
 import type { UserStatusAction } from "./schema";
 
 /** Query keys for the admin domain (single source for cache invalidation). */
 export const adminKeys = {
-  all: ["admin-users"] as const,
-  list: (page: number, size: number) => ["admin-users", "list", page, size] as const,
+  ...queryKeys("admin-users"),
   organization: ["admin-organization"] as const,
   userStats: ["admin-stats", "users"] as const,
   dossierStats: ["admin-stats", "dossiers"] as const,
@@ -33,41 +34,35 @@ export function useAdminUsers(page: number, size = 20) {
   });
 }
 
-/** Creates a user and refreshes the list on success. */
+/** Creates a user (invited), refreshes the list, and confirms. */
 export function useCreateUser() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: createUser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.all });
-    },
+    invalidate: [adminKeys.all],
+    successToast: (created) => `Invitation envoyée à ${created.email}`,
   });
 }
 
 /** Applies a lifecycle transition and refreshes the list on success. */
 export function useSetUserStatus() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: ({ id, action }: { id: string; action: UserStatusAction }) => setUserStatus(id, action),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.all });
-    },
+    invalidate: [adminKeys.all],
   });
 }
 
-/** Previews a bulk import CSV (no persistence). */
+/** Previews a bulk import CSV (no persistence); an unreadable file is toasted. */
 export function usePreviewBulkUsers() {
-  return useMutation({ mutationFn: previewBulkUsers });
+  return useApiMutation({ mutationFn: previewBulkUsers, errorToast: true });
 }
 
-/** Commits a bulk import and refreshes the list on success. */
+/** Commits a bulk import, refreshes the list, and reports the outcome. */
 export function useImportBulkUsers() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: importBulkUsers,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.all });
-    },
+    invalidate: [adminKeys.all],
+    successToast: (result) => `${result.created} compte(s) créé(s) et invité(s)`,
+    errorToast: true,
   });
 }
 
@@ -95,33 +90,38 @@ export function useOrganization() {
   });
 }
 
-/** Updates organisation settings and refreshes the cache. */
+/** Updates organisation settings, refreshes the cache, and confirms. */
 export function useUpdateOrganization() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: updateOrganization,
+    successToast: "Paramètres enregistrés",
     onSuccess: (data) => {
       queryClient.setQueryData(adminKeys.organization, data);
     },
   });
 }
 
-/** Uploads the organisation logo and refreshes the cached settings. */
+/** Uploads the organisation logo, refreshes the cached settings, and reports the outcome. */
 export function useUploadOrganizationLogo() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: uploadOrganizationLogo,
+    successToast: "Logo mis à jour",
+    errorToast: true,
     onSuccess: (data) => {
       queryClient.setQueryData(adminKeys.organization, data);
     },
   });
 }
 
-/** Removes the organisation logo and refreshes the cached settings. */
+/** Removes the organisation logo, refreshes the cached settings, and reports the outcome. */
 export function useDeleteOrganizationLogo() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: deleteOrganizationLogo,
+    successToast: "Logo supprimé",
+    errorToast: true,
     onSuccess: (data) => {
       queryClient.setQueryData(adminKeys.organization, data);
     },

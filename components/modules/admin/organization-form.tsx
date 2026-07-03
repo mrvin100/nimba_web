@@ -3,10 +3,10 @@
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { ApiError } from "@/lib/api-error";
+import { getErrorMessage } from "@/lib/api-error";
 import { useOrganization, useUpdateOrganization } from "./useAdmin";
 import { organizationSchema, type OrganizationInput } from "./schema";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -22,7 +22,7 @@ export function OrganizationForm() {
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isDirty, isSubmitting },
+    formState: { errors, isDirty },
   } = useForm<OrganizationInput>({
     resolver: zodResolver(organizationSchema),
     defaultValues: { organizationName: "", senderName: "", senderEmail: "" },
@@ -34,16 +34,11 @@ export function OrganizationForm() {
     }
   }, [data, reset]);
 
-  async function onSubmit(values: OrganizationInput) {
-    try {
-      await update.mutateAsync(values);
-      reset(values);
-      toast.success("Paramètres enregistrés");
-    } catch (error) {
-      setError("root", {
-        message: error instanceof ApiError ? error.message : "Une erreur est survenue. Veuillez réessayer.",
-      });
-    }
+  function onSubmit(values: OrganizationInput) {
+    update.mutate(values, {
+      onSuccess: () => reset(values),
+      onError: (error) => setError("root", { message: getErrorMessage(error) }),
+    });
   }
 
   if (isPending) {
@@ -100,9 +95,9 @@ export function OrganizationForm() {
             {errors.root && <FieldError errors={[errors.root]} />}
           </FieldGroup>
           <div className="mt-6 flex items-center gap-2">
-            <Button type="submit" disabled={!isDirty || isSubmitting}>
-              {isSubmitting ? "Enregistrement…" : "Enregistrer"}
-            </Button>
+            <SubmitButton formState={{ isSubmitting: update.isPending, isDirty }} requireDirty pendingLabel="Enregistrement…">
+              Enregistrer
+            </SubmitButton>
             <Button type="button" variant="outline" disabled={!isDirty} onClick={() => data && reset(data)}>
               Annuler
             </Button>

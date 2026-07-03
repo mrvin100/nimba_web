@@ -1,40 +1,35 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { inviteMember, listMembers, setMemberStatus } from "./team-service";
+import { useQuery } from "@tanstack/react-query";
+import { useApiMutation } from "@/lib/mutation";
+import { queryKeys } from "@/lib/query-keys";
+import { inviteMember, listMembers, setMemberStatus } from "./team.service";
 import type { MemberStatusAction } from "./schema";
 
 /** Query keys for the team domain. */
-export const teamKeys = {
-  members: ["team-members"] as const,
-};
-
-/** Invites a member into a managed direction and refreshes the member list. */
-export function useInviteMember() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: inviteMember,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: teamKeys.members });
-    },
-  });
-}
+export const teamKeys = queryKeys("team-members");
 
 /** The members of the directions the caller manages (server state). */
 export function useTeamMembers() {
   return useQuery({
-    queryKey: teamKeys.members,
+    queryKey: teamKeys.all,
     queryFn: listMembers,
+  });
+}
+
+/** Invites a member into a managed direction, refreshes the list, and confirms. */
+export function useInviteMember() {
+  return useApiMutation({
+    mutationFn: inviteMember,
+    invalidate: [teamKeys.all],
+    successToast: (invited) => `Invitation envoyée à ${invited.email}`,
   });
 }
 
 /** Applies a lifecycle transition to a member and refreshes the list. */
 export function useSetMemberStatus() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useApiMutation({
     mutationFn: ({ id, action }: { id: string; action: MemberStatusAction }) => setMemberStatus(id, action),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: teamKeys.members });
-    },
+    invalidate: [teamKeys.all],
   });
 }

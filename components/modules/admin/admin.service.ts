@@ -1,4 +1,5 @@
 import { api } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { env } from "@/lib/env";
 import type {
   AdminUser,
@@ -40,11 +41,31 @@ export function previewBulkUsers(file: File): Promise<BulkPreviewResponse> {
   return api.post("admin/users/import/preview", { body }).json<BulkPreviewResponse>();
 }
 
-/** Commits a bulk import (all-or-nothing); each created account is invited. */
-export function importBulkUsers(file: File): Promise<BulkImportResult> {
+/**
+ * Domain outcome of an all-or-nothing import rejected by the backend (422):
+ * nothing was created and the response carries the per-line preview. Thrown
+ * here — the module's one entry point — so the UI reacts to a typed outcome
+ * and never inspects HTTP statuses itself.
+ */
+export class BulkImportRejectedError extends Error {
+  constructor(readonly preview: BulkPreviewResponse) {
+    super("Certaines lignes sont invalides. Corrigez le fichier.");
+    this.name = "BulkImportRejectedError";
+  }
+}
+
+/** Commits a bulk import (all-or-nothing); throws [BulkImportRejectedError] on invalid lines. */
+export async function importBulkUsers(file: File): Promise<BulkImportResult> {
   const body = new FormData();
   body.append("file", file);
-  return api.post("admin/users/import", { body }).json<BulkImportResult>();
+  try {
+    return await api.post("admin/users/import", { body }).json<BulkImportResult>();
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 422) {
+      throw new BulkImportRejectedError(error.problem as unknown as BulkPreviewResponse);
+    }
+    throw error;
+  }
 }
 
 /** Reads the organisation settings. */

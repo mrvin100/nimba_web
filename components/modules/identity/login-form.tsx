@@ -1,113 +1,114 @@
 "use client";
 
-import { useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ApiError } from "@/lib/api-error";
+import { getErrorMessage } from "@/lib/api-error";
 import { ROUTES } from "@/lib/constants";
 import { PasswordInput } from "@/components/shared/password-input";
-import { login, publicOrganizationLogoPath } from "./auth-service";
-import { landingPath } from "./auth-access";
-import { useBootstrapStatus, useOrganizationName, useSession } from "./useIdentity";
+import { SubmitButton } from "@/components/shared/submit-button";
+import { publicOrganizationLogoPath } from "./identity.service";
+import { useBootstrapStatus, useLogin, useOrganizationName } from "./useIdentity";
 import { loginSchema, type LoginInput } from "./schema";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
+/**
+ * Credentials form — UI and validation only. The session redirect for an
+ * already-signed-in visitor is handled once by <GuestOnly> in the (auth)
+ * layout; the post-login navigation and cache priming live in useLogin.
+ */
 export function LoginForm() {
-  const router = useRouter();
-  const session = useSession();
+  const signIn = useLogin();
   const bootstrap = useBootstrapStatus();
   const organization = useOrganizationName();
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
-  // Already signed in? Don't show the login form — forward to the workspace. Only a
-  // visitor without an active session should stay on this page.
-  useEffect(() => {
-    if (!session.loading && session.user) {
-      router.replace(landingPath(session.user));
-    }
-  }, [session.loading, session.user, router]);
-
-  async function onSubmit(values: LoginInput) {
-    try {
-      const user = await login(values);
-      router.replace(landingPath(user));
-      router.refresh();
-    } catch (error) {
-      const message =
-        error instanceof ApiError && error.status === 429
-          ? "Trop de tentatives de connexion. Veuillez réessayer plus tard."
-          : error instanceof ApiError && error.status === 401
-            ? "Identifiants invalides."
-            : "Une erreur est survenue. Veuillez réessayer.";
-      setError("root", { message });
-    }
-  }
-
-  // While the session resolves, or once we know the visitor is signed in and are
-  // redirecting, show a spinner rather than briefly flashing the credentials form.
-  if (session.loading || session.user) {
-    return (
-      <div className="flex min-h-40 items-center justify-center" aria-busy>
-        <Spinner className="size-6 text-muted-foreground" />
-      </div>
-    );
+  function onSubmit(values: LoginInput) {
+    signIn.mutate(values, {
+      onError: (error) => form.setError("root", { message: getErrorMessage(error) }),
+    });
   }
 
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
         {organization.data?.hasLogo && (
-          // eslint-disable-next-line @next/next/no-img-element -- backend-served binary, not a static asset
-          <img
+          <Image
             src={publicOrganizationLogoPath()}
             alt={organization.data.organizationName}
-            className="mb-2 h-12 w-auto self-start object-contain"
+            width={160}
+            height={48}
+            unoptimized
+            className="mb-2 h-8 w-auto self-start object-fit mx-auto"
           />
         )}
-        <CardTitle>Connexion</CardTitle>
-        <CardDescription>{organization.data?.organizationName ?? "Nimba"}</CardDescription>
+        <Separator className="my-2" />
+        <div className="flex gap-2 justify-between">
+          <CardTitle className="text-center flex">Connexion</CardTitle>
+          <CardDescription className="text-center flex">{organization.data?.organizationName ?? "Nimba"}</CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          <div className="space-y-2">
-            <Label htmlFor="email">Adresse e-mail</Label>
-            <Input id="email" type="email" autoComplete="username" aria-invalid={!!errors.email} {...register("email")} />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Mot de passe</Label>
-            <PasswordInput
-              id="password"
-              autoComplete="current-password"
-              aria-invalid={!!errors.password}
-              {...register("password")}
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Adresse e-mail</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type="email"
+                    autoComplete="username"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
             />
-            {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
-          </div>
-          {errors.root && <p className="text-sm text-destructive">{errors.root.message}</p>}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Connexion…" : "Se connecter"}
-          </Button>
+            <Controller
+              control={form.control}
+              name="password"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Mot de passe</FieldLabel>
+                  <PasswordInput
+                    {...field}
+                    id={field.name}
+                    autoComplete="current-password"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            {form.formState.errors.root && (
+              <Field data-invalid>
+                <FieldError errors={[form.formState.errors.root]} />
+              </Field>
+            )}
+          </FieldGroup>
+          <SubmitButton formState={{ isSubmitting: signIn.isPending }} className="mt-6 w-full" pendingLabel="Connexion…">
+            Se connecter
+          </SubmitButton>
           {bootstrap.data?.available ? (
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="mt-4 text-center text-xs text-muted-foreground">
               Première installation ?{" "}
               <Link href={ROUTES.BOOTSTRAP} className="underline underline-offset-4">
                 Initialiser l&apos;administrateur
               </Link>
             </p>
           ) : (
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="mt-4 text-center text-xs text-muted-foreground">
               Pas d&apos;accès ou un problème de connexion ? Contactez la DSI (administration).
             </p>
           )}

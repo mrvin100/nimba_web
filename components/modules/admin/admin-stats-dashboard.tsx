@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from "lucide-react";
 import { Building2, Clock, FileCheck2, Folder, UserCheck, UserMinus, Users, UserX } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
 import { DEPARTMENT_LABELS } from "@/components/modules/identity";
 import { useDossierStats, useUserStats } from "./useAdmin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,11 +43,8 @@ export function AdminStatsDashboard() {
   const dossiers = useDossierStats();
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 px-6 py-10">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Tableau de bord</h1>
-        <p className="text-sm text-muted-foreground">Vue d&apos;ensemble de la plateforme</p>
-      </div>
+    <div className="mx-auto w-full max-w-5xl space-y-8 px-6 py-8">
+      <PageHeader title="Tableau de bord" description="Vue d'ensemble de la plateforme" />
 
       <section className="space-y-4">
         <h2 className="text-sm font-medium">Utilisateurs</h2>

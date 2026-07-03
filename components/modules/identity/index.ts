@@ -2,8 +2,10 @@ export { LoginForm } from "./login-form";
 export { BootstrapForm } from "./bootstrap-form";
 export { SetPasswordForm } from "./set-password-form";
 export { ProfileView } from "./profile-view";
+export { GuestOnly } from "./guest-only";
 export {
   useSession,
+  useLogin,
   useLogout,
   useBootstrapStatus,
   useBootstrap,
@@ -11,13 +13,14 @@ export {
   useSetPassword,
   useUpdateProfile,
   useOrganizationName,
-  sessionKeys,
+  identityKeys,
 } from "./useIdentity";
 export {
   useUploadAvatar,
   useDeleteAvatar,
 } from "./useIdentity";
-export { login, logout, fetchMe, avatarPath } from "./auth-service";
+// Only URL builders cross the module boundary — API calls stay behind the hooks.
+export { avatarPath, publicOrganizationLogoPath } from "./identity.service";
 export { loginSchema, DEPARTMENTS, DEPARTMENT_ROLES, DEPARTMENT_LABELS } from "./schema";
 export type {
   LoginInput,

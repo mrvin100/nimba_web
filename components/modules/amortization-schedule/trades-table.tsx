@@ -4,7 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Download, FileText } from "lucide-react";
 import type { Trade } from "./schema";
 import { formatDate, formatMoney } from "@/lib/format";
-import { tradesDocxExportPath, tradesExportPath } from "./amortization-service";
+import { tradesDocxExportPath, tradesExportPath } from "./amortization-schedule.service";
 import { DataTable } from "@/components/shared/data-table";
 import { Button } from "@/components/ui/button";
 

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { ApiError } from "@/lib/api-error";
 
 /** One parsed row of the uploaded schedule, transcribed raw for the preview. */
 export interface PreviewLine {
@@ -46,6 +45,67 @@ export interface UploadResponse {
   fixedDayOfMonth: number;
 }
 
+/** Payment state of one échéance relative to today (computed by the backend). */
+export type PaymentStatus = "PAYE" | "EN_COURS" | "A_VENIR";
+
+export interface AmortizationSummary {
+  loanAmount: number;
+  paidPrincipal: number;
+  remainingPrincipal: number;
+  interestPaid: number;
+  durationMonths: number;
+  nextPaymentDate: string | null;
+  nextPaymentAmount: number | null;
+}
+
+export interface AmortizationTimeline {
+  startDate: string | null;
+  endDate: string | null;
+  today: string;
+  /** Number of settled périodes — where the "today" marker sits on the chart. */
+  currentPeriod: number;
+  remainingPeriods: number;
+}
+
+export interface AmortizationChartPoint {
+  period: number;
+  date: string | null;
+  remainingCapital: number;
+  paidCapital: number;
+  paidPercentage: number;
+}
+
+export interface AmortizationProgress {
+  completedPayments: number;
+  remainingPayments: number;
+  completion: number;
+}
+
+/** Everything the dossier overview screen needs, in one backend response. */
+export interface AmortizationOverview {
+  summary: AmortizationSummary;
+  timeline: AmortizationTimeline;
+  chart: AmortizationChartPoint[];
+  status: AmortizationProgress;
+}
+
+/** Optional chart date range; the backend filters, the frontend only renders. */
+export interface OverviewRange {
+  from?: string;
+  to?: string;
+}
+
+/** Row of the lazily-loaded detailed table. */
+export interface AmortizationTableRow {
+  period: string;
+  date: string | null;
+  capital: number;
+  interet: number;
+  mensualite: number;
+  capitalRestantDu: number | null;
+  status: PaymentStatus;
+}
+
 /** A generated trade (bill of exchange). */
 export interface Trade {
   id: string;
@@ -73,16 +133,3 @@ export const DEFAULT_OFFSETS: OffsetsInput = {
   vrOffsetMonths: 2,
   fixedDayOfMonth: 5,
 };
-
-/**
- * A rejected definitive upload (422) carries the same error list as the preview.
- * Returns the errors when the failure is a validation rejection, or null for any
- * other error (which the caller should surface generically).
- */
-export function scheduleErrorsFrom(error: unknown): ScheduleError[] | null {
-  if (error instanceof ApiError && error.status === 422) {
-    const body = error.problem as unknown as { errors?: ScheduleError[] };
-    return body.errors ?? [];
-  }
-  return null;
-}
