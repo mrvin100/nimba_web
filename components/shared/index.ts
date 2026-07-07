@@ -15,6 +15,7 @@ export { StatusActionMenu } from "./status-action-menu";
 export { PageHeader } from "./page-header";
 export { SidebarNav } from "./sidebar-nav";
 export { WorkspaceSwitcher } from "./workspace-switcher";
+export { ServiceWakeNotice } from "./service-wake-notice";
 export type { LifecycleAction, LifecycleStatus } from "./status-action-menu";
 export {
   WORKSPACES,

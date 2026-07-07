@@ -10,7 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: "Nimba",
+  title: "D'mba",
   description: "Plateforme bancaire de gestion du cycle de vie des dossiers de crédit",
 };
 

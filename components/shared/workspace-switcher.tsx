@@ -30,7 +30,7 @@ export function WorkspaceSwitcher({ active, workspaces }: Readonly<WorkspaceSwit
   const { isMobile } = useSidebar();
   const organization = useOrganizationName();
   const canSwitch = workspaces.length > 1;
-  const orgName = organization.data?.organizationName ?? "Nimba";
+  const orgName = organization.data?.organizationName ?? "D'mba";
 
   const logo = organization.data?.hasLogo ? (
     // Backend-served binary behind the session proxy: Next's optimizer cannot
