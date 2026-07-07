@@ -87,7 +87,7 @@ export function OrganizationForm() {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Adresse e-mail expéditeur</FieldLabel>
                   <Input {...field} id={field.name} type="email" aria-invalid={fieldState.invalid} />
-                  <FieldDescription>Ex. no-reply@nimba.com</FieldDescription>
+                  <FieldDescription>Ex. no-reply@dmba.com</FieldDescription>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}

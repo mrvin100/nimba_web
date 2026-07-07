@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="D'mba">
+  <!-- Favicon: bolder, detail-free variant of public/logo.svg so the D'mba
+       silhouette stays readable at 16px. Next.js App Router serves this as the
+       tab icon automatically. -->
+  <rect width="64" height="64" rx="14" fill="#0B6B58"/>
+  <g fill="#F6ECD3">
+    <path d="M32 7 C 36 13 36 17.5 32 21.5 C 28 17.5 28 13 32 7 Z"/>
+    <circle cx="32" cy="28" r="10.5"/>
+    <path d="M23 44 L41 44 Q43.3 44 44 46.4 L46.5 55.2 Q47.2 58 44.2 58 L19.8 58 Q16.8 58 17.5 55.2 L20 46.4 Q20.7 44 23 44 Z"/>
+  </g>
+</svg>

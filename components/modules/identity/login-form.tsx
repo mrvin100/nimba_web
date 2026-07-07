@@ -52,7 +52,7 @@ export function LoginForm() {
         <Separator className="my-2" />
         <div className="flex gap-2 justify-between">
           <CardTitle className="text-center flex">Connexion</CardTitle>
-          <CardDescription className="text-center flex">{organization.data?.organizationName ?? "Nimba"}</CardDescription>
+          <CardDescription className="text-center flex">{organization.data?.organizationName ?? "D'mba"}</CardDescription>
         </div>
       </CardHeader>
       <CardContent>
