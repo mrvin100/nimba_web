@@ -26,6 +26,7 @@ function toFormValues(creditCase: CreditCase): CaseFormInput {
   return {
     clientName: creditCase.clientName,
     productType: creditCase.productType,
+    contractType: creditCase.contractType ?? undefined,
     currency: creditCase.currency,
     accountNumber: creditCase.accountNumber ?? "",
   };
@@ -70,7 +71,7 @@ export function EditCaseDialog({ creditCase }: { creditCase: CreditCase }) {
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <FieldGroup>
-            <CaseFormFields control={form.control} />
+            <CaseFormFields form={form} />
             {form.formState.errors.root && (
               <Field data-invalid>
                 <FieldError errors={[form.formState.errors.root]} />

@@ -66,6 +66,7 @@ export function CreditCaseDetail({ caseId }: { caseId: string }) {
       </CardHeader>
       <CardContent>
         <DetailRow label="Type de produit">{data.productType}</DetailRow>
+        {data.contractType && <DetailRow label="Type de contrat">{data.contractType}</DetailRow>}
         <DetailRow label="Devise">{data.currency}</DetailRow>
         <DetailRow label="N° de compte">{data.accountNumber ?? "—"}</DetailRow>
         <DetailRow label="Statut">
