@@ -10,7 +10,7 @@ import { EditCaseDialog } from "./edit-case-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+export function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b py-2 last:border-b-0">
       <span className="text-sm text-muted-foreground">{label}</span>

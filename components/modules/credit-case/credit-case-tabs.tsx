@@ -9,6 +9,7 @@ import {
 } from "@/components/modules/amortization-schedule";
 import { AnalysisSheetPanel } from "@/components/modules/analysis-sheet";
 import { WorkflowReviewPanel } from "@/components/modules/workflow";
+import { ClientIdentityCard } from "./client-identity-card";
 import { CreditCaseDetail } from "./credit-case-detail";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,6 +32,7 @@ export function CreditCaseTabs({ caseId, backHref }: Readonly<{ caseId: string; 
     return (
       <div className="space-y-6">
         <CreditCaseDetail caseId={caseId} backHref={backHref} />
+        <ClientIdentityCard caseId={caseId} />
         <WorkflowReviewPanel caseId={caseId} />
         <AnalysisSheetPanel caseId={caseId} />
       </div>
