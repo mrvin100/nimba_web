@@ -7,6 +7,7 @@ import {
   AmortizationPanel,
   useAmortizationOverview,
 } from "@/components/modules/amortization-schedule";
+import { AnalysisSheetPanel } from "@/components/modules/analysis-sheet";
 import { CreditCaseDetail } from "./credit-case-detail";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,7 +25,12 @@ export function CreditCaseTabs({ caseId }: Readonly<{ caseId: string }>) {
   const overview = useAmortizationOverview(caseId, {});
 
   if (searchParams.get("tab") !== "amortissement") {
-    return <CreditCaseDetail caseId={caseId} />;
+    return (
+      <div className="space-y-6">
+        <CreditCaseDetail caseId={caseId} />
+        <AnalysisSheetPanel caseId={caseId} />
+      </div>
+    );
   }
 
   return (

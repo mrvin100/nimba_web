@@ -7,6 +7,7 @@ export const QUERY_SCOPES = {
   identity: "identity",
   creditCases: "credit-cases",
   amortization: "amortization",
+  analysisSheet: "analysis-sheet",
   admin: "admin-users",
   adminOrganization: "admin-organization",
   adminStats: "admin-stats",
