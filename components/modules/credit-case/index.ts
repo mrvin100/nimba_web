@@ -1,5 +1,6 @@
 export { CreditCaseDashboard } from "./credit-case-dashboard";
 export { CreditCaseDetail } from "./credit-case-detail";
+export { CreditCaseDetailPage } from "./credit-case-detail-page";
 export { CreditCaseTabs } from "./credit-case-tabs";
 export { CreateCaseDialog } from "./create-case-dialog";
 export { EditCaseDialog } from "./edit-case-dialog";

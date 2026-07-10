@@ -1,5 +1,6 @@
-import { WorkspacePlaceholder } from "@/components/shared";
+import { WorkflowQueueView } from "@/components/modules/workflow";
+import { ROUTES } from "@/lib/constants";
 
 export default function DrcPage() {
-  return <WorkspacePlaceholder title="Espace DRC" />;
+  return <WorkflowQueueView workspaceBase={ROUTES.DRC} />;
 }

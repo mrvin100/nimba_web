@@ -1,5 +1,6 @@
-import { WorkspacePlaceholder } from "@/components/shared";
+import { WorkflowQueueView } from "@/components/modules/workflow";
+import { ROUTES } from "@/lib/constants";
 
 export default function ComitePage() {
-  return <WorkspacePlaceholder title="Espace Comité de Crédit" />;
+  return <WorkflowQueueView workspaceBase={ROUTES.COMITE} />;
 }

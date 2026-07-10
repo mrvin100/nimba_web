@@ -1,4 +1,4 @@
-import { Building2, FileText, LayoutDashboard, ScrollText, Users, type LucideIcon } from "lucide-react";
+import { Building2, ClipboardList, FileText, LayoutDashboard, ScrollText, Users, type LucideIcon } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { DEPARTMENT_LABELS, hasDepartment, isAdmin, type Department, type MeResponse } from "@/components/modules/identity";
 
@@ -73,7 +73,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     subtitle: DEPARTMENT_LABELS.DCM,
     basePath: ROUTES.DCM,
     nav: [
-      { label: "Tableau de bord", href: ROUTES.DCM, icon: LayoutDashboard },
+      { label: "Dossiers à revoir", href: ROUTES.DCM, icon: ClipboardList },
       { label: "Membres", href: `${ROUTES.DCM}/equipe`, icon: Users, managerOnly: true },
     ],
   },
@@ -84,7 +84,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     subtitle: DEPARTMENT_LABELS.DRC,
     basePath: ROUTES.DRC,
     nav: [
-      { label: "Tableau de bord", href: ROUTES.DRC, icon: LayoutDashboard },
+      { label: "Dossiers à revoir", href: ROUTES.DRC, icon: ClipboardList },
       { label: "Membres", href: `${ROUTES.DRC}/equipe`, icon: Users, managerOnly: true },
     ],
   },
@@ -95,7 +95,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     subtitle: DEPARTMENT_LABELS.COMITE,
     basePath: ROUTES.COMITE,
     nav: [
-      { label: "Tableau de bord", href: ROUTES.COMITE, icon: LayoutDashboard },
+      { label: "Dossiers à revoir", href: ROUTES.COMITE, icon: ClipboardList },
       { label: "Membres", href: `${ROUTES.COMITE}/equipe`, icon: Users, managerOnly: true },
     ],
   },

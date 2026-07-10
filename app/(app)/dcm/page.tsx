@@ -1,5 +1,6 @@
-import { WorkspacePlaceholder } from "@/components/shared";
+import { WorkflowQueueView } from "@/components/modules/workflow";
+import { ROUTES } from "@/lib/constants";
 
 export default function DcmPage() {
-  return <WorkspacePlaceholder title="Espace DCM" />;
+  return <WorkflowQueueView workspaceBase={ROUTES.DCM} />;
 }
