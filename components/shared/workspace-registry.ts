@@ -10,7 +10,7 @@ import { DEPARTMENT_LABELS, hasDepartment, isAdmin, type Department, type MeResp
  * single edit here, not a new layout tree.
  */
 
-export type WorkspaceKey = "dri" | "dcm" | "drc" | "admin";
+export type WorkspaceKey = "dri" | "dcm" | "drc" | "comite" | "admin";
 
 export interface NavSubItem {
   label: string;
@@ -86,6 +86,17 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     nav: [
       { label: "Tableau de bord", href: ROUTES.DRC, icon: LayoutDashboard },
       { label: "Membres", href: `${ROUTES.DRC}/equipe`, icon: Users, managerOnly: true },
+    ],
+  },
+  {
+    key: "comite",
+    department: "COMITE",
+    label: "Comité",
+    subtitle: DEPARTMENT_LABELS.COMITE,
+    basePath: ROUTES.COMITE,
+    nav: [
+      { label: "Tableau de bord", href: ROUTES.COMITE, icon: LayoutDashboard },
+      { label: "Membres", href: `${ROUTES.COMITE}/equipe`, icon: Users, managerOnly: true },
     ],
   },
   {

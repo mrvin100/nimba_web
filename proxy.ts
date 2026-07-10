@@ -21,5 +21,5 @@ export function proxy(request: NextRequest): NextResponse {
 // Guard the entry point and every workspace path. The login page and /api proxy
 // are intentionally excluded so they remain reachable without a session.
 export const config = {
-  matcher: ["/", "/profile", "/dri/:path*", "/dcm/:path*", "/drc/:path*", "/admin/:path*"],
+  matcher: ["/", "/profile", "/dri/:path*", "/dcm/:path*", "/drc/:path*", "/comite/:path*", "/admin/:path*"],
 };

@@ -7,6 +7,7 @@ export const ROUTES = {
   DRI: "/dri",
   DCM: "/dcm",
   DRC: "/drc",
+  COMITE: "/comite",
   ADMIN: "/admin",
   ADMIN_USERS: "/admin/users",
   ADMIN_ORGANIZATION: "/admin/organization",

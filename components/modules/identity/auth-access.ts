@@ -8,7 +8,7 @@ import { DEPARTMENTS, type Department, type MeResponse } from "./schema";
  * user do".
  */
 
-/** The directions the user belongs to, ordered by process priority (DRI > DCM > DRC). */
+/** The directions the user belongs to, ordered by process priority (DRI > DCM > DRC > COMITE). */
 export function userDepartments(user: MeResponse): Department[] {
   return DEPARTMENTS.filter((dept) => user.memberships.some((m) => m.department === dept));
 }
