@@ -72,10 +72,51 @@ export interface CreditCaseSummary {
 /** List visibility filter: active (default view), archived, or everything. */
 export type CaseListFilter = "active" | "archived" | "all";
 
+/**
+ * Descriptive client detail, captured once on the dossier and reused verbatim on
+ * the Fiche d'analyse, the PV, and the FMP. Every field is optional supplementary
+ * detail the DRI adds incrementally, never required to create the dossier.
+ */
+export interface ClientIdentity {
+  formeJuridique: string | null;
+  dateCreation: string | null;
+  adressePhysique: string | null;
+  activiteDeBase: string | null;
+  codeNif: string | null;
+  principalDirigeant: string | null;
+  dateEntreeRelation: string | null;
+  dateDerniereVisite: string | null;
+  agence: string | null;
+  gestionnaire: string | null;
+  analyste: string | null;
+  cotationPrecedente: string | null;
+  cotationActuelle: string | null;
+}
+
 /** Full case (detail + create response). */
 export interface CreditCase extends CreditCaseSummary {
   currency: string;
   accountNumber: string | null;
+  clientIdentity: ClientIdentity;
 }
+
+/** Edit-form schema for the client-identity card; every field optional, blanks mean "not captured". */
+export const clientIdentitySchema = z.object({
+  formeJuridique: z.string().max(100, "100 caractères maximum").optional(),
+  dateCreation: z.string().optional(),
+  adressePhysique: z.string().max(300, "300 caractères maximum").optional(),
+  activiteDeBase: z.string().max(300, "300 caractères maximum").optional(),
+  codeNif: z.string().max(50, "50 caractères maximum").optional(),
+  principalDirigeant: z.string().max(200, "200 caractères maximum").optional(),
+  dateEntreeRelation: z.string().optional(),
+  dateDerniereVisite: z.string().optional(),
+  agence: z.string().max(100, "100 caractères maximum").optional(),
+  gestionnaire: z.string().max(200, "200 caractères maximum").optional(),
+  analyste: z.string().max(200, "200 caractères maximum").optional(),
+  cotationPrecedente: z.string().max(20, "20 caractères maximum").optional(),
+  cotationActuelle: z.string().max(20, "20 caractères maximum").optional(),
+});
+
+export type ClientIdentityInput = z.infer<typeof clientIdentitySchema>;
 
 export type { PagedResponse } from "@/lib/pagination";

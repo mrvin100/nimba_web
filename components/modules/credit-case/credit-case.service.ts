@@ -1,5 +1,13 @@
 import { api } from "@/lib/api-client";
-import type { CaseFormInput, CaseListFilter, CaseType, CreditCase, CreditCaseSummary, PagedResponse } from "./schema";
+import type {
+  CaseFormInput,
+  CaseListFilter,
+  CaseType,
+  ClientIdentityInput,
+  CreditCase,
+  CreditCaseSummary,
+  PagedResponse,
+} from "./schema";
 
 /** Every selectable dossier type, driving the create form's type picker. */
 export function listCaseTypes(): Promise<CaseType[]> {
@@ -30,6 +38,11 @@ export function createCreditCase(input: CaseFormInput): Promise<CreditCase> {
 /** Updates a case's general information and returns it. */
 export function updateCreditCase(id: string, input: CaseFormInput): Promise<CreditCase> {
   return api.put(`credit-cases/${id}`, { json: input }).json<CreditCase>();
+}
+
+/** Replaces a case's client-identity details and returns the case. */
+export function updateClientIdentity(id: string, input: ClientIdentityInput): Promise<CreditCase> {
+  return api.put(`credit-cases/${id}/identity`, { json: input }).json<CreditCase>();
 }
 
 /** Archives a case out of the active list (admin act; nothing is destroyed). */
