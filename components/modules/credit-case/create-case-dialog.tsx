@@ -30,7 +30,7 @@ export function CreateCaseDialog() {
   const createCase = useCreateCreditCase();
   const form = useForm<CaseFormInput>({
     resolver: zodResolver(caseFormSchema),
-    defaultValues: { clientName: "", productType: "LEASING", currency: "GNF", accountNumber: "" },
+    defaultValues: { clientName: "", productType: "LEASING", contractType: "AVEC_CONTRAT", currency: "GNF", accountNumber: "" },
   });
 
   function onSubmit(values: CaseFormInput) {
@@ -59,7 +59,7 @@ export function CreateCaseDialog() {
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <FieldGroup>
-            <CaseFormFields control={form.control} />
+            <CaseFormFields form={form} />
             {form.formState.errors.root && (
               <Field data-invalid>
                 <FieldError errors={[form.formState.errors.root]} />

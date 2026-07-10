@@ -1,5 +1,10 @@
 import { api } from "@/lib/api-client";
-import type { CaseFormInput, CaseListFilter, CreditCase, CreditCaseSummary, PagedResponse } from "./schema";
+import type { CaseFormInput, CaseListFilter, CaseType, CreditCase, CreditCaseSummary, PagedResponse } from "./schema";
+
+/** Every selectable dossier type, driving the create form's type picker. */
+export function listCaseTypes(): Promise<CaseType[]> {
+  return api.get("credit-cases/types").json<CaseType[]>();
+}
 
 /** Lists credit cases, newest first (paginated); "all" skips the archived filter. */
 export function listCreditCases(
