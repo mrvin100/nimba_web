@@ -30,6 +30,18 @@ export function formatMoney(value: number, currency: string): string {
   return `${formatAmount(value)} ${currency}`;
 }
 
+/** Formats a byte count in the largest unit that keeps it readable (e.g. 3.2 Mo). */
+export function formatBytes(bytes: number): string {
+  const units = ["o", "Ko", "Mo", "Go"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  return `${unitIndex === 0 ? value : value.toFixed(1)} ${units[unitIndex]}`;
+}
+
 /** Initials for an avatar fallback (first letters of the first two words). */
 export function initials(name: string | undefined): string {
   if (!name) return "–";
