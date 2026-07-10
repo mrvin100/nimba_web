@@ -7,6 +7,7 @@ export const ROUTES = {
   DRI: "/dri",
   DCM: "/dcm",
   DRC: "/drc",
+  COMITE: "/comite",
   ADMIN: "/admin",
   ADMIN_USERS: "/admin/users",
   ADMIN_ORGANIZATION: "/admin/organization",
@@ -16,9 +17,9 @@ export const ROUTES = {
 /** The DRI dossier list lives at the DRI workspace root. */
 export const DOSSIERS = ROUTES.DRI;
 
-/** Builds the path to a credit-case detail page (DRI workspace). */
-export function caseDetailPath(id: string): string {
-  return `${ROUTES.DRI}/dossiers/${id}`;
+/** Builds the path to a credit-case detail page; every review workspace mounts one. */
+export function caseDetailPath(id: string, workspaceBase: string = ROUTES.DRI): string {
+  return `${workspaceBase}/dossiers/${id}`;
 }
 
 /** Backend session cookie names (see backend application.yaml). */

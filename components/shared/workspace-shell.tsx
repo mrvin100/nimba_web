@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { landingPath, useSession } from "@/components/modules/identity";
+import { NotificationBell } from "@/components/modules/notification";
 import { AppSidebar } from "./app-sidebar";
 import {
   accessibleWorkspaces,
@@ -99,6 +100,9 @@ export function WorkspaceShell({ children }: Readonly<{ children: React.ReactNod
                 )}
               </BreadcrumbList>
             </Breadcrumb>
+          </div>
+          <div className="ml-auto px-4">
+            <NotificationBell />
           </div>
         </header>
         <div className="flex flex-1 flex-col">{children}</div>

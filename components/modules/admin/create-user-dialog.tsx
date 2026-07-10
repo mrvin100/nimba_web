@@ -41,6 +41,7 @@ const DEPARTMENT_FIELDS = [
   { name: "dri", label: `DRI — ${DEPARTMENT_LABELS.DRI}` },
   { name: "dcm", label: `DCM — ${DEPARTMENT_LABELS.DCM}` },
   { name: "drc", label: `DRC — ${DEPARTMENT_LABELS.DRC}` },
+  { name: "comite", label: `Comité — ${DEPARTMENT_LABELS.COMITE}` },
 ] as const;
 
 const DEFAULTS: CreateUserInput = {
@@ -50,6 +51,7 @@ const DEFAULTS: CreateUserInput = {
   dri: "NONE",
   dcm: "NONE",
   drc: "NONE",
+  comite: "NONE",
 };
 
 export function CreateUserDialog() {

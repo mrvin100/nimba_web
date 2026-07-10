@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { PagedResponse } from "@/lib/pagination";
-import { DEPARTMENTS, type AccountStatus, type Membership } from "@/components/modules/identity";
+import { DEPARTMENTS, type AccountStatus, type Department, type Membership } from "@/components/modules/identity";
 
 /** A managed user, as returned by the admin endpoints. */
 export interface AdminUser {
@@ -39,6 +39,7 @@ export const createUserSchema = z.object({
   dri: z.enum(ROLE_CHOICES),
   dcm: z.enum(ROLE_CHOICES),
   drc: z.enum(ROLE_CHOICES),
+  comite: z.enum(ROLE_CHOICES),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -54,7 +55,7 @@ export interface CreateUserPayload {
 /** Turns the flat form values into the API payload (drops "NONE" directions). */
 export function toCreateUserPayload(values: CreateUserInput): CreateUserPayload {
   const memberships: Membership[] = DEPARTMENTS.flatMap((dept) => {
-    const choice = values[dept.toLowerCase() as "dri" | "dcm" | "drc"];
+    const choice = values[dept.toLowerCase() as "dri" | "dcm" | "drc" | "comite"];
     return choice === "NONE" ? [] : [{ department: dept, role: choice }];
   });
   return {
@@ -119,7 +120,7 @@ export interface UserStats {
   pending: number;
   suspended: number;
   revoked: number;
-  byDepartment: { department: "DRI" | "DCM" | "DRC"; count: number }[];
+  byDepartment: { department: Department; count: number }[];
 }
 
 /** Aggregate credit-case counts for the admin dashboard. */
