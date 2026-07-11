@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client";
-import type { AnalysisSheet, AnalysisSheetContentInput } from "./schema";
+import type { AnalysisSheet, FaSection, FaSectionKey } from "./schema";
 
 const basePath = (caseId: string) => `credit-cases/${caseId}/analysis-sheet`;
 
@@ -13,9 +13,14 @@ export function createAnalysisSheet(caseId: string): Promise<AnalysisSheet> {
   return api.post(basePath(caseId)).json<AnalysisSheet>();
 }
 
-/** Replaces the draft content (409 once the FA is published). */
-export function updateAnalysisSheetContent(caseId: string, input: AnalysisSheetContentInput): Promise<AnalysisSheet> {
-  return api.put(basePath(caseId), { json: input }).json<AnalysisSheet>();
+/** Every section that applies to the case's FA variant, whether or not content was saved to it yet. */
+export function getFaSections(caseId: string): Promise<FaSection[]> {
+  return api.get(`${basePath(caseId)}/sections`).json<FaSection[]>();
+}
+
+/** Replaces one editable section's content (409 once the FA is published). */
+export function updateFaSection(caseId: string, key: FaSectionKey, contentJson: string | null): Promise<FaSection> {
+  return api.put(`${basePath(caseId)}/sections/${key}`, { json: { contentJson } }).json<FaSection>();
 }
 
 /** Locks the FA (409 if already published). */

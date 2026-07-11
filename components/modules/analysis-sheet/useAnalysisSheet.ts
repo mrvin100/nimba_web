@@ -1,14 +1,15 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { QUERY_SCOPES } from "@/lib/query-keys";
-import { createAnalysisSheet, getAnalysisSheet, publishAnalysisSheet, updateAnalysisSheetContent } from "./analysis-sheet.service";
-import type { AnalysisSheetContentInput } from "./schema";
+import { createAnalysisSheet, getAnalysisSheet, getFaSections, publishAnalysisSheet, updateFaSection } from "./analysis-sheet.service";
+import type { FaSection, FaSectionKey } from "./schema";
 
 export const analysisSheetKeys = {
   all: [QUERY_SCOPES.analysisSheet] as const,
   detail: (caseId: string) => [QUERY_SCOPES.analysisSheet, caseId] as const,
+  sections: (caseId: string) => [QUERY_SCOPES.analysisSheet, caseId, "sections"] as const,
 };
 
 /**
@@ -27,18 +28,33 @@ export function useAnalysisSheet(caseId: string) {
 export function useCreateAnalysisSheet(caseId: string) {
   return useApiMutation({
     mutationFn: () => createAnalysisSheet(caseId),
-    invalidate: [analysisSheetKeys.detail(caseId)],
+    invalidate: [analysisSheetKeys.detail(caseId), analysisSheetKeys.sections(caseId)],
     errorToast: true,
   });
 }
 
-/** Saves the draft content. */
-export function useUpdateAnalysisSheetContent(caseId: string) {
+/** Every section that applies to the case's FA variant, enabled once the FA exists. */
+export function useFaSections(caseId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: analysisSheetKeys.sections(caseId),
+    queryFn: () => getFaSections(caseId),
+    enabled,
+  });
+}
+
+/** Saves one section's content; write-through updates just that row in the sections cache. */
+export function useUpdateFaSection(caseId: string) {
+  const queryClient = useQueryClient();
   return useApiMutation({
-    mutationFn: (input: AnalysisSheetContentInput) => updateAnalysisSheetContent(caseId, input),
-    invalidate: [analysisSheetKeys.detail(caseId)],
-    successToast: "Fiche d'analyse enregistrée",
+    mutationFn: ({ key, contentJson }: { key: FaSectionKey; contentJson: string | null }) =>
+      updateFaSection(caseId, key, contentJson),
+    successToast: "Section enregistrée",
     errorToast: true,
+    onSuccess: (data) => {
+      queryClient.setQueryData<FaSection[]>(analysisSheetKeys.sections(caseId), (sections) =>
+        sections?.map((section) => (section.key === data.key ? data : section)),
+      );
+    },
   });
 }
 
