@@ -85,10 +85,22 @@ export function AnalysisSheetPanel({ caseId }: Readonly<{ caseId: string }>) {
         ) : (
           <>
             {sheet.taSummary && (
-              <p className="text-sm text-muted-foreground">
-                Montant financé {formatAmount(sheet.taSummary.loanAmount)} · {sheet.taSummary.durationMonths} échéances
-                · {formatDate(sheet.taSummary.startDate)} → {formatDate(sheet.taSummary.endDate)}
-              </p>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>
+                  Montant financé {formatAmount(sheet.taSummary.loanAmount)} · {sheet.taSummary.durationMonths} échéances
+                  · {formatDate(sheet.taSummary.startDate)} → {formatDate(sheet.taSummary.endDate)}
+                </p>
+                <p>
+                  Équipement {formatAmount(sheet.taSummary.totalEquipement)} · Assurance{" "}
+                  {formatAmount(sheet.taSummary.totalAssurance)} · Tracking {formatAmount(sheet.taSummary.totalTracking)} ·
+                  Immatriculation {formatAmount(sheet.taSummary.totalImmatriculation)}
+                </p>
+                <p>
+                  1er loyer TTC {formatAmount(sheet.taSummary.premierLoyerTtc)} · Loyer mensuel HT{" "}
+                  {formatAmount(sheet.taSummary.loyerMensuelHt)} · Valeur résiduelle{" "}
+                  {formatAmount(sheet.taSummary.valeurResiduelle)}
+                </p>
+              </div>
             )}
 
             {sheet.status === "PUBLISHED" ? (

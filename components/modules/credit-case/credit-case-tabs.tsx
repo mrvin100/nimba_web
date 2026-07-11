@@ -11,6 +11,7 @@ import { AnalysisSheetPanel } from "@/components/modules/analysis-sheet";
 import { GuaranteePanel } from "@/components/modules/guarantee";
 import { WorkflowReviewPanel } from "@/components/modules/workflow";
 import { ClientIdentityCard } from "./client-identity-card";
+import { ConditionsDeBanqueCard } from "./conditions-de-banque-card";
 import { CreditCaseDetail } from "./credit-case-detail";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,6 +35,7 @@ export function CreditCaseTabs({ caseId, backHref }: Readonly<{ caseId: string; 
       <div className="space-y-6">
         <CreditCaseDetail caseId={caseId} backHref={backHref} />
         <ClientIdentityCard caseId={caseId} />
+        <ConditionsDeBanqueCard caseId={caseId} />
         <WorkflowReviewPanel caseId={caseId} />
         <AnalysisSheetPanel caseId={caseId} />
         <GuaranteePanel caseId={caseId} />

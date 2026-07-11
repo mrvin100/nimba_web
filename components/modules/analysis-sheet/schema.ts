@@ -3,12 +3,23 @@ import { z } from "zod";
 export type AnalysisSheetStatus = "DRAFT" | "PUBLISHED";
 export type FaVariant = "LEASING_AVEC_CONTRAT" | "LEASING_SANS_CONTRAT" | "MC2_MUFFA";
 
-/** TA figures reused to prefill the sheet's header (from the latest amortization schedule). */
+/**
+ * TA figures reused to prefill the sheet's header and the dossier's articulation
+ * du financement (from the latest amortization schedule) — the TA is their only
+ * source, nothing here is stored separately.
+ */
 export interface ScheduleSummary {
   loanAmount: number;
   durationMonths: number;
   startDate: string | null;
   endDate: string | null;
+  totalEquipement: number;
+  totalAssurance: number;
+  totalTracking: number;
+  totalImmatriculation: number;
+  premierLoyerTtc: number | null;
+  loyerMensuelHt: number | null;
+  valeurResiduelle: number | null;
 }
 
 /**

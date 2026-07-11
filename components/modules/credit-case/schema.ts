@@ -93,11 +93,32 @@ export interface ClientIdentity {
   cotationActuelle: string | null;
 }
 
+/** One "frais divers" line (label + amount) — the DRI defines the exact set per dossier. */
+export interface FraisDivers {
+  label: string;
+  montant: number;
+}
+
+/**
+ * Bank-set financing terms, captured once on the dossier and reused on the FA
+ * cover/§5, the PV and the FMP. Only the terms the TA cannot derive live here —
+ * 1er loyer, loyer mensuel, durée and valeur résiduelle come from the imported
+ * schedule (see the analysis-sheet module's `ScheduleSummary`), never re-entered.
+ */
+export interface ConditionsDeBanque {
+  tauxInteretPct: number | null;
+  fraisMiseEnPlacePct: number | null;
+  comEngagementPct: number | null;
+  fraisEtudesPct: number | null;
+  fraisDivers: FraisDivers[];
+}
+
 /** Full case (detail + create response). */
 export interface CreditCase extends CreditCaseSummary {
   currency: string;
   accountNumber: string | null;
   clientIdentity: ClientIdentity;
+  conditionsDeBanque: ConditionsDeBanque;
 }
 
 /** Edit-form schema for the client-identity card; every field optional, blanks mean "not captured". */
@@ -118,5 +139,26 @@ export const clientIdentitySchema = z.object({
 });
 
 export type ClientIdentityInput = z.infer<typeof clientIdentitySchema>;
+
+// z.coerce.number() turns a blank string into 0 rather than "absent" — the
+// field's own onChange keeps a blank input as `undefined` so it never reaches
+// this coercion, meaning "not captured" stays untouched by the form.
+const percentSchema = z.coerce.number().min(0, "Doit être positif").max(100, "100 maximum").optional();
+
+/** Edit-form schema for the conditions-de-banque card; percentages optional, blanks mean "not captured". */
+export const conditionsDeBanqueSchema = z.object({
+  tauxInteretPct: percentSchema,
+  fraisMiseEnPlacePct: percentSchema,
+  comEngagementPct: percentSchema,
+  fraisEtudesPct: percentSchema,
+  fraisDivers: z.array(
+    z.object({
+      label: z.string().min(1, "Libellé requis").max(100, "100 caractères maximum"),
+      montant: z.coerce.number().min(0, "Doit être positif"),
+    }),
+  ),
+});
+
+export type ConditionsDeBanqueInput = z.infer<typeof conditionsDeBanqueSchema>;
 
 export type { PagedResponse } from "@/lib/pagination";
