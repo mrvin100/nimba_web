@@ -13,9 +13,10 @@ import {
   listCreditCases,
   unarchiveCreditCase,
   updateClientIdentity,
+  updateConditionsDeBanque,
   updateCreditCase,
 } from "./credit-case.service";
-import type { CaseFormInput, CaseListFilter, ClientIdentityInput } from "./schema";
+import type { CaseFormInput, CaseListFilter, ClientIdentityInput, ConditionsDeBanqueInput } from "./schema";
 
 /** Query keys for the credit-case domain (single source for cache invalidation). */
 export const creditCaseKeys = queryKeys<CaseListFilter>("credit-cases");
@@ -80,6 +81,18 @@ export function useUpdateClientIdentity(id: string) {
   return useApiMutation({
     mutationFn: (input: ClientIdentityInput) => updateClientIdentity(id, input),
     successToast: "Identité du client enregistrée",
+    onSuccess: (data) => {
+      queryClient.setQueryData(creditCaseKeys.detail(id), data);
+    },
+  });
+}
+
+/** Replaces a case's conditions-de-banque details; refreshes its detail. */
+export function useUpdateConditionsDeBanque(id: string) {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: (input: ConditionsDeBanqueInput) => updateConditionsDeBanque(id, input),
+    successToast: "Conditions de banque enregistrées",
     onSuccess: (data) => {
       queryClient.setQueryData(creditCaseKeys.detail(id), data);
     },

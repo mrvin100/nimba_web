@@ -20,8 +20,9 @@ export function formatDateTime(value: string | null | undefined): string {
   return dateTime.format(new Date(value));
 }
 
-/** Formats a decimal amount with French grouping (e.g. 539 571 123). */
-export function formatAmount(value: number): string {
+/** Formats a decimal amount with French grouping (e.g. 539 571 123); returns a dash when absent. */
+export function formatAmount(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "—";
   return amount.format(value);
 }
 

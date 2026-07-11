@@ -5,6 +5,7 @@ export { CreditCaseTabs } from "./credit-case-tabs";
 export { CreateCaseDialog } from "./create-case-dialog";
 export { EditCaseDialog } from "./edit-case-dialog";
 export { ClientIdentityCard } from "./client-identity-card";
+export { ConditionsDeBanqueCard } from "./conditions-de-banque-card";
 export { CreditCaseList } from "./credit-case-list";
 export {
   useCreditCases,
@@ -12,6 +13,7 @@ export {
   useCreateCreditCase,
   useUpdateCreditCase,
   useUpdateClientIdentity,
+  useUpdateConditionsDeBanque,
   useCaseTypes,
   creditCaseKeys,
 } from "./useCreditCase";
@@ -25,4 +27,7 @@ export type {
   CaseFormInput,
   ClientIdentity,
   ClientIdentityInput,
+  ConditionsDeBanque,
+  ConditionsDeBanqueInput,
+  FraisDivers,
 } from "./schema";
