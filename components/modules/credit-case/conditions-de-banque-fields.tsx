@@ -12,6 +12,7 @@ const PERCENT_FIELDS = [
   { name: "fraisMiseEnPlacePct", label: "Frais de mise en place (%)" },
   { name: "comEngagementPct", label: "Commission d'engagement (%)" },
   { name: "fraisEtudesPct", label: "Frais d'études (%)" },
+  { name: "valeurResiduellePct", label: "Valeur résiduelle (%)" },
 ] as const satisfies ReadonlyArray<{ name: keyof ConditionsDeBanqueInput; label: string }>;
 
 /** The conditions-de-banque form's fields, shared by the edit dialog's single form. */

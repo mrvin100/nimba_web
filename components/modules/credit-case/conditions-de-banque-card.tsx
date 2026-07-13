@@ -14,11 +14,11 @@ function formatPercent(value: number | null): string {
 
 /**
  * Bank-set financing terms reused across the FA, the PV and the FMP — captured
- * once here instead of re-entered per document. 1er loyer, loyer mensuel, durée
- * and valeur résiduelle are NOT shown here: they come straight from the TA (see
- * the analysis-sheet panel), this card only holds what the TA cannot derive.
- * DRI-only edit, like the client-identity card. Shares the `useCreditCase`
- * cache — no extra request.
+ * once here instead of re-entered per document. 1er loyer, loyer mensuel and
+ * durée are NOT shown here: they come straight from the TA (see the
+ * analysis-sheet panel). Valeur résiduelle here is the bank's contractual
+ * percentage, distinct from the TA-derived amount. DRI-only edit, like the
+ * client-identity card. Shares the `useCreditCase` cache — no extra request.
  */
 export function ConditionsDeBanqueCard({ caseId }: Readonly<{ caseId: string }>) {
   const { data, isPending, isError } = useCreditCase(caseId);

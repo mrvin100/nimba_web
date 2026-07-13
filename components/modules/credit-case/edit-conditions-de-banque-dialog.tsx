@@ -28,6 +28,7 @@ function toFormValues(conditions: ConditionsDeBanque): ConditionsDeBanqueInput {
     fraisMiseEnPlacePct: conditions.fraisMiseEnPlacePct ?? undefined,
     comEngagementPct: conditions.comEngagementPct ?? undefined,
     fraisEtudesPct: conditions.fraisEtudesPct ?? undefined,
+    valeurResiduellePct: conditions.valeurResiduellePct ?? undefined,
     fraisDivers: conditions.fraisDivers,
   };
 }
@@ -69,7 +70,8 @@ export function EditConditionsDeBanqueDialog({
           <DialogTitle>Conditions de banque</DialogTitle>
           <DialogDescription>
             Réutilisées sur la fiche d&apos;analyse, le PV et la fiche de mise en place — le 1er loyer, le loyer
-            mensuel, la durée et la valeur résiduelle viennent directement de l&apos;échéancier importé.
+            mensuel et la durée viennent directement de l&apos;échéancier importé. La valeur résiduelle ici est le
+            pourcentage contractuel fixé par la banque, distinct du montant calculé sur l&apos;échéancier.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>

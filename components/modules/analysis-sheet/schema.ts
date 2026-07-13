@@ -56,7 +56,10 @@ export type FaSectionKey =
   | "PILIER4_SURETES"
   | "CONCLUSION_ARTICULATION"
   | "CONCLUSION_GARANTIES"
-  | "CONCLUSION_CONDITIONS_BANQUE";
+  | "CONCLUSION_CONDITIONS_BANQUE"
+  // BOUND onto the PV at finalization — see the pv module's PvSnapshot.
+  | "CONCLUSION_POINTS_FORTS"
+  | "CONCLUSION_POINTS_FAIBLES";
 
 /**
  * One section of a case's FA, resolved for display. `contentJson` and

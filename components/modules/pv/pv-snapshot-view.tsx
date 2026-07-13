@@ -25,7 +25,7 @@ function parseFraisDivers(json: string | null): { label: string; montant: number
  */
 export function PvSnapshotView({ pv }: Readonly<{ pv: Pv }>) {
   if (!pv.snapshot) return null;
-  const { identite, articulation, garanties, conditionsDeBanque } = pv.snapshot;
+  const { identite, articulation, garanties, conditionsDeBanque, pointsForts, pointsFaibles } = pv.snapshot;
   const fraisDivers = parseFraisDivers(conditionsDeBanque.fraisDivers);
 
   return (
@@ -67,20 +67,21 @@ export function PvSnapshotView({ pv }: Readonly<{ pv: Pv }>) {
         <Row label="Frais de mise en place">{conditionsDeBanque.fraisMiseEnPlacePct ?? "—"} %</Row>
         <Row label="Commission d'engagement">{conditionsDeBanque.comEngagementPct ?? "—"} %</Row>
         <Row label="Frais d'études">{conditionsDeBanque.fraisEtudesPct ?? "—"} %</Row>
+        <Row label="Valeur résiduelle">{conditionsDeBanque.valeurResiduellePct ?? "—"} %</Row>
         <Row label="Frais divers">
           {fraisDivers.length === 0 ? "—" : fraisDivers.map((frais) => `${frais.label} (${formatAmount(frais.montant)})`).join(" · ")}
         </Row>
       </div>
 
-      {(pv.pointsForts || pv.pointsFaibles) && (
+      {(pointsForts || pointsFaibles) && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <p className="mb-1 text-sm font-medium">Points forts</p>
-            <p className="whitespace-pre-wrap text-sm">{pv.pointsForts || "—"}</p>
+            <p className="whitespace-pre-wrap text-sm">{pointsForts || "—"}</p>
           </div>
           <div>
             <p className="mb-1 text-sm font-medium">Points faibles</p>
-            <p className="whitespace-pre-wrap text-sm">{pv.pointsFaibles || "—"}</p>
+            <p className="whitespace-pre-wrap text-sm">{pointsFaibles || "—"}</p>
           </div>
         </div>
       )}
