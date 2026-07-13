@@ -22,6 +22,8 @@ export interface PvGuaranteeSnapshot {
  * declared separately from the live `ConditionsDeBanque` type — `fraisDivers`
  * stays the backend's raw JSON text here (a read-only, point-in-time archive,
  * never re-edited), rather than pulling in the live type's parsed shape.
+ * `pointsForts`/`pointsFaibles` are read from the FA's own sections at
+ * finalization — never typed on the PV itself.
  */
 export interface PvSnapshot {
   identite: ClientIdentity;
@@ -43,8 +45,11 @@ export interface PvSnapshot {
     fraisMiseEnPlacePct: number | null;
     comEngagementPct: number | null;
     fraisEtudesPct: number | null;
+    valeurResiduellePct: number | null;
     fraisDivers: string | null;
   };
+  pointsForts: string | null;
+  pointsFaibles: string | null;
 }
 
 /** A dossier's PV (design §10.3) — DRAFT while the DCM edits it, then immutable once FINAL. */
@@ -55,8 +60,6 @@ export interface Pv {
   seanceDate: string;
   rapporteur: string | null;
   president: string | null;
-  pointsForts: string | null;
-  pointsFaibles: string | null;
   debats: PvDebat[];
   createdAt: string;
   updatedAt: string;
@@ -74,8 +77,6 @@ export const updatePvDraftSchema = z.object({
   seanceDate: z.string().min(1, "La date de séance est requise"),
   rapporteur: z.string().max(200, "200 caractères maximum").optional(),
   president: z.string().max(200, "200 caractères maximum").optional(),
-  pointsForts: z.string().max(5000, "5000 caractères maximum").optional(),
-  pointsFaibles: z.string().max(5000, "5000 caractères maximum").optional(),
   debats: z.array(
     z.object({
       preoccupation: z.string().min(1, "Préoccupation requise").max(2000, "2000 caractères maximum"),

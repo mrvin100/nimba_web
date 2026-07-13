@@ -28,6 +28,7 @@ export interface Fmp {
     fraisMiseEnPlacePct: number | null;
     comEngagementPct: number | null;
     fraisEtudesPct: number | null;
+    valeurResiduellePct: number | null;
     fraisDivers: string | null;
   };
 }

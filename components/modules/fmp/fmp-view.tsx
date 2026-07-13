@@ -74,6 +74,7 @@ export function FmpView({ fmp }: Readonly<{ fmp: Fmp }>) {
         <Row label="Frais de mise en place">{fmp.conditionsDeBanque.fraisMiseEnPlacePct ?? "—"} %</Row>
         <Row label="Commission d'engagement">{fmp.conditionsDeBanque.comEngagementPct ?? "—"} %</Row>
         <Row label="Frais d'études">{fmp.conditionsDeBanque.fraisEtudesPct ?? "—"} %</Row>
+        <Row label="Valeur résiduelle">{fmp.conditionsDeBanque.valeurResiduellePct ?? "—"} %</Row>
         <Row label="Frais divers">
           {fraisDivers.length === 0 ? "—" : fraisDivers.map((frais) => `${frais.label} (${formatAmount(frais.montant)})`).join(" · ")}
         </Row>

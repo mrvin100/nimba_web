@@ -102,14 +102,17 @@ export interface FraisDivers {
 /**
  * Bank-set financing terms, captured once on the dossier and reused on the FA
  * cover/§5, the PV and the FMP. Only the terms the TA cannot derive live here —
- * 1er loyer, loyer mensuel, durée and valeur résiduelle come from the imported
- * schedule (see the analysis-sheet module's `ScheduleSummary`), never re-entered.
+ * 1er loyer, loyer mensuel and durée come from the imported schedule (see the
+ * analysis-sheet module's `ScheduleSummary`), never re-entered.
+ * `valeurResiduellePct` is a distinct, bank-set figure from the TA-derived VR
+ * amount (a contractual term, independent of what a given schedule computes).
  */
 export interface ConditionsDeBanque {
   tauxInteretPct: number | null;
   fraisMiseEnPlacePct: number | null;
   comEngagementPct: number | null;
   fraisEtudesPct: number | null;
+  valeurResiduellePct: number | null;
   fraisDivers: FraisDivers[];
 }
 
@@ -151,6 +154,7 @@ export const conditionsDeBanqueSchema = z.object({
   fraisMiseEnPlacePct: percentSchema,
   comEngagementPct: percentSchema,
   fraisEtudesPct: percentSchema,
+  valeurResiduellePct: percentSchema,
   fraisDivers: z.array(
     z.object({
       label: z.string().min(1, "Libellé requis").max(100, "100 caractères maximum"),

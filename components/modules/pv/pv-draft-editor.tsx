@@ -23,20 +23,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 function toFormValues(pv: Pv): UpdatePvDraftInput {
   return {
     seanceDate: pv.seanceDate,
     rapporteur: pv.rapporteur ?? "",
     president: pv.president ?? "",
-    pointsForts: pv.pointsForts ?? "",
-    pointsFaibles: pv.pointsFaibles ?? "",
     debats: pv.debats,
   };
 }
 
-/** The DCM's draft editor — every field here locks the instant the PV is finalized. */
+/**
+ * The DCM's draft editor — every field here locks the instant the PV is
+ * finalized. Points forts/faibles are deliberately absent: they live on the
+ * FA (captured once by the analyst), the PV only reuses them at finalization.
+ */
 export function PvDraftEditor({ caseId, pv }: Readonly<{ caseId: string; pv: Pv }>) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const update = useUpdatePvDraft(caseId);
@@ -92,31 +93,6 @@ export function PvDraftEditor({ caseId, pv }: Readonly<{ caseId: string; pv: Pv 
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Controller
-              control={form.control}
-              name="pointsForts"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Points forts</FieldLabel>
-                  <Textarea {...field} value={field.value ?? ""} id={field.name} rows={4} aria-invalid={fieldState.invalid} />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="pointsFaibles"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Points faibles</FieldLabel>
-                  <Textarea {...field} value={field.value ?? ""} id={field.name} rows={4} aria-invalid={fieldState.invalid} />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-          </div>
-
           <PvDebatFields control={form.control} />
 
           {form.formState.errors.root && (
@@ -149,8 +125,9 @@ export function PvDraftEditor({ caseId, pv }: Readonly<{ caseId: string; pv: Pv 
           <AlertDialogHeader>
             <AlertDialogTitle>Finaliser le PV ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Le PV devient définitif : l&apos;identité client, l&apos;articulation du financement, les garanties et les
-              conditions de banque sont figées telles qu&apos;elles sont aujourd&apos;hui. Cette action est irréversible.
+              Le PV devient définitif : l&apos;identité client, l&apos;articulation du financement, les garanties, les
+              conditions de banque et les points forts/faibles de la fiche d&apos;analyse sont figés tels qu&apos;ils
+              sont aujourd&apos;hui. Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
