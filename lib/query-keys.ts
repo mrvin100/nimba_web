@@ -16,6 +16,7 @@ export const QUERY_SCOPES = {
   notification: "notification",
   workflow: "workflow",
   guarantee: "guarantee",
+  pv: "pv",
 } as const;
 
 export type QueryScope = (typeof QUERY_SCOPES)[keyof typeof QUERY_SCOPES];

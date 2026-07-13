@@ -9,6 +9,7 @@ import {
 } from "@/components/modules/amortization-schedule";
 import { AnalysisSheetPanel } from "@/components/modules/analysis-sheet";
 import { GuaranteePanel } from "@/components/modules/guarantee";
+import { PvPanel } from "@/components/modules/pv";
 import { WorkflowReviewPanel } from "@/components/modules/workflow";
 import { ClientIdentityCard } from "./client-identity-card";
 import { ConditionsDeBanqueCard } from "./conditions-de-banque-card";
@@ -39,6 +40,7 @@ export function CreditCaseTabs({ caseId, backHref }: Readonly<{ caseId: string; 
         <WorkflowReviewPanel caseId={caseId} />
         <AnalysisSheetPanel caseId={caseId} />
         <GuaranteePanel caseId={caseId} />
+        <PvPanel caseId={caseId} />
       </div>
     );
   }
