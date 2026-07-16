@@ -1,4 +1,5 @@
 import { api } from "@/lib/api-client";
+import { env } from "@/lib/env";
 import type { AnalysisSheet, FaSection, FaSectionKey } from "./schema";
 
 const basePath = (caseId: string) => `credit-cases/${caseId}/analysis-sheet`;
@@ -26,4 +27,14 @@ export function updateFaSection(caseId: string, key: FaSectionKey, contentJson: 
 /** Locks the FA (409 if already published). */
 export function publishAnalysisSheet(caseId: string): Promise<AnalysisSheet> {
   return api.post(`${basePath(caseId)}/publish`).json<AnalysisSheet>();
+}
+
+/**
+ * Same-origin URL of the Word (.docx) export of the FA's current completion
+ * state — RAS for anything not yet captured. Used as an anchor href so the
+ * browser downloads it directly with the session cookie (no blob handling
+ * needed). Works even before the FA has been initiated.
+ */
+export function analysisSheetDocxExportPath(caseId: string): string {
+  return `${env.apiBasePath}/${basePath(caseId)}/export/docx`;
 }

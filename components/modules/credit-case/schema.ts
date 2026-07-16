@@ -124,16 +124,22 @@ export interface CreditCase extends CreditCaseSummary {
   conditionsDeBanque: ConditionsDeBanque;
 }
 
+// A native <input type="date"> can hand back a malformed value (e.g. an
+// over-typed year like "42026-02-01") that the backend's LocalDate parser
+// rejects outright. Validate it as a real calendar date client-side so the
+// user gets an inline error instead of a raw 400 from the API.
+const optionalDateSchema = z.string().date("Date invalide").optional();
+
 /** Edit-form schema for the client-identity card; every field optional, blanks mean "not captured". */
 export const clientIdentitySchema = z.object({
   formeJuridique: z.string().max(100, "100 caractères maximum").optional(),
-  dateCreation: z.string().optional(),
+  dateCreation: optionalDateSchema,
   adressePhysique: z.string().max(300, "300 caractères maximum").optional(),
   activiteDeBase: z.string().max(300, "300 caractères maximum").optional(),
   codeNif: z.string().max(50, "50 caractères maximum").optional(),
   principalDirigeant: z.string().max(200, "200 caractères maximum").optional(),
-  dateEntreeRelation: z.string().optional(),
-  dateDerniereVisite: z.string().optional(),
+  dateEntreeRelation: optionalDateSchema,
+  dateDerniereVisite: optionalDateSchema,
   agence: z.string().max(100, "100 caractères maximum").optional(),
   gestionnaire: z.string().max(200, "200 caractères maximum").optional(),
   analyste: z.string().max(200, "200 caractères maximum").optional(),

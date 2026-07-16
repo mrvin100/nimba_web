@@ -1,5 +1,6 @@
 export { AnalysisSheetPanel } from "./analysis-sheet-panel";
 export { AnalysisSheetStatusBadge } from "./analysis-sheet-status-badge";
+export { analysisSheetDocxExportPath } from "./analysis-sheet.service";
 export {
   useAnalysisSheet,
   useCreateAnalysisSheet,

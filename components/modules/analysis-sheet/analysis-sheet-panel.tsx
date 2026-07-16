@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import { FileCheck2 } from "lucide-react";
+import { FileCheck2, FileText } from "lucide-react";
 import { formatAmount, formatDate } from "@/lib/format";
 import { useLatestSchedule } from "@/components/modules/amortization-schedule";
 import { useAnalysisSheet, useCreateAnalysisSheet, useFaSections, usePublishAnalysisSheet } from "./useAnalysisSheet";
+import { analysisSheetDocxExportPath } from "./analysis-sheet.service";
 import { AnalysisSheetStatusBadge } from "./analysis-sheet-status-badge";
 import { FaSectionBody } from "./fa-section-body";
 import type { FaPilier, FaSection } from "./schema";
@@ -71,7 +72,15 @@ export function AnalysisSheetPanel({ caseId }: Readonly<{ caseId: string }>) {
             <CardTitle className="text-base">Fiche d&apos;analyse</CardTitle>
             <CardDescription>{description}</CardDescription>
           </div>
-          {sheet && <AnalysisSheetStatusBadge status={sheet.status} />}
+          <div className="flex items-center gap-2">
+            {sheet && <AnalysisSheetStatusBadge status={sheet.status} />}
+            <Button variant="outline" size="sm" asChild>
+              <a href={analysisSheetDocxExportPath(caseId)} download>
+                <FileText />
+                Exporter (.docx)
+              </a>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

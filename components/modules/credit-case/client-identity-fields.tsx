@@ -50,7 +50,15 @@ export function ClientIdentityFields({ control }: { control: Control<ClientIdent
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-              <Input {...field} value={field.value ?? ""} type="date" id={field.name} aria-invalid={fieldState.invalid} />
+              <Input
+                type="date"
+                min="1900-01-01"
+                max="2100-12-31"
+                value={field.value ?? ""}
+                onChange={(event) => field.onChange(event.target.value === "" ? undefined : event.target.value)}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+              />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}

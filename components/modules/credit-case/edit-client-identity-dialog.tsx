@@ -25,13 +25,13 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 function toFormValues(identity: ClientIdentity): ClientIdentityInput {
   return {
     formeJuridique: identity.formeJuridique ?? "",
-    dateCreation: identity.dateCreation ?? "",
+    dateCreation: identity.dateCreation ?? undefined,
     adressePhysique: identity.adressePhysique ?? "",
     activiteDeBase: identity.activiteDeBase ?? "",
     codeNif: identity.codeNif ?? "",
     principalDirigeant: identity.principalDirigeant ?? "",
-    dateEntreeRelation: identity.dateEntreeRelation ?? "",
-    dateDerniereVisite: identity.dateDerniereVisite ?? "",
+    dateEntreeRelation: identity.dateEntreeRelation ?? undefined,
+    dateDerniereVisite: identity.dateDerniereVisite ?? undefined,
     agence: identity.agence ?? "",
     gestionnaire: identity.gestionnaire ?? "",
     analyste: identity.analyste ?? "",
