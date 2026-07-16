@@ -29,12 +29,10 @@ export const ROLE_CHOICES = ["NONE", "MEMBER", "MANAGER"] as const;
 export type RoleChoice = (typeof ROLE_CHOICES)[number];
 
 /**
- * Create-user form schema. One role choice per direction plus the admin flag. No
- * password: the account is created pending and the user sets it via the invitation.
+ * One role choice per direction plus the admin flag — the access-assignment part
+ * shared by the create-user form and the edit-role dialog.
  */
-export const createUserSchema = z.object({
-  fullName: z.string().min(1, "Le nom complet est requis").max(200, "200 caractères maximum"),
-  email: z.string().min(1, "Adresse e-mail requise").email("Adresse e-mail invalide"),
+export const membershipFieldsSchema = z.object({
   admin: z.boolean(),
   dri: z.enum(ROLE_CHOICES),
   dcm: z.enum(ROLE_CHOICES),
@@ -42,7 +40,22 @@ export const createUserSchema = z.object({
   comite: z.enum(ROLE_CHOICES),
 });
 
+export type MembershipFieldsInput = z.infer<typeof membershipFieldsSchema>;
+
+/**
+ * Create-user form schema. No password: the account is created pending and the
+ * user sets it via the invitation.
+ */
+export const createUserSchema = membershipFieldsSchema.extend({
+  fullName: z.string().min(1, "Le nom complet est requis").max(200, "200 caractères maximum"),
+  email: z.string().min(1, "Adresse e-mail requise").email("Adresse e-mail invalide"),
+});
+
 export type CreateUserInput = z.infer<typeof createUserSchema>;
+
+/** Edit-role form schema: the same access fields, applied to an existing user. */
+export const editMembershipsSchema = membershipFieldsSchema;
+export type EditMembershipsInput = z.infer<typeof editMembershipsSchema>;
 
 /** Request payload for POST /admin/users. */
 export interface CreateUserPayload {
@@ -52,23 +65,50 @@ export interface CreateUserPayload {
   memberships: Membership[];
 }
 
-/** Turns the flat form values into the API payload (drops "NONE" directions). */
-export function toCreateUserPayload(values: CreateUserInput): CreateUserPayload {
-  const memberships: Membership[] = DEPARTMENTS.flatMap((dept) => {
+/** Request payload for PUT /admin/users/{id}/memberships. */
+export interface UpdateMembershipsPayload {
+  admin: boolean;
+  memberships: Membership[];
+}
+
+/** Turns the flat role-choice fields into the API membership list (drops "NONE" directions). */
+function toMemberships(values: MembershipFieldsInput): Membership[] {
+  return DEPARTMENTS.flatMap((dept) => {
     const choice = values[dept.toLowerCase() as "dri" | "dcm" | "drc" | "comite"];
     return choice === "NONE" ? [] : [{ department: dept, role: choice }];
   });
+}
+
+/** Turns the create-user form values into the API payload. */
+export function toCreateUserPayload(values: CreateUserInput): CreateUserPayload {
   return {
     fullName: values.fullName,
     email: values.email,
     admin: values.admin,
-    memberships,
+    memberships: toMemberships(values),
   };
 }
 
+/** Turns the edit-role form values into the API payload. */
+export function toUpdateMembershipsPayload(values: EditMembershipsInput): UpdateMembershipsPayload {
+  return { admin: values.admin, memberships: toMemberships(values) };
+}
+
 /** Whether the form grants any access at all (admin or at least one direction). */
-export function hasAnyAssignment(values: CreateUserInput): boolean {
-  return values.admin || values.dri !== "NONE" || values.dcm !== "NONE" || values.drc !== "NONE";
+export function hasAnyAssignment(values: MembershipFieldsInput): boolean {
+  return values.admin || values.dri !== "NONE" || values.dcm !== "NONE" || values.drc !== "NONE" || values.comite !== "NONE";
+}
+
+/** Builds edit-role form defaults from a managed user's current memberships. */
+export function toEditMembershipsDefaults(user: AdminUser): EditMembershipsInput {
+  const roleFor = (dept: Department): RoleChoice => user.memberships.find((m) => m.department === dept)?.role ?? "NONE";
+  return {
+    admin: user.admin,
+    dri: roleFor("DRI"),
+    dcm: roleFor("DCM"),
+    drc: roleFor("DRC"),
+    comite: roleFor("COMITE"),
+  };
 }
 
 /** One evaluated row of a bulk import CSV. */

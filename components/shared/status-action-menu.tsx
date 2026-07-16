@@ -19,8 +19,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { LucideIcon } from "lucide-react";
 
 export type LifecycleAction = "suspend" | "reactivate" | "revoke";
 export type LifecycleStatus = "ACTIVE" | "SUSPENDED" | "REVOKED";
@@ -43,6 +45,15 @@ function actionsFor(status: LifecycleStatus): LifecycleAction[] {
   }
 }
 
+/** An action unrelated to the account lifecycle, plugged into the same menu (e.g. password reset). */
+export interface ExtraMenuAction {
+  key: string;
+  label: string;
+  icon?: LucideIcon;
+  disabled?: boolean;
+  onSelect: () => void;
+}
+
 interface StatusActionMenuProps {
   /** Display name of the account the actions apply to. */
   name: string;
@@ -50,6 +61,8 @@ interface StatusActionMenuProps {
   pending: boolean;
   /** Runs the transition (the module's mutation); errors are toasted here. */
   onAction: (action: LifecycleAction) => Promise<unknown>;
+  /** Extra items rendered above the lifecycle actions, separated by a divider. */
+  extraActions?: ExtraMenuAction[];
 }
 
 /**
@@ -58,7 +71,7 @@ interface StatusActionMenuProps {
  * irreversible in spirit (the user loses access immediately), so it asks for an
  * explicit confirmation instead of firing straight from the menu.
  */
-export function StatusActionMenu({ name, status, pending, onAction }: StatusActionMenuProps) {
+export function StatusActionMenu({ name, status, pending, onAction, extraActions }: StatusActionMenuProps) {
   const [confirmRevoke, setConfirmRevoke] = useState(false);
 
   async function run(action: LifecycleAction) {
@@ -80,6 +93,17 @@ export function StatusActionMenu({ name, status, pending, onAction }: StatusActi
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          {extraActions && extraActions.length > 0 && (
+            <>
+              {extraActions.map((action) => (
+                <DropdownMenuItem key={action.key} disabled={action.disabled} onSelect={action.onSelect}>
+                  {action.icon && <action.icon />}
+                  {action.label}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+            </>
+          )}
           {actionsFor(status).map((action) => (
             <DropdownMenuItem
               key={action}

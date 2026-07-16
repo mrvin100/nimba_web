@@ -69,7 +69,7 @@ export function EditConditionsDeBanqueDialog({
         <DialogHeader>
           <DialogTitle>Conditions de banque</DialogTitle>
           <DialogDescription>
-            Réutilisées sur la fiche d&apos;analyse, le PV et la fiche de mise en place — le 1er loyer, le loyer
+            Réutilisées sur la fiche d&apos;analyse, le PV et la fiche de mise en place, le 1er loyer, le loyer
             mensuel et la durée viennent directement de l&apos;échéancier importé. La valeur résiduelle ici est le
             pourcentage contractuel fixé par la banque, distinct du montant calculé sur l&apos;échéancier.
           </DialogDescription>

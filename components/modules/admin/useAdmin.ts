@@ -12,11 +12,13 @@ import {
   importBulkUsers,
   listUsers,
   previewBulkUsers,
+  resetUserPassword,
   setUserStatus,
   updateOrganization,
+  updateUserMemberships,
   uploadOrganizationLogo,
 } from "./admin.service";
-import type { UserStatusAction } from "./schema";
+import type { UpdateMembershipsPayload, UserStatusAction } from "./schema";
 
 /** Query keys for the admin domain (single source for cache invalidation). */
 export const adminKeys = {
@@ -48,6 +50,24 @@ export function useSetUserStatus() {
   return useApiMutation({
     mutationFn: ({ id, action }: { id: string; action: UserStatusAction }) => setUserStatus(id, action),
     invalidate: [adminKeys.all],
+  });
+}
+
+/** Sends a password-reset e-mail for a managed user. */
+export function useResetUserPassword() {
+  return useApiMutation({
+    mutationFn: resetUserPassword,
+    successToast: (user) => `E-mail de réinitialisation envoyé à ${user.email}`,
+    errorToast: true,
+  });
+}
+
+/** Replaces a user's directions/role and admin flag; refreshes the list on success. */
+export function useUpdateUserMemberships() {
+  return useApiMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateMembershipsPayload }) => updateUserMemberships(id, payload),
+    invalidate: [adminKeys.all],
+    successToast: (user) => `Accès mis à jour pour ${user.fullName}`,
   });
 }
 

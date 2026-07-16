@@ -10,6 +10,7 @@ import type {
   DossierStats,
   OrganizationInput,
   OrganizationSettings,
+  UpdateMembershipsPayload,
   UserStats,
   UserStatusAction,
 } from "./schema";
@@ -27,6 +28,16 @@ export function createUser(payload: CreateUserPayload): Promise<AdminUser> {
 /** Applies a lifecycle transition (suspend / reactivate / revoke). */
 export function setUserStatus(id: string, action: UserStatusAction): Promise<AdminUser> {
   return api.post(`admin/users/${id}/${action}`).json<AdminUser>();
+}
+
+/** Sends a password-reset e-mail so the user can set a new password themselves. */
+export function resetUserPassword(id: string): Promise<AdminUser> {
+  return api.post(`admin/users/${id}/reset-password`).json<AdminUser>();
+}
+
+/** Replaces a user's directions/role and admin flag. */
+export function updateUserMemberships(id: string, payload: UpdateMembershipsPayload): Promise<AdminUser> {
+  return api.put(`admin/users/${id}/memberships`, { json: payload }).json<AdminUser>();
 }
 
 /** Same-origin URL of the bulk import CSV template (used as an anchor href). */
