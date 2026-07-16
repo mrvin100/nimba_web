@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSession } from "@/components/modules/identity";
 import { ROUTES } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { useCreditCase } from "./useCreditCase";
@@ -9,7 +10,7 @@ import { EditCaseDialog } from "./edit-case-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+export function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b py-2 last:border-b-0">
       <span className="text-sm text-muted-foreground">{label}</span>
@@ -18,8 +19,10 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-export function CreditCaseDetail({ caseId }: { caseId: string }) {
+/** [backHref] and the edit action are DRI-specific; reviewers see the same card read-only. */
+export function CreditCaseDetail({ caseId, backHref = ROUTES.DRI }: Readonly<{ caseId: string; backHref?: string }>) {
   const { data, isPending, isError } = useCreditCase(caseId);
+  const session = useSession();
 
   if (isPending) {
     // Mirror the loaded card's structure (header + four rows) so nothing shifts or
@@ -46,7 +49,7 @@ export function CreditCaseDetail({ caseId }: { caseId: string }) {
     return (
       <p className="text-sm text-muted-foreground">
         Dossier introuvable.{" "}
-        <Link href={ROUTES.DRI} className="underline underline-offset-4">
+        <Link href={backHref} className="underline underline-offset-4">
           Retour au tableau de bord
         </Link>
       </p>
@@ -61,11 +64,12 @@ export function CreditCaseDetail({ caseId }: { caseId: string }) {
             <CardTitle>{data.caseNumber}</CardTitle>
             <CardDescription>{data.clientName}</CardDescription>
           </div>
-          <EditCaseDialog creditCase={data} />
+          {session.hasDepartment("DRI") && <EditCaseDialog creditCase={data} />}
         </div>
       </CardHeader>
       <CardContent>
         <DetailRow label="Type de produit">{data.productType}</DetailRow>
+        {data.contractType && <DetailRow label="Type de contrat">{data.contractType}</DetailRow>}
         <DetailRow label="Devise">{data.currency}</DetailRow>
         <DetailRow label="N° de compte">{data.accountNumber ?? "—"}</DetailRow>
         <DetailRow label="Statut">

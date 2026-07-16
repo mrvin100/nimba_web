@@ -7,11 +7,17 @@ export const QUERY_SCOPES = {
   identity: "identity",
   creditCases: "credit-cases",
   amortization: "amortization",
+  analysisSheet: "analysis-sheet",
   admin: "admin-users",
   adminOrganization: "admin-organization",
   adminStats: "admin-stats",
   team: "team-members",
   audit: "audit",
+  notification: "notification",
+  workflow: "workflow",
+  guarantee: "guarantee",
+  pv: "pv",
+  fmp: "fmp",
 } as const;
 
 export type QueryScope = (typeof QUERY_SCOPES)[keyof typeof QUERY_SCOPES];

@@ -7,6 +7,13 @@ import {
   AmortizationPanel,
   useAmortizationOverview,
 } from "@/components/modules/amortization-schedule";
+import { AnalysisSheetPanel } from "@/components/modules/analysis-sheet";
+import { FmpPanel } from "@/components/modules/fmp";
+import { GuaranteePanel } from "@/components/modules/guarantee";
+import { PvPanel } from "@/components/modules/pv";
+import { WorkflowReviewPanel } from "@/components/modules/workflow";
+import { ClientIdentityCard } from "./client-identity-card";
+import { ConditionsDeBanqueCard } from "./conditions-de-banque-card";
 import { CreditCaseDetail } from "./credit-case-detail";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,14 +24,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  * only switcher, so no duplicate tab row is rendered here. The amortization
  * section keeps its own two sub-tabs (server-computed overview, and the
  * échéancier / traités workflow). The overview query is shared with the content
- * through the cache — presence costs no extra request.
+ * through the cache — presence costs no extra request. Reused as-is by every
+ * direction's dossier page ([backHref] points back to the viewer's own
+ * workspace); the workflow panel decides for itself whether the viewer can act.
  */
-export function CreditCaseTabs({ caseId }: Readonly<{ caseId: string }>) {
+export function CreditCaseTabs({ caseId, backHref }: Readonly<{ caseId: string; backHref?: string }>) {
   const searchParams = useSearchParams();
   const overview = useAmortizationOverview(caseId, {});
 
   if (searchParams.get("tab") !== "amortissement") {
-    return <CreditCaseDetail caseId={caseId} />;
+    return (
+      <div className="space-y-6">
+        <CreditCaseDetail caseId={caseId} backHref={backHref} />
+        <ClientIdentityCard caseId={caseId} />
+        <ConditionsDeBanqueCard caseId={caseId} />
+        <WorkflowReviewPanel caseId={caseId} />
+        <AnalysisSheetPanel caseId={caseId} />
+        <GuaranteePanel caseId={caseId} />
+        <PvPanel caseId={caseId} />
+        <FmpPanel caseId={caseId} />
+      </div>
+    );
   }
 
   return (

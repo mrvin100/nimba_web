@@ -20,14 +20,27 @@ export function formatDateTime(value: string | null | undefined): string {
   return dateTime.format(new Date(value));
 }
 
-/** Formats a decimal amount with French grouping (e.g. 539 571 123). */
-export function formatAmount(value: number): string {
+/** Formats a decimal amount with French grouping (e.g. 539 571 123); returns a dash when absent. */
+export function formatAmount(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "—";
   return amount.format(value);
 }
 
 /** Formats an amount followed by its currency code (e.g. 539 571 123 GNF). */
 export function formatMoney(value: number, currency: string): string {
   return `${formatAmount(value)} ${currency}`;
+}
+
+/** Formats a byte count in the largest unit that keeps it readable (e.g. 3.2 Mo). */
+export function formatBytes(bytes: number): string {
+  const units = ["o", "Ko", "Mo", "Go"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  return `${unitIndex === 0 ? value : value.toFixed(1)} ${units[unitIndex]}`;
 }
 
 /** Initials for an avatar fallback (first letters of the first two words). */

@@ -1,5 +1,40 @@
 import { api } from "@/lib/api-client";
-import type { CaseFormInput, CaseListFilter, CreditCase, CreditCaseSummary, PagedResponse } from "./schema";
+import type {
+  CaseFormInput,
+  CaseListFilter,
+  CaseType,
+  ClientIdentityInput,
+  ConditionsDeBanqueInput,
+  CreditCase,
+  CreditCaseSummary,
+  FraisDivers,
+  PagedResponse,
+} from "./schema";
+
+/**
+ * The wire shape of a case: identical to [CreditCase] except `fraisDivers` is
+ * still the opaque JSON text the backend persists verbatim (mirroring the
+ * analysis sheet's free-text content) — this module owns the only place that
+ * parses it into the typed list the rest of the app uses.
+ */
+type CreditCaseWire = Omit<CreditCase, "conditionsDeBanque"> & {
+  conditionsDeBanque: Omit<CreditCase["conditionsDeBanque"], "fraisDivers"> & { fraisDivers: string | null };
+};
+
+function toCreditCase(wire: CreditCaseWire): CreditCase {
+  return {
+    ...wire,
+    conditionsDeBanque: {
+      ...wire.conditionsDeBanque,
+      fraisDivers: wire.conditionsDeBanque.fraisDivers ? (JSON.parse(wire.conditionsDeBanque.fraisDivers) as FraisDivers[]) : [],
+    },
+  };
+}
+
+/** Every selectable dossier type, driving the create form's type picker. */
+export function listCaseTypes(): Promise<CaseType[]> {
+  return api.get("credit-cases/types").json<CaseType[]>();
+}
 
 /** Lists credit cases, newest first (paginated); "all" skips the archived filter. */
 export function listCreditCases(
@@ -14,27 +49,59 @@ export function listCreditCases(
 
 /** Resolves a single case by id. */
 export function getCreditCase(id: string): Promise<CreditCase> {
-  return api.get(`credit-cases/${id}`).json<CreditCase>();
+  return api
+    .get(`credit-cases/${id}`)
+    .json<CreditCaseWire>()
+    .then(toCreditCase);
 }
 
 /** Creates a credit case and returns it (with its generated case number). */
 export function createCreditCase(input: CaseFormInput): Promise<CreditCase> {
-  return api.post("credit-cases", { json: input }).json<CreditCase>();
+  return api
+    .post("credit-cases", { json: input })
+    .json<CreditCaseWire>()
+    .then(toCreditCase);
 }
 
 /** Updates a case's general information and returns it. */
 export function updateCreditCase(id: string, input: CaseFormInput): Promise<CreditCase> {
-  return api.put(`credit-cases/${id}`, { json: input }).json<CreditCase>();
+  return api
+    .put(`credit-cases/${id}`, { json: input })
+    .json<CreditCaseWire>()
+    .then(toCreditCase);
+}
+
+/** Replaces a case's client-identity details and returns the case. */
+export function updateClientIdentity(id: string, input: ClientIdentityInput): Promise<CreditCase> {
+  return api
+    .put(`credit-cases/${id}/identity`, { json: input })
+    .json<CreditCaseWire>()
+    .then(toCreditCase);
+}
+
+/** Replaces a case's conditions-de-banque details and returns the case. */
+export function updateConditionsDeBanque(id: string, input: ConditionsDeBanqueInput): Promise<CreditCase> {
+  const body = { ...input, fraisDivers: JSON.stringify(input.fraisDivers) };
+  return api
+    .put(`credit-cases/${id}/conditions-banque`, { json: body })
+    .json<CreditCaseWire>()
+    .then(toCreditCase);
 }
 
 /** Archives a case out of the active list (admin act; nothing is destroyed). */
 export function archiveCreditCase(id: string): Promise<CreditCase> {
-  return api.post(`credit-cases/${id}/archive`).json<CreditCase>();
+  return api
+    .post(`credit-cases/${id}/archive`)
+    .json<CreditCaseWire>()
+    .then(toCreditCase);
 }
 
 /** Puts an archived case back into the active list (admin act). */
 export function unarchiveCreditCase(id: string): Promise<CreditCase> {
-  return api.post(`credit-cases/${id}/unarchive`).json<CreditCase>();
+  return api
+    .post(`credit-cases/${id}/unarchive`)
+    .json<CreditCaseWire>()
+    .then(toCreditCase);
 }
 
 /** Definitively deletes a case with its schedules and trades (admin act, irreversible). */

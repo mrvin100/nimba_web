@@ -9,14 +9,30 @@ import {
   createCreditCase,
   deleteCreditCase,
   getCreditCase,
+  listCaseTypes,
   listCreditCases,
   unarchiveCreditCase,
+  updateClientIdentity,
+  updateConditionsDeBanque,
   updateCreditCase,
 } from "./credit-case.service";
-import type { CaseFormInput, CaseListFilter } from "./schema";
+import type { CaseFormInput, CaseListFilter, ClientIdentityInput, ConditionsDeBanqueInput } from "./schema";
 
 /** Query keys for the credit-case domain (single source for cache invalidation). */
 export const creditCaseKeys = queryKeys<CaseListFilter>("credit-cases");
+
+/**
+ * Every selectable dossier type (drives the create form's type picker). Backend
+ * reference data that only changes with a deploy, so it is fetched once and kept
+ * fresh for the session rather than refetched like case data.
+ */
+export function useCaseTypes() {
+  return useQuery({
+    queryKey: [...creditCaseKeys.all, "types"],
+    queryFn: listCaseTypes,
+    staleTime: Infinity,
+  });
+}
 
 /** Paginated list of credit cases (server state); archived ones are hidden by default. */
 export function useCreditCases(page: number, size = 20, filter: CaseListFilter = "active") {
@@ -53,6 +69,30 @@ export function useUpdateCreditCase(id: string) {
     mutationFn: (input: CaseFormInput) => updateCreditCase(id, input),
     invalidate: [creditCaseKeys.lists()],
     successToast: "Dossier mis à jour",
+    onSuccess: (data) => {
+      queryClient.setQueryData(creditCaseKeys.detail(id), data);
+    },
+  });
+}
+
+/** Replaces a case's client-identity details; refreshes its detail. */
+export function useUpdateClientIdentity(id: string) {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: (input: ClientIdentityInput) => updateClientIdentity(id, input),
+    successToast: "Identité du client enregistrée",
+    onSuccess: (data) => {
+      queryClient.setQueryData(creditCaseKeys.detail(id), data);
+    },
+  });
+}
+
+/** Replaces a case's conditions-de-banque details; refreshes its detail. */
+export function useUpdateConditionsDeBanque(id: string) {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: (input: ConditionsDeBanqueInput) => updateConditionsDeBanque(id, input),
+    successToast: "Conditions de banque enregistrées",
     onSuccess: (data) => {
       queryClient.setQueryData(creditCaseKeys.detail(id), data);
     },

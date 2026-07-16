@@ -5,18 +5,11 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
-import { DEPARTMENT_LABELS } from "@/components/modules/identity";
 import { useCreateUser } from "./useAdmin";
-import {
-  createUserSchema,
-  hasAnyAssignment,
-  toCreateUserPayload,
-  type CreateUserInput,
-  type RoleChoice,
-} from "./schema";
+import { MembershipFields } from "./membership-fields";
+import { createUserSchema, hasAnyAssignment, toCreateUserPayload, type CreateUserInput } from "./schema";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -29,19 +22,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const ROLE_LABELS: Record<RoleChoice, string> = {
-  NONE: "Aucun",
-  MEMBER: "Membre",
-  MANAGER: "Manager",
-};
-
-const DEPARTMENT_FIELDS = [
-  { name: "dri", label: `DRI — ${DEPARTMENT_LABELS.DRI}` },
-  { name: "dcm", label: `DCM — ${DEPARTMENT_LABELS.DCM}` },
-  { name: "drc", label: `DRC — ${DEPARTMENT_LABELS.DRC}` },
-] as const;
 
 const DEFAULTS: CreateUserInput = {
   fullName: "",
@@ -50,6 +30,7 @@ const DEFAULTS: CreateUserInput = {
   dri: "NONE",
   dcm: "NONE",
   drc: "NONE",
+  comite: "NONE",
 };
 
 export function CreateUserDialog() {
@@ -118,45 +99,7 @@ export function CreateUserDialog() {
               )}
             />
 
-            {DEPARTMENT_FIELDS.map((dept) => (
-              <Controller
-                key={dept.name}
-                control={control}
-                name={dept.name}
-                render={({ field }) => (
-                  <Field orientation="horizontal">
-                    <FieldLabel htmlFor={field.name}>{dept.label}</FieldLabel>
-                    <Select name={field.name} value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger id={field.name} className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(Object.keys(ROLE_LABELS) as RoleChoice[]).map((choice) => (
-                          <SelectItem key={choice} value={choice}>
-                            {ROLE_LABELS[choice]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                )}
-              />
-            ))}
-
-            <Controller
-              control={control}
-              name="admin"
-              render={({ field }) => (
-                <Field orientation="horizontal">
-                  <Checkbox
-                    id={field.name}
-                    checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked === true)}
-                  />
-                  <FieldLabel htmlFor={field.name}>Administrateur de la plateforme</FieldLabel>
-                </Field>
-              )}
-            />
+            <MembershipFields control={control} />
 
             {errors.root && <FieldError errors={[errors.root]} />}
           </FieldGroup>

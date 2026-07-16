@@ -6,6 +6,7 @@ export {
   useTrades,
   useAmortizationOverview,
   useAmortizationTable,
+  useLatestSchedule,
   usePreviewSchedule,
   useUploadSchedule,
   useGenerateTrades,
@@ -19,5 +20,6 @@ export type {
   OffsetsInput,
   AmortizationOverview as AmortizationOverviewData,
   AmortizationTableRow,
+  LatestSchedule,
   PaymentStatus,
 } from "./schema";

@@ -9,7 +9,7 @@ export const loginSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 
 /** Directions, in process order (declaration order = landing priority). */
-export const DEPARTMENTS = ["DRI", "DCM", "DRC"] as const;
+export const DEPARTMENTS = ["DRI", "DCM", "DRC", "COMITE"] as const;
 export type Department = (typeof DEPARTMENTS)[number];
 
 /** Human-readable direction names (single source for every label in the UI). */
@@ -17,6 +17,7 @@ export const DEPARTMENT_LABELS: Record<Department, string> = {
   DRI: "Direction Recherches et Investissement",
   DCM: "Direction Crédit et Marketing",
   DRC: "Direction Risque et Conformité",
+  COMITE: "Comité de Crédit",
 };
 
 /** Role held within a direction (a manager inherits member access). */
