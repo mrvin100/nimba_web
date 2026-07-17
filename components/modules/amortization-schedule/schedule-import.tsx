@@ -109,8 +109,9 @@ export function ScheduleImport({ caseId, onUploaded }: { caseId: string; onUploa
         <AlertTitle>Import de l&apos;échéancier</AlertTitle>
         <AlertDescription>
           Depuis Excel : <strong>Fichier → Enregistrer sous → CSV UTF-8 (délimité par des virgules)</strong>. La virgule
-          et le point-virgule sont acceptés. L&apos;aperçu vérifie le format avant l&apos;import définitif, puis vous
-          générez les trades.
+          et le point-virgule sont acceptés, ainsi que l&apos;ancien format{" "}
+          <strong>CSV (délimité par des virgules)</strong> des versions d&apos;Excel qui n&apos;ont pas d&apos;option
+          UTF-8. L&apos;aperçu vérifie le format avant l&apos;import définitif, puis vous générez les trades.
         </AlertDescription>
       </Alert>
 
