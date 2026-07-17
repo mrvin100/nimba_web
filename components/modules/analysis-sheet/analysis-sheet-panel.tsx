@@ -19,9 +19,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const PILIER_LABELS: Record<FaPilier, string> = {
   COVER: "Couverture",
   PILIER_1: "Pilier 1 — Entreprise",
+  PILIER_2: "Pilier 2 — Marché / contrat",
   PILIER_3: "Pilier 3 — Analyse financière",
   PILIER_4: "Pilier 4 — Risques & sûretés",
   CONCLUSION: "Conclusion",
+  ANNEXES: "Annexes",
 };
 
 /** Groups sections by pilier, preserving the registry's order (both the piliers and their sections within). */

@@ -40,6 +40,23 @@ export interface WorkspaceConfig {
   nav: NavItem[];
 }
 
+/**
+ * The open dossier's tabs, exposed as contextual sub-navigation under the
+ * workspace's dossier list — same three tabs in every direction (the FA tab is
+ * read-only outside DRI; the page itself decides what the viewer can do).
+ */
+function dossierSubItems(base: RegExp): (pathname: string) => NavSubItem[] {
+  return (pathname) => {
+    const match = pathname.match(base);
+    if (!match) return [];
+    return [
+      { label: "Aperçu du dossier", href: `${match[0]}?tab=apercu` },
+      { label: "Fiche d'analyse", href: `${match[0]}?tab=fiche-analyse` },
+      { label: "Amortissement", href: `${match[0]}?tab=amortissement` },
+    ];
+  };
+}
+
 export const WORKSPACES: readonly WorkspaceConfig[] = [
   {
     key: "dri",
@@ -54,14 +71,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
         icon: FileText,
         // When a dossier is open, expose its tabs as sub-navigation; the parent
         // stays a link to the full list.
-        subItems: (pathname) => {
-          const match = pathname.match(/^\/dri\/dossiers\/[^/]+/);
-          if (!match) return [];
-          return [
-            { label: "Aperçu du dossier", href: `${match[0]}?tab=apercu` },
-            { label: "Amortissement", href: `${match[0]}?tab=amortissement` },
-          ];
-        },
+        subItems: dossierSubItems(/^\/dri\/dossiers\/[^/]+/),
       },
       { label: "Membres", href: `${ROUTES.DRI}/equipe`, icon: Users, managerOnly: true },
     ],
@@ -73,7 +83,12 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     subtitle: DEPARTMENT_LABELS.DCM,
     basePath: ROUTES.DCM,
     nav: [
-      { label: "Dossiers à revoir", href: ROUTES.DCM, icon: ClipboardList },
+      {
+        label: "Dossiers à revoir",
+        href: ROUTES.DCM,
+        icon: ClipboardList,
+        subItems: dossierSubItems(/^\/dcm\/dossiers\/[^/]+/),
+      },
       { label: "Membres", href: `${ROUTES.DCM}/equipe`, icon: Users, managerOnly: true },
     ],
   },
@@ -84,7 +99,12 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     subtitle: DEPARTMENT_LABELS.DRC,
     basePath: ROUTES.DRC,
     nav: [
-      { label: "Dossiers à revoir", href: ROUTES.DRC, icon: ClipboardList },
+      {
+        label: "Dossiers à revoir",
+        href: ROUTES.DRC,
+        icon: ClipboardList,
+        subItems: dossierSubItems(/^\/drc\/dossiers\/[^/]+/),
+      },
       { label: "Membres", href: `${ROUTES.DRC}/equipe`, icon: Users, managerOnly: true },
     ],
   },
@@ -95,7 +115,12 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     subtitle: DEPARTMENT_LABELS.COMITE,
     basePath: ROUTES.COMITE,
     nav: [
-      { label: "Dossiers à revoir", href: ROUTES.COMITE, icon: ClipboardList },
+      {
+        label: "Dossiers à revoir",
+        href: ROUTES.COMITE,
+        icon: ClipboardList,
+        subItems: dossierSubItems(/^\/comite\/dossiers\/[^/]+/),
+      },
       { label: "Membres", href: `${ROUTES.COMITE}/equipe`, icon: Users, managerOnly: true },
     ],
   },

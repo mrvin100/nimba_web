@@ -3,6 +3,7 @@
 // Direct file imports (not the module barrels): both credit-case/index.ts and
 // this module's own index.ts re-export CreditCaseTabs/AnalysisSheetPanel, which
 // import each other — going through either barrel here would create a cycle.
+import { ClientIdentityCard } from "@/components/modules/credit-case/client-identity-card";
 import { ConditionsDeBanqueCard } from "@/components/modules/credit-case/conditions-de-banque-card";
 import { GuaranteePanel } from "@/components/modules/guarantee";
 import { formatAmount } from "@/lib/format";
@@ -33,6 +34,9 @@ export function FaBoundSection({
   taSummary,
 }: Readonly<{ caseId: string; sectionKey: FaSectionKey; taSummary: ScheduleSummary | null }>) {
   switch (sectionKey) {
+    case "PILIER1_INFOS_GENERALES":
+    case "PILIER1_REGULARITE":
+      return <ClientIdentityCard caseId={caseId} />;
     case "COVER_CONDITIONS_BANQUE":
     case "CONCLUSION_CONDITIONS_BANQUE":
       return <ConditionsDeBanqueCard caseId={caseId} />;
