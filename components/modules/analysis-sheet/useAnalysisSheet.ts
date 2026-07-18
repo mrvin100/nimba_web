@@ -3,8 +3,16 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { QUERY_SCOPES } from "@/lib/query-keys";
-import { createAnalysisSheet, getAnalysisSheet, getFaSections, publishAnalysisSheet, updateFaSection } from "./analysis-sheet.service";
-import type { FaSection, FaSectionKey } from "./schema";
+import {
+  createAnalysisSheet,
+  deleteFaSectionImage,
+  getAnalysisSheet,
+  getFaSections,
+  publishAnalysisSheet,
+  updateFaSection,
+  uploadFaSectionImage,
+} from "./analysis-sheet.service";
+import type { FaSection, FaSectionImage, FaSectionKey } from "./schema";
 
 export const analysisSheetKeys = {
   all: [QUERY_SCOPES.analysisSheet] as const,
@@ -55,6 +63,40 @@ export function useUpdateFaSection(caseId: string) {
         sections?.map((section) => (section.key === data.key ? data : section)),
       );
     },
+  });
+}
+
+/** Write-through: replaces one section's image list in the sections cache. */
+function useSectionImagesWriteThrough(caseId: string) {
+  const queryClient = useQueryClient();
+  return (key: FaSectionKey, images: FaSectionImage[]) => {
+    queryClient.setQueryData<FaSection[]>(analysisSheetKeys.sections(caseId), (sections) =>
+      sections?.map((section) => (section.key === key ? { ...section, images } : section)),
+    );
+  };
+}
+
+/** Uploads one figure to an IMAGE section (409 once published, 400 outside IMAGE sections). */
+export function useUploadFaSectionImage(caseId: string) {
+  const writeThrough = useSectionImagesWriteThrough(caseId);
+  return useApiMutation({
+    mutationFn: ({ key, file, caption }: { key: FaSectionKey; file: File; caption?: string }) =>
+      uploadFaSectionImage(caseId, key, file, caption).then((images) => ({ key, images })),
+    successToast: "Image ajoutée",
+    errorToast: true,
+    onSuccess: ({ key, images }) => writeThrough(key, images),
+  });
+}
+
+/** Removes one figure from an IMAGE section. */
+export function useDeleteFaSectionImage(caseId: string) {
+  const writeThrough = useSectionImagesWriteThrough(caseId);
+  return useApiMutation({
+    mutationFn: ({ key, imageId }: { key: FaSectionKey; imageId: string }) =>
+      deleteFaSectionImage(caseId, key, imageId).then((images) => ({ key, images })),
+    successToast: "Image supprimée",
+    errorToast: true,
+    onSuccess: ({ key, images }) => writeThrough(key, images),
   });
 }
 
