@@ -91,7 +91,7 @@ function CommentActionDialog({
   );
 }
 
-/** REJECT: destructive and irreversible (archives the dossier), so it confirms through an AlertDialog. */
+/** REJECT: the comité's rejection sends the dossier to the DCM for its explicit archiving note. */
 function RejectAction({ caseId }: Readonly<{ caseId: string }>) {
   const [comment, setComment] = useState("");
   const act = useWorkflowAction(caseId);
@@ -107,7 +107,7 @@ function RejectAction({ caseId }: Readonly<{ caseId: string }>) {
         <AlertDialogHeader>
           <AlertDialogTitle>Rejeter le dossier</AlertDialogTitle>
           <AlertDialogDescription>
-            Le dossier sera archivé avec le motif indiqué. Cette action est irréversible.
+            Le dossier sera transmis à la DCM pour archivage avec le motif indiqué. Cette action est irréversible.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Field>
@@ -122,6 +122,45 @@ function RejectAction({ caseId }: Readonly<{ caseId: string }>) {
             onClick={() => act.mutate({ action: "REJECT", comment })}
           >
             Rejeter
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+/** ARCHIVE: the DCM's final note after a comité rejection — closes the dossier with full traces. */
+function ArchiveAction({ caseId }: Readonly<{ caseId: string }>) {
+  const [comment, setComment] = useState("");
+  const act = useWorkflowAction(caseId);
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive">
+          <XCircle /> Archiver le dossier
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Archiver le dossier rejeté</AlertDialogTitle>
+          <AlertDialogDescription>
+            Le dossier sera définitivement archivé avec le motif du comité et votre note d&apos;archivage — seules
+            les traces de son traitement restent consultables.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <Field>
+          <FieldLabel htmlFor="archive-comment">Note d&apos;archivage</FieldLabel>
+          <Textarea id="archive-comment" rows={4} value={comment} onChange={(event) => setComment(event.target.value)} />
+        </Field>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction
+            className={buttonVariants({ variant: "destructive" })}
+            disabled={act.isPending || !comment.trim()}
+            onClick={() => act.mutate({ action: "ARCHIVE", comment })}
+          >
+            Archiver
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -181,6 +220,11 @@ export function WorkflowReviewPanel({ caseId }: Readonly<{ caseId: string }>) {
                 <Send /> Soumettre à la revue
               </Button>
             )}
+            {state.availableActions.includes("SUBMIT_CORRECTIONS") && (
+              <Button onClick={() => submit.mutate({ action: "SUBMIT_CORRECTIONS" })} disabled={submit.isPending}>
+                <Send /> Soumettre les corrections
+              </Button>
+            )}
             {state.availableActions.includes("APPROVE") && (
               <CommentActionDialog
                 caseId={caseId}
@@ -188,6 +232,16 @@ export function WorkflowReviewPanel({ caseId }: Readonly<{ caseId: string }>) {
                 triggerLabel="Approuver"
                 title="Approuver le dossier"
                 description="Le dossier passe à l'étape suivante de la revue."
+                requireComment={false}
+              />
+            )}
+            {state.availableActions.includes("SEND_TO_COMITE") && (
+              <CommentActionDialog
+                caseId={caseId}
+                action="SEND_TO_COMITE"
+                triggerLabel="Envoyer au comité"
+                title="Envoyer au comité"
+                description="Vérifiez que les observations sont traitées (fils résolus sur la fiche d'analyse) — le comité prend ensuite la main."
                 requireComment={false}
               />
             )}
@@ -209,11 +263,12 @@ export function WorkflowReviewPanel({ caseId }: Readonly<{ caseId: string }>) {
                 triggerLabel="Renvoyer pour complément"
                 variant="outline"
                 title="Renvoyer pour complément"
-                description="Le dossier retourne au DRI pour compléter des documents ou informations."
+                description="Le dossier retourne au DRI pour compléter des documents ou informations, puis repasse par la vérification DCM."
                 requireComment
               />
             )}
             {state.availableActions.includes("REJECT") && <RejectAction caseId={caseId} />}
+            {state.availableActions.includes("ARCHIVE") && <ArchiveAction caseId={caseId} />}
           </div>
         ) : (
           !state.hint &&
