@@ -70,8 +70,14 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
         href: ROUTES.DRI,
         icon: FileText,
         // When a dossier is open, expose its tabs as sub-navigation; the parent
-        // stays a link to the full list.
-        subItems: dossierSubItems(/^\/dri\/dossiers\/[^/]+/),
+        // stays a link to the full list. The DRI additionally gets the Settings
+        // tab (critical actions — the page itself gates manager/admin).
+        subItems: (pathname) => {
+          const items = dossierSubItems(/^\/dri\/dossiers\/[^/]+/)(pathname);
+          if (items.length === 0) return items;
+          const match = pathname.match(/^\/dri\/dossiers\/[^/]+/);
+          return [...items, { label: "Paramètres", href: `${match?.[0]}?tab=parametres` }];
+        },
       },
       { label: "Membres", href: `${ROUTES.DRI}/equipe`, icon: Users, managerOnly: true },
     ],

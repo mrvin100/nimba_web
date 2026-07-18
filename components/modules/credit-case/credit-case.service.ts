@@ -108,3 +108,11 @@ export function unarchiveCreditCase(id: string): Promise<CreditCase> {
 export async function deleteCreditCase(id: string): Promise<void> {
   await api.delete(`credit-cases/${id}`);
 }
+
+/** A dossier document the Settings tab can wipe (mirrors the backend enum). */
+export type ResettableDocument = "AMORTISSEMENT" | "FICHE_ANALYSE" | "GARANTIES" | "PV" | "FMP";
+
+/** Wipes ONE document of a BROUILLON dossier (DRI manager / admin act, irreversible). */
+export async function resetCaseDocument(caseId: string, document: ResettableDocument): Promise<void> {
+  await api.post(`credit-cases/${caseId}/settings/reset/${document}`);
+}
