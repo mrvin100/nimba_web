@@ -9,6 +9,7 @@ import {
   getAnalysisSheet,
   getFaSections,
   publishAnalysisSheet,
+  unpublishAnalysisSheet,
   updateFaSection,
   uploadFaSectionImage,
 } from "./analysis-sheet.service";
@@ -106,6 +107,16 @@ export function usePublishAnalysisSheet(caseId: string) {
     mutationFn: () => publishAnalysisSheet(caseId),
     invalidate: [analysisSheetKeys.detail(caseId)],
     successToast: "Fiche d'analyse publiée",
+    errorToast: true,
+  });
+}
+
+/** Takes the FA back to draft — the publish/draft toggle, open until the first submission. */
+export function useUnpublishAnalysisSheet(caseId: string) {
+  return useApiMutation({
+    mutationFn: () => unpublishAnalysisSheet(caseId),
+    invalidate: [analysisSheetKeys.detail(caseId)],
+    successToast: "Fiche d'analyse repassée en brouillon",
     errorToast: true,
   });
 }

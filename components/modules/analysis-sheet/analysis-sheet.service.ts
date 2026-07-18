@@ -29,6 +29,11 @@ export function publishAnalysisSheet(caseId: string): Promise<AnalysisSheet> {
   return api.post(`${basePath(caseId)}/publish`).json<AnalysisSheet>();
 }
 
+/** Takes the FA back to draft — only while the dossier was never submitted to review (409 otherwise). */
+export function unpublishAnalysisSheet(caseId: string): Promise<AnalysisSheet> {
+  return api.post(`${basePath(caseId)}/unpublish`).json<AnalysisSheet>();
+}
+
 /** Uploads one figure to an IMAGE section; returns the section's refreshed image list. */
 export function uploadFaSectionImage(
   caseId: string,
