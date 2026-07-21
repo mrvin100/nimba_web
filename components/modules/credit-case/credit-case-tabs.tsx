@@ -15,6 +15,7 @@ import { WorkflowReviewPanel } from "@/components/modules/workflow";
 import { ClientIdentityCard } from "./client-identity-card";
 import { ConditionsDeBanqueCard } from "./conditions-de-banque-card";
 import { CreditCaseDetail } from "./credit-case-detail";
+import { CreditCaseSettings } from "./credit-case-settings";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -37,6 +38,10 @@ export function CreditCaseTabs({ caseId, backHref }: Readonly<{ caseId: string; 
 
   if (tab === "fiche-analyse") {
     return <AnalysisSheetPanel caseId={caseId} />;
+  }
+
+  if (tab === "parametres") {
+    return <CreditCaseSettings caseId={caseId} backHref={backHref} />;
   }
 
   if (tab !== "amortissement") {
