@@ -20,26 +20,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /**
  * The dossier screen's sections, selected by the `?tab=` search param — the
- * sidebar's contextual sub-navigation (Aperçu du dossier / Amortissement) is the
- * only switcher, so no duplicate tab row is rendered here. The amortization
- * section keeps its own two sub-tabs (server-computed overview, and the
- * échéancier / traités workflow). The overview query is shared with the content
- * through the cache — presence costs no extra request. Reused as-is by every
- * direction's dossier page ([backHref] points back to the viewer's own
- * workspace); the workflow panel decides for itself whether the viewer can act.
+ * sidebar's contextual sub-navigation (Aperçu du dossier / Fiche d'analyse /
+ * Amortissement) is the only switcher, so no duplicate tab row is rendered
+ * here. The Fiche d'analyse has its own dedicated tab (full-page workspace);
+ * the amortization section keeps its own two sub-tabs (server-computed
+ * overview, and the échéancier / traités workflow). The overview query is
+ * shared with the content through the cache — presence costs no extra request.
+ * Reused as-is by every direction's dossier page ([backHref] points back to
+ * the viewer's own workspace); the workflow and FA panels decide for
+ * themselves whether the viewer can act.
  */
 export function CreditCaseTabs({ caseId, backHref }: Readonly<{ caseId: string; backHref?: string }>) {
   const searchParams = useSearchParams();
   const overview = useAmortizationOverview(caseId, {});
+  const tab = searchParams.get("tab");
 
-  if (searchParams.get("tab") !== "amortissement") {
+  if (tab === "fiche-analyse") {
+    return <AnalysisSheetPanel caseId={caseId} />;
+  }
+
+  if (tab !== "amortissement") {
     return (
       <div className="space-y-6">
         <CreditCaseDetail caseId={caseId} backHref={backHref} />
         <ClientIdentityCard caseId={caseId} />
         <ConditionsDeBanqueCard caseId={caseId} />
         <WorkflowReviewPanel caseId={caseId} />
-        <AnalysisSheetPanel caseId={caseId} />
         <GuaranteePanel caseId={caseId} />
         <PvPanel caseId={caseId} />
         <FmpPanel caseId={caseId} />

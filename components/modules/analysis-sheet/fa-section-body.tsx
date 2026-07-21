@@ -17,12 +17,25 @@ export function FaSectionBody({
     case "NARRATIVE":
       return <FaNarrativeSection caseId={caseId} section={section} locked={locked} />;
     case "TABLE":
-      // Only one TABLE section exists in this proof set; the fast-follow
-      // sections will add their own dedicated table renderers the same way.
-      return <FaPersonnesClesSection caseId={caseId} section={section} locked={locked} />;
+      if (section.key === "PILIER1_PERSONNES_CLES") {
+        return <FaPersonnesClesSection caseId={caseId} section={section} locked={locked} />;
+      }
+      // The dedicated typed editors (tables, key-value, financial, flex, images)
+      // arrive with the full-structure editor work; until then the section is
+      // visible but not editable here.
+      return <FaPendingEditor />;
+    case "KEY_VALUE":
+    case "FLEX_TABLE":
+    case "FINANCIAL":
+    case "IMAGE":
+      return <FaPendingEditor />;
     case "COMPUTED":
       return <FaComputedSection caseId={caseId} sectionKey={section.key} taSummary={taSummary} />;
     case "BOUND":
       return <FaBoundSection caseId={caseId} sectionKey={section.key} taSummary={taSummary} />;
   }
+}
+
+function FaPendingEditor() {
+  return <p className="text-sm text-muted-foreground">Éditeur dédié en cours de construction — la section est déjà exportée dans le document Word.</p>;
 }
