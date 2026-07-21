@@ -1,2 +1,4 @@
 export { useClients, useClient, useCreateClient, useUpdateClient, clientKeys } from "./useClient";
-export type { Client, ClientSummary, ClientFormInput, CreateClientInput } from "./schema";
+export { ClientPicker } from "./client-picker";
+export { CreateClientDialog } from "./create-client-dialog";
+export type { Client, ClientSummary, ClientFormInput, CreateClientInput, CreateClientFormInput } from "./schema";

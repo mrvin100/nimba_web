@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /** A bank client, independent of any credit case — backs the Caution module so documents can be grouped by matricule. */
 export interface Client {
   id: string;
@@ -53,3 +55,21 @@ export interface ClientFormInput {
 }
 
 export type CreateClientInput = ClientFormInput & { matricule: string };
+
+/**
+ * Only the fields the Caution module's SMS/ACF renderers actually consume —
+ * the rest of [Client]'s identity fields (forme juridique, dates, cotations...)
+ * are left for a future client-detail screen to capture incrementally, the
+ * same way a credit case's own identity is filled in over time.
+ */
+export const createClientSchema = z.object({
+  matricule: z.string().min(1, "Matricule requis").max(50, "50 caractères maximum"),
+  raisonSociale: z.string().min(1, "Raison sociale requise").max(200, "200 caractères maximum"),
+  sigle: z.string().max(100, "100 caractères maximum").optional(),
+  rccm: z.string().max(50, "50 caractères maximum").optional(),
+  accountNumber: z.string().max(50, "50 caractères maximum").optional(),
+  agence: z.string().max(100, "100 caractères maximum").optional(),
+  principalDirigeant: z.string().max(200, "200 caractères maximum").optional(),
+});
+
+export type CreateClientFormInput = z.infer<typeof createClientSchema>;
