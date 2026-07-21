@@ -5,6 +5,7 @@ import { Check, MessageSquarePlus, RotateCcw, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/format";
 import { DEPARTMENT_LABELS, useSession } from "@/components/modules/identity";
+import { ActorAvatar } from "@/components/shared/actor-avatar";
 import type { FaSectionKey } from "@/components/modules/analysis-sheet";
 import { useAddReviewComment, useDeleteReviewComment, useResolveReviewThread } from "./useReview";
 import type { ReviewComment, ReviewThread } from "./schema";
@@ -19,28 +20,31 @@ function CommentBubble({
 }: Readonly<{ caseId: string; comment: ReviewComment; canDeletePending: boolean }>) {
   const remove = useDeleteReviewComment(caseId);
   return (
-    <div className={cn("rounded-md border p-2 text-sm", comment.pending && "border-dashed bg-muted/40")}>
-      <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span>
-          <span className="font-medium text-foreground">{comment.authorName}</span> ·{" "}
-          {DEPARTMENT_LABELS[comment.authorDepartment]} · {formatDateTime(comment.createdAt)}
-        </span>
-        <span className="flex items-center gap-1">
-          {comment.pending && <Badge variant="outline">En attente</Badge>}
-          {comment.pending && canDeletePending && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Supprimer ce commentaire en attente"
-              onClick={() => remove.mutate({ commentId: comment.id })}
-            >
-              <Trash2 />
-            </Button>
-          )}
-        </span>
+    <div className={cn("flex gap-2 rounded-md border p-2 text-sm", comment.pending && "border-dashed bg-muted/40")}>
+      <ActorAvatar name={comment.authorName} department={comment.authorDepartment} size="sm" className="mt-0.5 shrink-0" />
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <span>
+            <span className="font-medium text-foreground">{comment.authorName}</span> ·{" "}
+            {DEPARTMENT_LABELS[comment.authorDepartment]} · {formatDateTime(comment.createdAt)}
+          </span>
+          <span className="flex items-center gap-1">
+            {comment.pending && <Badge variant="outline">En attente</Badge>}
+            {comment.pending && canDeletePending && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                aria-label="Supprimer ce commentaire en attente"
+                onClick={() => remove.mutate({ commentId: comment.id })}
+              >
+                <Trash2 />
+              </Button>
+            )}
+          </span>
+        </div>
+        <p className="whitespace-pre-wrap">{comment.body}</p>
       </div>
-      <p className="whitespace-pre-wrap">{comment.body}</p>
     </div>
   );
 }

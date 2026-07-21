@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useSession } from "@/components/modules/identity";
+import { isDriEditable, useWorkflowState } from "@/components/modules/workflow";
 import { ROUTES } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { useCreditCase } from "./useCreditCase";
-import { CreditCaseStatusBadge } from "./credit-case-status-badge";
 import { EditCaseDialog } from "./edit-case-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,10 +19,16 @@ export function DetailRow({ label, children }: { label: string; children: React.
   );
 }
 
-/** [backHref] and the edit action are DRI-specific; reviewers see the same card read-only. */
+/**
+ * [backHref] and the edit action are DRI-specific, and only while the dossier
+ * is still in the DRI's hands; reviewers, and the DRI once it's out for
+ * review, see the same card read-only.
+ */
 export function CreditCaseDetail({ caseId, backHref = ROUTES.DRI }: Readonly<{ caseId: string; backHref?: string }>) {
   const { data, isPending, isError } = useCreditCase(caseId);
+  const { data: workflowState } = useWorkflowState(caseId);
   const session = useSession();
+  const canEdit = session.hasDepartment("DRI") && isDriEditable(workflowState?.status);
 
   if (isPending) {
     // Mirror the loaded card's structure (header + four rows) so nothing shifts or
@@ -64,7 +70,7 @@ export function CreditCaseDetail({ caseId, backHref = ROUTES.DRI }: Readonly<{ c
             <CardTitle>{data.caseNumber}</CardTitle>
             <CardDescription>{data.clientName}</CardDescription>
           </div>
-          {session.hasDepartment("DRI") && <EditCaseDialog creditCase={data} />}
+          {canEdit && <EditCaseDialog creditCase={data} />}
         </div>
       </CardHeader>
       <CardContent>
@@ -72,9 +78,6 @@ export function CreditCaseDetail({ caseId, backHref = ROUTES.DRI }: Readonly<{ c
         {data.contractType && <DetailRow label="Type de contrat">{data.contractType}</DetailRow>}
         <DetailRow label="Devise">{data.currency}</DetailRow>
         <DetailRow label="N° de compte">{data.accountNumber ?? "—"}</DetailRow>
-        <DetailRow label="Statut">
-          <CreditCaseStatusBadge status={data.status} />
-        </DetailRow>
         <DetailRow label="Créé le">{formatDate(data.createdAt, "long")}</DetailRow>
       </CardContent>
     </Card>

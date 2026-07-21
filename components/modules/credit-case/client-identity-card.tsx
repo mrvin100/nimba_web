@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "@/components/modules/identity";
+import { isDriEditable, useWorkflowState } from "@/components/modules/workflow";
 import { formatDate } from "@/lib/format";
 import { DetailRow } from "./credit-case-detail";
 import { EditClientIdentityDialog } from "./edit-client-identity-dialog";
@@ -11,13 +12,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 /**
  * Descriptive client detail reused across the FA, the PV and the FMP — captured
  * once here instead of re-entered per document. DRI-only edit, like the case's
- * own "Modifier" action; reviewers see the same card read-only. Shares the
- * `useCreditCase` cache with `CreditCaseDetail` — no extra request. Renders
- * nothing on error: the detail card above already surfaces "dossier introuvable".
+ * own "Modifier" action, and only while the dossier is still in the DRI's
+ * hands (not yet submitted, or sent back for corrections) — reviewers see the
+ * same card read-only, and so does the DRI once it's out for review. Shares
+ * the `useCreditCase` cache with `CreditCaseDetail` — no extra request.
+ * Renders nothing on error: the detail card above already surfaces "dossier
+ * introuvable".
  */
 export function ClientIdentityCard({ caseId }: Readonly<{ caseId: string }>) {
   const { data, isPending, isError } = useCreditCase(caseId);
+  const { data: workflowState } = useWorkflowState(caseId);
   const session = useSession();
+  const canEdit = session.hasDepartment("DRI") && isDriEditable(workflowState?.status);
 
   if (isPending) {
     return (
@@ -42,7 +48,7 @@ export function ClientIdentityCard({ caseId }: Readonly<{ caseId: string }>) {
             <CardTitle className="text-base">Identité du client</CardTitle>
             <CardDescription>Réutilisée sur la fiche d&apos;analyse, le PV et la fiche de mise en place.</CardDescription>
           </div>
-          {session.hasDepartment("DRI") && <EditClientIdentityDialog caseId={caseId} identity={identity} />}
+          {canEdit && <EditClientIdentityDialog caseId={caseId} identity={identity} />}
         </div>
       </CardHeader>
       <CardContent>

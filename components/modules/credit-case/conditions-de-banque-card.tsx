@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "@/components/modules/identity";
+import { isDriEditable, useWorkflowState } from "@/components/modules/workflow";
 import { formatAmount } from "@/lib/format";
 import { DetailRow } from "./credit-case-detail";
 import { EditConditionsDeBanqueDialog } from "./edit-conditions-de-banque-dialog";
@@ -17,12 +18,15 @@ function formatPercent(value: number | null): string {
  * once here instead of re-entered per document. 1er loyer, loyer mensuel and
  * durée are NOT shown here: they come straight from the TA (see the
  * analysis-sheet panel). Valeur résiduelle here is the bank's contractual
- * percentage, distinct from the TA-derived amount. DRI-only edit, like the
- * client-identity card. Shares the `useCreditCase` cache — no extra request.
+ * percentage, distinct from the TA-derived amount. DRI-only edit while the
+ * dossier is still theirs to constitute, like the client-identity card.
+ * Shares the `useCreditCase` cache — no extra request.
  */
 export function ConditionsDeBanqueCard({ caseId }: Readonly<{ caseId: string }>) {
   const { data, isPending, isError } = useCreditCase(caseId);
+  const { data: workflowState } = useWorkflowState(caseId);
   const session = useSession();
+  const canEdit = session.hasDepartment("DRI") && isDriEditable(workflowState?.status);
 
   if (isPending) {
     return (
@@ -47,7 +51,7 @@ export function ConditionsDeBanqueCard({ caseId }: Readonly<{ caseId: string }>)
             <CardTitle className="text-base">Conditions de banque</CardTitle>
             <CardDescription>Réutilisées sur la fiche d&apos;analyse, le PV et la fiche de mise en place.</CardDescription>
           </div>
-          {session.hasDepartment("DRI") && <EditConditionsDeBanqueDialog caseId={caseId} conditions={conditions} />}
+          {canEdit && <EditConditionsDeBanqueDialog caseId={caseId} conditions={conditions} />}
         </div>
       </CardHeader>
       <CardContent>

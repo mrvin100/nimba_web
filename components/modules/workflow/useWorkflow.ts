@@ -4,13 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { QUERY_SCOPES } from "@/lib/query-keys";
 import { creditCaseKeys } from "@/components/modules/credit-case";
-import { getWorkflowQueue, getWorkflowState, postWorkflowAction } from "./workflow.service";
+import { getWorkflowQueue, getWorkflowState, getWorkflowStatuses, postWorkflowAction } from "./workflow.service";
 import { WORKFLOW_STATUS_LABELS, type WorkflowActionInput } from "./schema";
 
 export const workflowKeys = {
   all: [QUERY_SCOPES.workflow] as const,
   state: (caseId: string) => [QUERY_SCOPES.workflow, "state", caseId] as const,
   queue: () => [QUERY_SCOPES.workflow, "queue"] as const,
+  statuses: (caseIds: string[]) => [QUERY_SCOPES.workflow, "statuses", [...caseIds].sort()] as const,
 };
 
 /** A dossier's workflow state (server state) — status, available actions, timeline. */
@@ -22,10 +23,20 @@ export function useWorkflowState(caseId: string) {
 }
 
 /** Dossiers awaiting the caller's review (a direction's queue). */
-export function useWorkflowQueue() {
+export function useWorkflowQueue(enabled = true) {
   return useQuery({
     queryKey: workflowKeys.queue(),
     queryFn: getWorkflowQueue,
+    enabled,
+  });
+}
+
+/** A dossier list's workflow-status badges, batched in one request instead of one per row. */
+export function useWorkflowStatuses(caseIds: string[]) {
+  return useQuery({
+    queryKey: workflowKeys.statuses(caseIds),
+    queryFn: () => getWorkflowStatuses(caseIds),
+    enabled: caseIds.length > 0,
   });
 }
 

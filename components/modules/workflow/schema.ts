@@ -48,6 +48,18 @@ export const WORKFLOW_REVIEW_DEPARTMENT: Partial<Record<WorkflowStatus, Departme
   PRET_POUR_COMITE: "COMITE",
 };
 
+/**
+ * Whether the dossier's constitution (client identity, conditions de banque,
+ * guarantees, the dossier's own fields) is still safe for the DRI to edit —
+ * true only while it's in a DRI-owned stage. Once it's under review, decided
+ * or archived, editing it out from under the reviewers would silently
+ * invalidate what they're looking at, so every constitution card gates its
+ * edit actions on this in addition to the DRI department check.
+ */
+export function isDriEditable(status: WorkflowStatus | undefined): boolean {
+  return status !== undefined && WORKFLOW_REVIEW_DEPARTMENT[status] === "DRI";
+}
+
 /** A move an actor can make on a dossier (mirrors the backend enum). */
 export const WORKFLOW_ACTIONS = [
   "SUBMIT",
@@ -109,4 +121,10 @@ export interface QueueItem {
 export interface WorkflowActionInput {
   action: WorkflowActionType;
   comment?: string;
+}
+
+/** One row of the batch status lookup — drives a dossier list's status badges. */
+export interface CaseWorkflowStatus {
+  creditCaseId: string;
+  status: WorkflowStatus;
 }

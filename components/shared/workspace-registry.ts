@@ -1,4 +1,4 @@
-import { Building2, ClipboardList, FileText, LayoutDashboard, ScrollText, Users, type LucideIcon } from "lucide-react";
+import { Building2, ClipboardList, FileText, FolderOpen, LayoutDashboard, ScrollText, Users, type LucideIcon } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { DEPARTMENT_LABELS, hasDepartment, isAdmin, type Department, type MeResponse } from "@/components/modules/identity";
 
@@ -28,6 +28,12 @@ export interface NavItem {
    * dossier's tabs). Empty ⇒ the item renders as a plain link.
    */
   subItems?: (pathname: string) => NavSubItem[];
+  /**
+   * Shows the caller's review-queue count as a sidebar badge (dossiers waiting
+   * on this direction) — visible from anywhere in the workspace, not just the
+   * FA tab of one dossier, so the direction doesn't have to remember to check.
+   */
+  queueBadge?: boolean;
 }
 
 export interface WorkspaceConfig {
@@ -42,8 +48,11 @@ export interface WorkspaceConfig {
 
 /**
  * The open dossier's tabs, exposed as contextual sub-navigation under the
- * workspace's dossier list — same three tabs in every direction (the FA tab is
- * read-only outside DRI; the page itself decides what the viewer can do).
+ * workspace's dossier list — same tabs in every direction (each document tab
+ * is read-only outside its authoring direction; the page itself decides what
+ * the viewer can do). One tab per generated/imported document — Amortissement
+ * (TA), Fiche d'analyse (FA), PV and FMP — same as the physical dossier is
+ * organized, instead of stacking every document under one overview screen.
  */
 function dossierSubItems(base: RegExp): (pathname: string) => NavSubItem[] {
   return (pathname) => {
@@ -53,6 +62,8 @@ function dossierSubItems(base: RegExp): (pathname: string) => NavSubItem[] {
       { label: "Aperçu du dossier", href: `${match[0]}?tab=apercu` },
       { label: "Fiche d'analyse", href: `${match[0]}?tab=fiche-analyse` },
       { label: "Amortissement", href: `${match[0]}?tab=amortissement` },
+      { label: "PV", href: `${match[0]}?tab=pv` },
+      { label: "FMP", href: `${match[0]}?tab=fmp` },
     ];
   };
 }
@@ -93,6 +104,12 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
         label: "Dossiers à revoir",
         href: ROUTES.DCM,
         icon: ClipboardList,
+        queueBadge: true,
+      },
+      {
+        label: "Tous les dossiers",
+        href: `${ROUTES.DCM}/dossiers`,
+        icon: FolderOpen,
         subItems: dossierSubItems(/^\/dcm\/dossiers\/[^/]+/),
       },
       { label: "Membres", href: `${ROUTES.DCM}/equipe`, icon: Users, managerOnly: true },
@@ -109,6 +126,12 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
         label: "Dossiers à revoir",
         href: ROUTES.DRC,
         icon: ClipboardList,
+        queueBadge: true,
+      },
+      {
+        label: "Tous les dossiers",
+        href: `${ROUTES.DRC}/dossiers`,
+        icon: FolderOpen,
         subItems: dossierSubItems(/^\/drc\/dossiers\/[^/]+/),
       },
       { label: "Membres", href: `${ROUTES.DRC}/equipe`, icon: Users, managerOnly: true },
@@ -125,6 +148,12 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
         label: "Dossiers à revoir",
         href: ROUTES.COMITE,
         icon: ClipboardList,
+        queueBadge: true,
+      },
+      {
+        label: "Tous les dossiers",
+        href: `${ROUTES.COMITE}/dossiers`,
+        icon: FolderOpen,
         subItems: dossierSubItems(/^\/comite\/dossiers\/[^/]+/),
       },
       { label: "Membres", href: `${ROUTES.COMITE}/equipe`, icon: Users, managerOnly: true },

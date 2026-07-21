@@ -1,17 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
-import { FileCheck2, FileText, MessageSquare } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronDown, FileCheck2, FileText, MessageSquare } from "lucide-react";
 import { formatAmount, formatDate, formatDateTime } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { useLatestSchedule } from "@/components/modules/amortization-schedule";
 import { DEPARTMENT_LABELS, useSession } from "@/components/modules/identity";
+import { ActorAvatar } from "@/components/shared/actor-avatar";
 // Direct file imports (not the review barrel) — review's components import this
 // module's barrel for FaSectionKey types; going through review/index.ts here
 // would close an import cycle between the two barrels.
 import { FaSectionComments } from "@/components/modules/review/fa-section-comments";
 import { ReviewSubmitBar } from "@/components/modules/review/review-submit-bar";
 import { useReviewOverview } from "@/components/modules/review/useReview";
-import { REVIEW_VERDICT_LABELS } from "@/components/modules/review/schema";
+import { REVIEW_VERDICT_LABELS, type Review } from "@/components/modules/review/schema";
 import { useWorkflowState } from "@/components/modules/workflow";
 import { useAnalysisSheet, useCreateAnalysisSheet, useFaSections, usePublishAnalysisSheet, useUnpublishAnalysisSheet } from "./useAnalysisSheet";
 import { analysisSheetDocxExportPath } from "./analysis-sheet.service";
@@ -23,6 +25,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -45,6 +48,37 @@ function groupByPilier(sections: FaSection[]): Map<FaPilier, FaSection[]> {
     grouped.set(section.pilier, list);
   }
   return grouped;
+}
+
+/** One submitted verdict: actor + verdict up front, the written summary collapsed behind a disclosure so the recap stays scannable. */
+function SubmittedReviewEntry({ review }: Readonly<{ review: Review }>) {
+  const [summaryOpen, setSummaryOpen] = useState(false);
+
+  return (
+    <div className="flex items-start gap-2">
+      <ActorAvatar name={review.reviewerName} department={review.department} className="mt-0.5 shrink-0" />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm">
+          <span className="font-medium text-foreground">{review.reviewerName}</span>{" "}
+          <span className="text-muted-foreground">({DEPARTMENT_LABELS[review.department]})</span>
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {REVIEW_VERDICT_LABELS[review.verdict]} · {formatDateTime(review.submittedAt, "long")}
+        </p>
+        {review.summary && (
+          <Collapsible open={summaryOpen} onOpenChange={setSummaryOpen} className="mt-1">
+            <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium hover:underline">
+              <ChevronDown className={cn("size-3 transition-transform", summaryOpen && "rotate-180")} />
+              {summaryOpen ? "Masquer le commentaire" : "Voir le commentaire"}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-1.5 rounded-md border bg-muted/40 p-2 text-sm whitespace-pre-wrap">
+              {review.summary}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -111,6 +145,22 @@ export function AnalysisSheetPanel({ caseId }: Readonly<{ caseId: string }>) {
                 Exporter (.docx)
               </a>
             </Button>
+            {sheet && !locked && session.hasDepartment("DRI") && (
+              <Button type="button" size="sm" onClick={() => publishSheet.mutate()} disabled={publishSheet.isPending}>
+                {publishSheet.isPending ? "Publication…" : "Publier"}
+              </Button>
+            )}
+            {canUnpublish && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => unpublishSheet.mutate()}
+                disabled={unpublishSheet.isPending}
+              >
+                {unpublishSheet.isPending ? "Dépublication…" : "Repasser en brouillon"}
+              </Button>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -137,16 +187,9 @@ export function AnalysisSheetPanel({ caseId }: Readonly<{ caseId: string }>) {
             )}
 
             {(review?.reviews.length ?? 0) > 0 && (
-              <div className="space-y-1 rounded-md border p-3">
+              <div className="space-y-3 rounded-md border p-3">
                 <p className="text-sm font-medium">Revues soumises</p>
-                {review?.reviews.map((item) => (
-                  <p key={item.id} className="text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">{item.reviewerName}</span> (
-                    {DEPARTMENT_LABELS[item.department]}) — {REVIEW_VERDICT_LABELS[item.verdict]} ·{" "}
-                    {formatDateTime(item.submittedAt)}
-                    {item.summary ? ` — ${item.summary}` : ""}
-                  </p>
-                ))}
+                {review?.reviews.map((item) => <SubmittedReviewEntry key={item.id} review={item} />)}
                 {(review?.unresolvedCount ?? 0) > 0 && (
                   <p className="text-sm text-amber-600">
                     {review?.unresolvedCount} fil{(review?.unresolvedCount ?? 0) > 1 ? "s" : ""} non résolu
@@ -209,21 +252,6 @@ export function AnalysisSheetPanel({ caseId }: Readonly<{ caseId: string }>) {
                   </TabsContent>
                 ))}
               </Tabs>
-            )}
-
-            {!locked && (
-              <div className="flex justify-end">
-                <Button type="button" onClick={() => publishSheet.mutate()} disabled={publishSheet.isPending}>
-                  {publishSheet.isPending ? "Publication…" : "Publier"}
-                </Button>
-              </div>
-            )}
-            {canUnpublish && (
-              <div className="flex justify-end">
-                <Button type="button" variant="outline" onClick={() => unpublishSheet.mutate()} disabled={unpublishSheet.isPending}>
-                  {unpublishSheet.isPending ? "Dépublication…" : "Repasser en brouillon"}
-                </Button>
-              </div>
             )}
           </>
         )}

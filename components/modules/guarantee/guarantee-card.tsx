@@ -1,7 +1,6 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import { useSession } from "@/components/modules/identity";
 import { EditGuaranteeDialog } from "./edit-guarantee-dialog";
 import { GuaranteeAttachments } from "./guarantee-attachments";
 import { useDeleteGuarantee } from "./useGuarantee";
@@ -20,10 +19,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 
-/** One guarantee: type + description, its proof files, and DRI-only edit/delete. */
-export function GuaranteeCard({ caseId, guarantee }: Readonly<{ caseId: string; guarantee: Guarantee }>) {
-  const session = useSession();
-  const canEdit = session.hasDepartment("DRI");
+/** One guarantee: type + description, its proof files, and DRI-only edit/delete (while the dossier is still theirs to constitute — see GuaranteePanel). */
+export function GuaranteeCard({
+  caseId,
+  guarantee,
+  canEdit,
+}: Readonly<{ caseId: string; guarantee: Guarantee; canEdit: boolean }>) {
   const deleteGuarantee = useDeleteGuarantee(caseId);
 
   return (
@@ -63,7 +64,7 @@ export function GuaranteeCard({ caseId, guarantee }: Readonly<{ caseId: string; 
           </div>
         )}
       </div>
-      <GuaranteeAttachments caseId={caseId} guarantee={guarantee} />
+      <GuaranteeAttachments caseId={caseId} guarantee={guarantee} canEdit={canEdit} />
     </div>
   );
 }

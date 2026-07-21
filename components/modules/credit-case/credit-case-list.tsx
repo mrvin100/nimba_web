@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { caseDetailPath } from "@/lib/constants";
+import { useWorkflowStatuses, type WorkflowStatus } from "@/components/modules/workflow";
+import { caseDetailPath, ROUTES } from "@/lib/constants";
 import { useSession } from "@/components/modules/identity";
 import { useCreditCases } from "./useCreditCase";
 import { caseActionsColumn, creditCaseColumns } from "./credit-case-columns";
@@ -20,16 +21,25 @@ const FILTER_LABELS: Record<CaseListFilter, string> = {
   all: "Tous les dossiers",
 };
 
-export function CreditCaseList() {
+export function CreditCaseList({ workspaceBase = ROUTES.DRI }: Readonly<{ workspaceBase?: string }>) {
   const router = useRouter();
   const [page, setPage] = useState(0);
   const [filter, setFilter] = useState<CaseListFilter>("active");
   const { data, isPending, isError } = useCreditCases(page, 20, filter);
   const { isAdmin } = useSession();
 
+  // The dossier's real cross-directorate status, batched in one request for
+  // the whole visible page rather than the list's own narrow TA-readiness flag.
+  const caseIds = useMemo(() => data?.content.map((item) => item.id) ?? [], [data]);
+  const { data: statuses } = useWorkflowStatuses(caseIds);
+  const statusByCaseId = useMemo(
+    () => new Map<string, WorkflowStatus>(statuses?.map((item) => [item.creditCaseId, item.status]) ?? []),
+    [statuses],
+  );
+
   // The administrative actions (archive / delete) belong to platform admins;
   // everyone else keeps the plain columns.
-  const columns = isAdmin ? [...creditCaseColumns, caseActionsColumn] : creditCaseColumns;
+  const columns = isAdmin ? [...creditCaseColumns(statusByCaseId), caseActionsColumn] : creditCaseColumns(statusByCaseId);
 
   if (isPending) {
     return (
@@ -67,7 +77,7 @@ export function CreditCaseList() {
         emptyMessage={filter === "archived" ? "Aucun dossier archivé." : "Aucun dossier."}
         searchable
         searchPlaceholder="Rechercher un dossier…"
-        onRowClick={(creditCase) => router.push(caseDetailPath(creditCase.id))}
+        onRowClick={(creditCase) => router.push(caseDetailPath(creditCase.id, workspaceBase))}
         toolbar={
           <Select
             value={filter}

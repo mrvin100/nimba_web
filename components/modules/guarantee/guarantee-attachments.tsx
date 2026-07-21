@@ -1,7 +1,6 @@
 "use client";
 
 import { File, FileText, Image as ImageIcon, Trash2 } from "lucide-react";
-import { useSession } from "@/components/modules/identity";
 import { formatBytes, formatDate } from "@/lib/format";
 import { AddAttachmentDialog } from "./add-attachment-dialog";
 import { guaranteeAttachmentDownloadPath } from "./guarantee.service";
@@ -61,11 +60,12 @@ function AttachmentItem({
   );
 }
 
-/** A guarantee's proof files: an official shadcn Attachment/AttachmentGroup list, with an add action for the DRI. */
-export function GuaranteeAttachments({ caseId, guarantee }: Readonly<{ caseId: string; guarantee: Guarantee }>) {
-  const session = useSession();
-  const canEdit = session.hasDepartment("DRI");
-
+/** A guarantee's proof files: an official shadcn Attachment/AttachmentGroup list, with an add action while the dossier is still editable (see GuaranteePanel). */
+export function GuaranteeAttachments({
+  caseId,
+  guarantee,
+  canEdit,
+}: Readonly<{ caseId: string; guarantee: Guarantee; canEdit: boolean }>) {
   return (
     <div className="flex items-center gap-2">
       {guarantee.attachments.length > 0 && (

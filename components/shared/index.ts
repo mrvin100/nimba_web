@@ -12,6 +12,7 @@ export { QueryProvider } from "./query-provider";
 export { SubmitButton } from "./submit-button";
 export { StatusActionMenu } from "./status-action-menu";
 export { PageHeader } from "./page-header";
+export { ActorAvatar } from "./actor-avatar";
 export { SidebarNav } from "./sidebar-nav";
 export { WorkspaceSwitcher } from "./workspace-switcher";
 export { ServiceWakeNotice } from "./service-wake-notice";
