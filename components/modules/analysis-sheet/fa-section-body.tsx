@@ -2,8 +2,12 @@
 
 import { FaBoundSection } from "./fa-bound-section";
 import { FaComputedSection } from "./fa-computed-section";
+import { FaFinancialSection } from "./fa-financial-section";
+import { FaFlexTableSection } from "./fa-flex-table-section";
+import { FaImageSection } from "./fa-image-section";
+import { FaKeyValueSection } from "./fa-key-value-section";
 import { FaNarrativeSection } from "./fa-narrative-section";
-import { FaPersonnesClesSection } from "./fa-personnes-cles-section";
+import { FaTableSection } from "./fa-table-section";
 import type { FaSection, ScheduleSummary } from "./schema";
 
 /** Dispatches one section to its type-specific renderer — the only place that switches on [FaSection.type]. */
@@ -17,25 +21,18 @@ export function FaSectionBody({
     case "NARRATIVE":
       return <FaNarrativeSection caseId={caseId} section={section} locked={locked} />;
     case "TABLE":
-      if (section.key === "PILIER1_PERSONNES_CLES") {
-        return <FaPersonnesClesSection caseId={caseId} section={section} locked={locked} />;
-      }
-      // The dedicated typed editors (tables, key-value, financial, flex, images)
-      // arrive with the full-structure editor work; until then the section is
-      // visible but not editable here.
-      return <FaPendingEditor />;
+      return <FaTableSection caseId={caseId} section={section} locked={locked} />;
     case "KEY_VALUE":
+      return <FaKeyValueSection caseId={caseId} section={section} locked={locked} />;
     case "FLEX_TABLE":
+      return <FaFlexTableSection caseId={caseId} section={section} locked={locked} />;
     case "FINANCIAL":
+      return <FaFinancialSection caseId={caseId} section={section} locked={locked} />;
     case "IMAGE":
-      return <FaPendingEditor />;
+      return <FaImageSection caseId={caseId} section={section} locked={locked} />;
     case "COMPUTED":
       return <FaComputedSection caseId={caseId} sectionKey={section.key} taSummary={taSummary} />;
     case "BOUND":
       return <FaBoundSection caseId={caseId} sectionKey={section.key} taSummary={taSummary} />;
   }
-}
-
-function FaPendingEditor() {
-  return <p className="text-sm text-muted-foreground">Éditeur dédié en cours de construction — la section est déjà exportée dans le document Word.</p>;
 }
