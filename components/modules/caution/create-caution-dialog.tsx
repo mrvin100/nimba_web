@@ -5,8 +5,8 @@ import { Plus } from "lucide-react";
 import { ClientPicker } from "@/components/modules/client";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
-import { useCautionDocumentTypes, useCreateCaution } from "./useCaution";
-import type { CautionDocumentType, CautionFieldDefinition } from "./schema";
+import { useCautionDocumentTypes, useCreateCaution, useReferenceSequenceStatus } from "./useCaution";
+import { CAUTION_CURRENCIES, type CautionDocumentType, type CautionFieldDefinition } from "./schema";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -22,11 +22,49 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+
+const DEFAULT_CURRENCY = "GNF";
 
 function fieldInputType(type: CautionFieldDefinition["type"]): string {
   if (type === "DATE") return "date";
   return "text";
+}
+
+/** A field's value as it will be submitted — a CURRENCY field defaults to GNF even if the DCM never touched the select. */
+function valueFor(field: CautionFieldDefinition, values: Record<string, string>): string {
+  if (values[field.key] !== undefined) return values[field.key];
+  return field.type === "CURRENCY" ? DEFAULT_CURRENCY : "";
+}
+
+interface CautionFieldInputProps {
+  field: CautionFieldDefinition;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+/** One field of the dynamic form — a currency picks from a select (GNF by default), everything else is a plain input. */
+function CautionFieldInput({ field, value, onChange }: CautionFieldInputProps) {
+  if (field.type === "CURRENCY") {
+    return (
+      <Select value={value || DEFAULT_CURRENCY} onValueChange={onChange}>
+        <SelectTrigger id={field.key} className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {CAUTION_CURRENCIES.map((currency) => (
+            <SelectItem key={currency} value={currency}>
+              {currency}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+  return (
+    <Input id={field.key} type={fieldInputType(field.type)} value={value} onChange={(event) => onChange(event.target.value)} />
+  );
 }
 
 /**
@@ -41,8 +79,10 @@ export function CreateCautionDialog() {
   const [clientId, setClientId] = useState<string | null>(null);
   const [selectedTypes, setSelectedTypes] = useState<CautionDocumentType[]>([]);
   const [values, setValues] = useState<Record<string, string>>({});
+  const [startingSequence, setStartingSequence] = useState("");
   const [rootError, setRootError] = useState<string | null>(null);
   const { data: documentTypes, isPending: typesPending } = useCautionDocumentTypes();
+  const { data: referenceSequenceStatus } = useReferenceSequenceStatus();
   const createCaution = useCreateCaution();
 
   const selectedDefinitions = useMemo(
@@ -61,7 +101,8 @@ export function CreateCautionDialog() {
     return [...byKey.values()];
   }, [selectedDefinitions]);
 
-  const canSubmit = Boolean(clientId) && selectedTypes.length > 0 && allFields.every((field) => values[field.key]?.trim());
+  const canSubmit = Boolean(clientId) && selectedTypes.length > 0 && allFields.every((field) => valueFor(field, values).trim());
+  const showStartingSequence = referenceSequenceStatus?.initialized === false;
 
   function toggleType(code: CautionDocumentType, checked: boolean) {
     setSelectedTypes((prev) => (checked ? [...prev, code] : prev.filter((type) => type !== code)));
@@ -71,6 +112,7 @@ export function CreateCautionDialog() {
     setClientId(null);
     setSelectedTypes([]);
     setValues({});
+    setStartingSequence("");
     setRootError(null);
   }
 
@@ -78,13 +120,20 @@ export function CreateCautionDialog() {
     if (!clientId || selectedDefinitions.length === 0) return;
     setRootError(null);
     try {
-      for (const dt of selectedDefinitions) {
+      for (const [index, dt] of selectedDefinitions.entries()) {
         const content: Record<string, string> = {};
         [...dt.sharedFields, ...dt.specificFields].forEach((field) => {
-          content[field.key] = values[field.key] ?? "";
+          content[field.key] = valueFor(field, values);
         });
         // Sequential on purpose: each document needs its own reference number, assigned atomically by the backend one at a time.
-        await createCaution.mutateAsync({ clientId, documentType: dt.code, content });
+        // The starting sequence only ever takes effect on the very first caution system-wide, so it's harmless to pass it every time.
+        await createCaution.mutateAsync({
+          clientId,
+          documentType: dt.code,
+          content,
+          startingReferenceSequence:
+            showStartingSequence && index === 0 && startingSequence.trim() ? Number(startingSequence) : undefined,
+        });
       }
       setOpen(false);
       reset();
@@ -140,6 +189,23 @@ export function CreateCautionDialog() {
             </div>
           </Field>
 
+          {showStartingSequence && (
+            <>
+              <Separator />
+              <Field>
+                <FieldLabel htmlFor="starting-reference-sequence">Numéro de départ (première caution)</FieldLabel>
+                <Input
+                  id="starting-reference-sequence"
+                  type="number"
+                  min={1}
+                  placeholder="Pour reprendre la numérotation papier existante"
+                  value={startingSequence}
+                  onChange={(event) => setStartingSequence(event.target.value)}
+                />
+              </Field>
+            </>
+          )}
+
           {sharedFields.length > 0 && (
             <>
               <Separator />
@@ -147,11 +213,10 @@ export function CreateCautionDialog() {
               {sharedFields.map((field) => (
                 <Field key={field.key}>
                   <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
-                  <Input
-                    id={field.key}
-                    type={fieldInputType(field.type)}
-                    value={values[field.key] ?? ""}
-                    onChange={(event) => setValues((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                  <CautionFieldInput
+                    field={field}
+                    value={valueFor(field, values)}
+                    onChange={(value) => setValues((prev) => ({ ...prev, [field.key]: value }))}
                   />
                 </Field>
               ))}
@@ -167,11 +232,10 @@ export function CreateCautionDialog() {
                   {dt.specificFields.map((field) => (
                     <Field key={field.key}>
                       <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
-                      <Input
-                        id={field.key}
-                        type={fieldInputType(field.type)}
-                        value={values[field.key] ?? ""}
-                        onChange={(event) => setValues((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                      <CautionFieldInput
+                        field={field}
+                        value={valueFor(field, values)}
+                        onChange={(value) => setValues((prev) => ({ ...prev, [field.key]: value }))}
                       />
                     </Field>
                   ))}

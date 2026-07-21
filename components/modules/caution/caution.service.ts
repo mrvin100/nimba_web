@@ -8,12 +8,18 @@ import type {
   CautionStatus,
   CautionSummary,
   CreateCautionInput,
+  ReferenceSequenceStatus,
   UpdateCautionInput,
 } from "./schema";
 
 /** The generic document engine's metadata — drives the dynamic creation form, never hardcoded per type. */
 export function listCautionDocumentTypes(): Promise<CautionDocumentTypeInfo[]> {
   return api.get("cautions/document-types").json<CautionDocumentTypeInfo[]>();
+}
+
+/** Whether the create form should still offer a starting-sequence override (only before the very first caution ever created). */
+export function getReferenceSequenceStatus(): Promise<ReferenceSequenceStatus> {
+  return api.get("cautions/reference-sequence-status").json<ReferenceSequenceStatus>();
 }
 
 /** Lists cautions, newest first (paginated); every filter is optional. */

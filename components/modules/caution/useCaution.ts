@@ -9,6 +9,7 @@ import {
   deleteCaution,
   finalizeCaution,
   getCaution,
+  getReferenceSequenceStatus,
   listCautionDocumentTypes,
   listCautions,
   updateCaution,
@@ -33,6 +34,18 @@ export function useCautionDocumentTypes() {
     queryKey: [...cautionKeys.all, "document-types"],
     queryFn: listCautionDocumentTypes,
     staleTime: Infinity,
+  });
+}
+
+/**
+ * Whether the create form should still offer a starting-sequence override —
+ * only relevant before the very first caution ever created, so this is worth
+ * re-checking each time the create dialog opens rather than caching forever.
+ */
+export function useReferenceSequenceStatus() {
+  return useQuery({
+    queryKey: [...cautionKeys.all, "reference-sequence-status"],
+    queryFn: getReferenceSequenceStatus,
   });
 }
 
