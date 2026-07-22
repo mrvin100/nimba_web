@@ -21,6 +21,7 @@ export const QUERY_SCOPES = {
   review: "review",
   client: "client",
   caution: "caution",
+  cautionDossier: "caution-dossier",
 } as const;
 
 export type QueryScope = (typeof QUERY_SCOPES)[keyof typeof QUERY_SCOPES];
