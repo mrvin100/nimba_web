@@ -60,11 +60,12 @@ export function useCautions(page: number, size = 20, filters: CautionListFilters
   });
 }
 
-/** A single caution by id (server state). */
-export function useCaution(id: string) {
+/** A single caution by id (server state). `enabled` lets a dialog defer the fetch until it actually opens. */
+export function useCaution(id: string, enabled = true) {
   return useQuery({
     queryKey: cautionKeys.detail(id),
     queryFn: () => getCaution(id),
+    enabled,
   });
 }
 

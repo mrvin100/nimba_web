@@ -40,7 +40,7 @@ export function ClientPicker({
     <div className="flex items-end gap-2">
       <div className="flex-1 space-y-2">
         <Input
-          placeholder="Rechercher par nom ou matricule…"
+          placeholder="Rechercher par nom ou matricule"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />

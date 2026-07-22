@@ -6,7 +6,8 @@ import { ClientPicker } from "@/components/modules/client";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { useCautionDocumentTypes, useCreateCaution, useReferenceSequenceStatus } from "./useCaution";
-import { CAUTION_CURRENCIES, type CautionDocumentType, type CautionFieldDefinition } from "./schema";
+import type { CautionDocumentType, CautionFieldDefinition } from "./schema";
+import { CautionFieldsGrid, isFieldSatisfied, valueFor } from "./caution-form-fields";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -19,57 +20,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-
-const DEFAULT_CURRENCY = "GNF";
-
-function fieldInputType(type: CautionFieldDefinition["type"]): string {
-  if (type === "DATE") return "date";
-  return "text";
-}
-
-/** A field's value as it will be submitted — a CURRENCY field defaults to GNF even if the DCM never touched the select. */
-function valueFor(field: CautionFieldDefinition, values: Record<string, string>): string {
-  if (values[field.key] !== undefined) return values[field.key];
-  return field.type === "CURRENCY" ? DEFAULT_CURRENCY : "";
-}
-
-interface CautionFieldInputProps {
-  field: CautionFieldDefinition;
-  value: string;
-  onChange: (value: string) => void;
-}
-
-/** One field of the dynamic form — a currency picks from a select (GNF by default), everything else is a plain input. */
-function CautionFieldInput({ field, value, onChange }: CautionFieldInputProps) {
-  if (field.type === "CURRENCY") {
-    return (
-      <Select value={value || DEFAULT_CURRENCY} onValueChange={onChange}>
-        <SelectTrigger id={field.key} className="w-full">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {CAUTION_CURRENCIES.map((currency) => (
-            <SelectItem key={currency} value={currency}>
-              {currency}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    );
-  }
-  return (
-    <Input id={field.key} type={fieldInputType(field.type)} value={value} onChange={(event) => onChange(event.target.value)} />
-  );
-}
 
 /**
  * The generic document engine's create form, built entirely from
- * `GET /cautions/document-types` metadata — never a hardcoded page per type.
+ * `GET /cautions/document-types` metadata, never a hardcoded page per type.
  * Selecting several types merges their fields: shared fields are asked once,
  * a type's specific fields appear only under its own heading. Submitting
  * creates one caution per selected type, each with its own reference number.
@@ -101,8 +58,12 @@ export function CreateCautionDialog() {
     return [...byKey.values()];
   }, [selectedDefinitions]);
 
-  const canSubmit = Boolean(clientId) && selectedTypes.length > 0 && allFields.every((field) => valueFor(field, values).trim());
+  const canSubmit = Boolean(clientId) && selectedTypes.length > 0 && allFields.every((field) => isFieldSatisfied(field, values));
   const showStartingSequence = referenceSequenceStatus?.initialized === false;
+
+  function setValue(key: string, value: string) {
+    setValues((prev) => ({ ...prev, [key]: value }));
+  }
 
   function toggleType(code: CautionDocumentType, checked: boolean) {
     setSelectedTypes((prev) => (checked ? [...prev, code] : prev.filter((type) => type !== code)));
@@ -126,7 +87,7 @@ export function CreateCautionDialog() {
           content[field.key] = valueFor(field, values);
         });
         // Sequential on purpose: each document needs its own reference number, assigned atomically by the backend one at a time.
-        // The starting sequence only ever takes effect on the very first caution system-wide, so it's harmless to pass it every time.
+        // The starting sequence only ever takes effect on the very first caution system-wide, so it is harmless to pass it every time.
         await createCaution.mutateAsync({
           clientId,
           documentType: dt.code,
@@ -156,41 +117,43 @@ export function CreateCautionDialog() {
           Nouveau document
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-h-[90vh] w-[95vw] gap-0 overflow-hidden p-0 sm:max-w-3xl">
+        <DialogHeader className="border-b px-6 py-4">
           <DialogTitle>Nouveau document</DialogTitle>
           <DialogDescription>
-            Choisissez le client et les documents à générer — les champs communs ne sont demandés qu&apos;une fois.
+            Choisissez le client et le ou les documents à générer. Les champs communs ne sont saisis qu&apos;une seule fois.
           </DialogDescription>
         </DialogHeader>
 
-        <FieldGroup>
-          <Field>
-            <FieldLabel>Client</FieldLabel>
-            <ClientPicker value={clientId} onChange={setClientId} />
-          </Field>
+        <div className="max-h-[65vh] space-y-6 overflow-y-auto px-6 py-5">
+          <div className="space-y-4">
+            <Field className="w-full">
+              <FieldLabel>Client</FieldLabel>
+              <ClientPicker value={clientId} onChange={setClientId} />
+            </Field>
 
-          <Field>
-            <FieldLabel>Documents à générer</FieldLabel>
-            <div className="space-y-2">
-              {typesPending && <p className="text-sm text-muted-foreground">Chargement…</p>}
-              {documentTypes?.map((dt) => (
-                <div key={dt.code} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`type-${dt.code}`}
-                    checked={selectedTypes.includes(dt.code)}
-                    onCheckedChange={(checked) => toggleType(dt.code, checked === true)}
-                  />
-                  <Label htmlFor={`type-${dt.code}`} className="font-normal">
-                    {dt.label} ({dt.code})
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </Field>
+            <Field className="w-full">
+              <FieldLabel>Documents à générer</FieldLabel>
+              <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
+                {typesPending && <p className="text-sm text-muted-foreground">Chargement des types de documents</p>}
+                {documentTypes?.map((dt) => (
+                  <label key={dt.code} htmlFor={`type-${dt.code}`} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      id={`type-${dt.code}`}
+                      checked={selectedTypes.includes(dt.code)}
+                      onCheckedChange={(checked) => toggleType(dt.code, checked === true)}
+                    />
+                    <span className="font-normal">
+                      {dt.label} ({dt.code})
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </Field>
+          </div>
 
           {showStartingSequence && (
-            <>
+            <div className="space-y-3">
               <Separator />
               <Field>
                 <FieldLabel htmlFor="starting-reference-sequence">Numéro de départ (première caution)</FieldLabel>
@@ -203,24 +166,15 @@ export function CreateCautionDialog() {
                   onChange={(event) => setStartingSequence(event.target.value)}
                 />
               </Field>
-            </>
+            </div>
           )}
 
           {sharedFields.length > 0 && (
-            <>
+            <div className="space-y-4">
               <Separator />
-              <p className="text-sm font-medium">Champs communs</p>
-              {sharedFields.map((field) => (
-                <Field key={field.key}>
-                  <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
-                  <CautionFieldInput
-                    field={field}
-                    value={valueFor(field, values)}
-                    onChange={(value) => setValues((prev) => ({ ...prev, [field.key]: value }))}
-                  />
-                </Field>
-              ))}
-            </>
+              <p className="text-sm font-semibold text-foreground">Champs communs</p>
+              <CautionFieldsGrid fields={sharedFields} values={values} onChange={setValue} />
+            </div>
           )}
 
           {selectedDefinitions.map(
@@ -228,17 +182,8 @@ export function CreateCautionDialog() {
               dt.specificFields.length > 0 && (
                 <div key={dt.code} className="space-y-4">
                   <Separator />
-                  <p className="text-sm font-medium">Spécifique {dt.label}</p>
-                  {dt.specificFields.map((field) => (
-                    <Field key={field.key}>
-                      <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
-                      <CautionFieldInput
-                        field={field}
-                        value={valueFor(field, values)}
-                        onChange={(value) => setValues((prev) => ({ ...prev, [field.key]: value }))}
-                      />
-                    </Field>
-                  ))}
+                  <p className="text-sm font-semibold text-foreground">Champs spécifiques : {dt.label}</p>
+                  <CautionFieldsGrid fields={dt.specificFields} values={values} onChange={setValue} />
                 </div>
               ),
           )}
@@ -248,9 +193,9 @@ export function CreateCautionDialog() {
               <FieldError errors={[{ message: rootError }]} />
             </Field>
           )}
-        </FieldGroup>
+        </div>
 
-        <DialogFooter className="mt-6">
+        <DialogFooter className="border-t px-6 py-4">
           <DialogClose asChild>
             <Button type="button" variant="outline">
               Annuler
@@ -259,7 +204,7 @@ export function CreateCautionDialog() {
           <SubmitButton
             formState={{ isSubmitting: createCaution.isPending }}
             disabled={!canSubmit}
-            pendingLabel="Création…"
+            pendingLabel="Création en cours"
             onClick={handleSubmit}
           >
             Créer{selectedTypes.length > 1 ? ` (${selectedTypes.length})` : ""}

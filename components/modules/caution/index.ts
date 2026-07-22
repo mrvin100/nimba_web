@@ -1,6 +1,7 @@
 export { CautionList } from "./caution-list";
 export { CautionsView } from "./cautions-view";
 export { CreateCautionDialog } from "./create-caution-dialog";
+export { EditCautionDialog } from "./edit-caution-dialog";
 export { CautionStatusBadge } from "./caution-status-badge";
 export { CautionDocumentTypeBadge } from "./caution-document-type-badge";
 export {

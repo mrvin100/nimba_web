@@ -28,7 +28,16 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
   const createClient = useCreateClient();
   const form = useForm<CreateClientFormInput>({
     resolver: zodResolver(createClientSchema),
-    defaultValues: { matricule: "", raisonSociale: "", sigle: "", rccm: "", accountNumber: "", agence: "", principalDirigeant: "" },
+    defaultValues: {
+      matricule: "",
+      raisonSociale: "",
+      sigle: "",
+      adressePhysique: "",
+      rccm: "",
+      accountNumber: "",
+      agence: "",
+      principalDirigeant: "",
+    },
   });
 
   function onSubmit(values: CreateClientFormInput) {
@@ -53,7 +62,7 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Nouveau client</DialogTitle>
-          <DialogDescription>Le matricule est le code interne de la banque — il ne pourra plus être modifié ensuite.</DialogDescription>
+          <DialogDescription>Le matricule est le code interne de la banque. Il ne pourra plus être modifié ensuite.</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <FieldGroup>
@@ -85,6 +94,17 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Sigle (optionnel)</FieldLabel>
+                  <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="adressePhysique"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Siège social (adresse)</FieldLabel>
                   <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -149,7 +169,7 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
                 Annuler
               </Button>
             </DialogClose>
-            <SubmitButton formState={{ isSubmitting: createClient.isPending }} pendingLabel="Création…">
+            <SubmitButton formState={{ isSubmitting: createClient.isPending }} pendingLabel="Création en cours">
               Créer le client
             </SubmitButton>
           </DialogFooter>
