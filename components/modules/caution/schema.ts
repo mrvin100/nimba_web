@@ -94,6 +94,8 @@ export interface CautionDossier {
   clientId: string;
   referenceNumber: string;
   status: DossierStatus;
+  /** Bumped on each amendment; the companion documents are re-issued carrying this version. */
+  version: number;
   content: Record<string, string>;
   createdAt: string;
   updatedAt: string;

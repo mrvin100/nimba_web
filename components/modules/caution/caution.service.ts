@@ -91,6 +91,11 @@ export function updateDossier(id: string, input: UpdateDossierInput): Promise<Ca
   return api.put(`caution-dossiers/${id}`, { json: input }).json<CautionDossier>();
 }
 
+/** Closes a dossier once its request is fully served (manager-only). */
+export function closeDossier(id: string): Promise<CautionDossier> {
+  return api.post(`caution-dossiers/${id}/close`).json<CautionDossier>();
+}
+
 /** Same-origin URL of the dossier's Notification de caution (.docx). */
 export function dossierNotificationPath(id: string): string {
   return `${env.apiBasePath}/caution-dossiers/${id}/notification/docx`;

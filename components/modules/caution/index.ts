@@ -20,6 +20,7 @@ export {
   useDossier,
   useCreateDossier,
   useUpdateDossier,
+  useCloseDossier,
   dossierKeys,
 } from "./useCaution";
 export { cautionDocxExportPath, dossierNotificationPath, dossierFichePath } from "./caution.service";

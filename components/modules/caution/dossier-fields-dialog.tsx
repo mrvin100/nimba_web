@@ -22,6 +22,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const NO_ANSWER = "__none__";
 
+/** Section 6 condition rows, in the order the Fiche renderer expects (row index 0..3). */
+const CONDITION_LABELS = ["Com. d'engagement", "Frais de caution", "Frais de délivrance", "Frais d'attestation"];
+
 interface DossierFieldsDialogProps {
   dossierId: string;
   content: Record<string, string>;
@@ -85,6 +88,11 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
+  const lots = (values.lots ?? "")
+    .split(",")
+    .map((lot) => lot.trim())
+    .filter((lot) => lot.length > 0);
+
   async function handleSubmit() {
     setRootError(null);
     try {
@@ -117,6 +125,36 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
               </div>
             </div>
           ))}
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-foreground">Fiche : conditions par lot</p>
+            {lots.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Renseignez d&apos;abord les lots (section « Contexte du marché ») pour saisir les montants par lot.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {CONDITION_LABELS.map((label, row) => (
+                  <div key={label} className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      {lots.map((lot, col) => (
+                        <Field key={`${row}-${col}`}>
+                          <FieldLabel htmlFor={`cond_${row}_${col}`}>{lot}</FieldLabel>
+                          <Input
+                            id={`cond_${row}_${col}`}
+                            inputMode="numeric"
+                            value={values[`cond_${row}_${col}`] ?? ""}
+                            onChange={(e) => setValue(`cond_${row}_${col}`, e.target.value)}
+                          />
+                        </Field>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {rootError && (
             <Field data-invalid>
               <FieldError errors={[{ message: rootError }]} />

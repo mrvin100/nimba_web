@@ -3,17 +3,28 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Download, FileText, Pencil, ScrollText } from "lucide-react";
+import { ArrowLeft, CircleCheck, Download, FileText, Pencil, ScrollText } from "lucide-react";
 import { useClients } from "@/components/modules/client";
+import { useSession } from "@/components/modules/identity";
 import { ROUTES } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
-import { dossierKeys, useDossier } from "./useCaution";
+import { dossierKeys, useCloseDossier, useDossier } from "./useCaution";
 import { CreateCautionDialog } from "./create-caution-dialog";
 import { DossierFieldsDialog } from "./dossier-fields-dialog";
 import { CautionDocumentTypeBadge } from "./caution-document-type-badge";
 import { CautionStatusBadge } from "./caution-status-badge";
 import { cautionDocxExportPath, dossierFichePath, dossierNotificationPath } from "./caution.service";
 import { DOSSIER_STATUS_LABELS } from "./schema";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,7 +36,10 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
   const [editOpen, setEditOpen] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
   const queryClient = useQueryClient();
+  const session = useSession();
+  const closeDossier = useCloseDossier(dossierId);
   const { data, isPending, isError } = useDossier(dossierId);
   const { data: clients } = useClients(0, 200);
 
@@ -69,6 +83,8 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
   }
 
   const { dossier, documents } = data;
+  const isOpen = dossier.status === "OPEN";
+  const canClose = isOpen && session.isManager("DCM");
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8">
@@ -78,15 +94,23 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
         <div className="space-y-1">
           <h1 className="text-xl font-semibold">{dossier.referenceNumber}</h1>
           <p className="text-sm text-muted-foreground">
-            {clientName.get(dossier.clientId) ?? "Client"} · créé le {formatDate(dossier.createdAt)}
+            {clientName.get(dossier.clientId) ?? "Client"} · version {dossier.version} · créé le {formatDate(dossier.createdAt)}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant={dossier.status === "OPEN" ? "default" : "secondary"}>{DOSSIER_STATUS_LABELS[dossier.status]}</Badge>
-          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-            <Pencil />
-            Informations du dossier
-          </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={isOpen ? "default" : "secondary"}>{DOSSIER_STATUS_LABELS[dossier.status]}</Badge>
+          {isOpen && (
+            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+              <Pencil />
+              Informations du dossier
+            </Button>
+          )}
+          {canClose && (
+            <Button variant="outline" size="sm" onClick={() => setConfirmClose(true)}>
+              <CircleCheck />
+              Clôturer
+            </Button>
+          )}
         </div>
       </div>
 
@@ -112,12 +136,14 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
       <section className="space-y-3 rounded-md border p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold">Documents du dossier</h2>
-          <CreateCautionDialog
-            presetClientId={dossier.clientId}
-            dossierId={dossier.id}
-            triggerLabel="Ajouter un document"
-            onCreated={refreshDossier}
-          />
+          {isOpen && (
+            <CreateCautionDialog
+              presetClientId={dossier.clientId}
+              dossierId={dossier.id}
+              triggerLabel="Ajouter un document"
+              onCreated={refreshDossier}
+            />
+          )}
         </div>
         {documents.length === 0 ? (
           <p className="text-sm text-muted-foreground">Aucun document attaché pour le moment.</p>
@@ -147,6 +173,21 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
       </section>
 
       <DossierFieldsDialog dossierId={dossier.id} content={dossier.content} open={editOpen} onOpenChange={setEditOpen} />
+
+      <AlertDialog open={confirmClose} onOpenChange={setConfirmClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clôturer le dossier {dossier.referenceNumber} ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Le dossier sera marqué comme clôturé et ne pourra plus être modifié ni recevoir de nouveaux documents.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={() => closeDossier.mutate()}>Clôturer</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

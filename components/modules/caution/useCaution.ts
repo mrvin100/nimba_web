@@ -5,6 +5,7 @@ import { useApiMutation } from "@/lib/mutation";
 import { queryKeys } from "@/lib/query-keys";
 import { usePagedQuery } from "@/lib/use-paged-query";
 import {
+  closeDossier,
   createCaution,
   createDossier,
   deleteCaution,
@@ -161,6 +162,20 @@ export function useUpdateDossier(id: string) {
     mutationFn: (input: UpdateDossierInput) => updateDossier(id, input),
     invalidate: [dossierKeys.lists()],
     successToast: "Dossier mis à jour",
+    errorToast: true,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dossierKeys.detail(id) });
+    },
+  });
+}
+
+/** Closes a dossier (manager-only); refreshes its detail and the list. */
+export function useCloseDossier(id: string) {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: () => closeDossier(id),
+    invalidate: [dossierKeys.lists()],
+    successToast: "Dossier clôturé",
     errorToast: true,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: dossierKeys.detail(id) });
