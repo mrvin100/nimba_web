@@ -81,12 +81,36 @@ export interface CreateCautionInput {
   dossierId?: string;
 }
 
-export type DossierStatus = "OPEN" | "CLOSED";
+export type DossierStatus = "BROUILLON" | "FINALISE" | "EN_PROROGATION";
 
 export const DOSSIER_STATUS_LABELS: Record<DossierStatus, string> = {
-  OPEN: "Ouvert",
-  CLOSED: "Clôturé",
+  BROUILLON: "Brouillon",
+  FINALISE: "Finalisé",
+  EN_PROROGATION: "En prorogation",
 };
+
+export type DossierActionKind = "FINALIZE" | "PROROGE" | "REFINALIZE";
+
+/** One entry of a dossier's lifecycle journal. */
+export interface DossierEvent {
+  id: string;
+  action: DossierActionKind;
+  fromStatus: DossierStatus;
+  toStatus: DossierStatus;
+  reason: string | null;
+  actor: string;
+  createdAt: string;
+}
+
+/** One entry of a document's edit history. */
+export interface DocumentVersion {
+  id: string;
+  contentBefore: Record<string, string>;
+  contentAfter: Record<string, string>;
+  reason: string | null;
+  actor: string;
+  createdAt: string;
+}
 
 /** A dossier de caution de soumission: one client request grouping its documents and companions. */
 export interface CautionDossier {
@@ -119,6 +143,8 @@ export interface UpdateDossierInput {
 
 export interface UpdateCautionInput {
   content: Record<string, string>;
+  /** Journaled in the document's history (used notably during a prorogation). */
+  reason?: string;
 }
 
 /** Whether the create form should still offer a starting-sequence override (only before the very first caution ever created). */
