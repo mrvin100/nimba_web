@@ -56,11 +56,6 @@ export function updateCaution(id: string, input: UpdateCautionInput): Promise<Ca
   return api.put(`cautions/${id}`, { json: input }).json<Caution>();
 }
 
-/** Locks the caution, freezing the issuing client's identity. */
-export function finalizeCaution(id: string): Promise<Caution> {
-  return api.post(`cautions/${id}/finalize`).json<Caution>();
-}
-
 /** Deletes a document (refused when its dossier is locked). */
 export async function deleteCaution(id: string): Promise<void> {
   await api.delete(`cautions/${id}`);

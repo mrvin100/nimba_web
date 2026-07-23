@@ -10,7 +10,6 @@ import {
   deleteCaution,
   documentHistory,
   dossierEvents,
-  finalizeCaution,
   finalizeDossier,
   getCaution,
   getDossier,
@@ -96,20 +95,6 @@ export function useUpdateCaution(id: string) {
     mutationFn: (input: UpdateCautionInput) => updateCaution(id, input),
     invalidate: [cautionKeys.lists(), dossierKeys.all],
     successToast: "Document mis à jour",
-    errorToast: true,
-    onSuccess: (data) => {
-      queryClient.setQueryData(cautionKeys.detail(id), data);
-    },
-  });
-}
-
-/** Locks the caution; refreshes its detail and the list. */
-export function useFinalizeCaution(id: string) {
-  const queryClient = useQueryClient();
-  return useApiMutation({
-    mutationFn: () => finalizeCaution(id),
-    invalidate: [cautionKeys.lists()],
-    successToast: "Caution finalisée",
     errorToast: true,
     onSuccess: (data) => {
       queryClient.setQueryData(cautionKeys.detail(id), data);
