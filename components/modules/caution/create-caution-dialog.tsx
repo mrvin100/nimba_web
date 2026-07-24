@@ -31,9 +31,17 @@ import { Separator } from "@/components/ui/separator";
  * a type's specific fields appear only under its own heading. Submitting
  * creates one caution per selected type, each with its own reference number.
  */
-export function CreateCautionDialog() {
+interface CreateCautionDialogProps {
+  /** When set, the dialog is scoped to this client (the picker is hidden) and every document is attached to [dossierId]. */
+  presetClientId?: string;
+  dossierId?: string;
+  triggerLabel?: string;
+  onCreated?: () => void;
+}
+
+export function CreateCautionDialog({ presetClientId, dossierId, triggerLabel, onCreated }: CreateCautionDialogProps = {}) {
   const [open, setOpen] = useState(false);
-  const [clientId, setClientId] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(presetClientId ?? null);
   const [selectedTypes, setSelectedTypes] = useState<CautionDocumentType[]>([]);
   const [values, setValues] = useState<Record<string, string>>({});
   const [startingSequence, setStartingSequence] = useState("");
@@ -70,7 +78,7 @@ export function CreateCautionDialog() {
   }
 
   function reset() {
-    setClientId(null);
+    setClientId(presetClientId ?? null);
     setSelectedTypes([]);
     setValues({});
     setStartingSequence("");
@@ -92,12 +100,14 @@ export function CreateCautionDialog() {
           clientId,
           documentType: dt.code,
           content,
+          dossierId,
           startingReferenceSequence:
             showStartingSequence && index === 0 && startingSequence.trim() ? Number(startingSequence) : undefined,
         });
       }
       setOpen(false);
       reset();
+      onCreated?.();
     } catch (error) {
       setRootError(getErrorMessage(error));
     }
@@ -112,9 +122,9 @@ export function CreateCautionDialog() {
       }}
     >
       <DialogTrigger asChild>
-        <Button>
+        <Button variant={presetClientId ? "outline" : "default"}>
           <Plus />
-          Nouveau document
+          {triggerLabel ?? "Nouveau document"}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] w-[95vw] gap-0 overflow-hidden p-0 sm:max-w-3xl">
@@ -127,10 +137,12 @@ export function CreateCautionDialog() {
 
         <div className="max-h-[65vh] space-y-6 overflow-y-auto px-6 py-5">
           <div className="space-y-4">
-            <Field className="w-full">
-              <FieldLabel>Client</FieldLabel>
-              <ClientPicker value={clientId} onChange={setClientId} />
-            </Field>
+            {!presetClientId && (
+              <Field className="w-full">
+                <FieldLabel>Client</FieldLabel>
+                <ClientPicker value={clientId} onChange={setClientId} />
+              </Field>
+            )}
 
             <Field className="w-full">
               <FieldLabel>Documents à générer</FieldLabel>

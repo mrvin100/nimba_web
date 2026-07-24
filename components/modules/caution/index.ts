@@ -4,6 +4,9 @@ export { CreateCautionDialog } from "./create-caution-dialog";
 export { EditCautionDialog } from "./edit-caution-dialog";
 export { CautionStatusBadge } from "./caution-status-badge";
 export { CautionDocumentTypeBadge } from "./caution-document-type-badge";
+export { CautionDossiersView } from "./caution-dossiers-view";
+export { CautionDossierDetailView } from "./caution-dossier-detail";
+export { CreateDossierDialog } from "./create-dossier-dialog";
 export {
   useCautions,
   useCaution,
@@ -13,11 +16,18 @@ export {
   useFinalizeCaution,
   useDeleteCaution,
   cautionKeys,
+  useDossiers,
+  useDossier,
+  useCreateDossier,
+  useUpdateDossier,
+  useCloseDossier,
+  dossierKeys,
 } from "./useCaution";
-export { cautionDocxExportPath } from "./caution.service";
+export { cautionDocxExportPath, dossierNotificationPath, dossierFichePath } from "./caution.service";
 export {
   CAUTION_DOCUMENT_TYPES,
   CAUTION_STATUS_LABELS,
+  DOSSIER_STATUS_LABELS,
 } from "./schema";
 export type {
   Caution,
@@ -29,4 +39,9 @@ export type {
   CautionFieldType,
   CreateCautionInput,
   UpdateCautionInput,
+  CautionDossier,
+  CautionDossierDetail,
+  DossierStatus,
+  CreateDossierInput,
+  UpdateDossierInput,
 } from "./schema";

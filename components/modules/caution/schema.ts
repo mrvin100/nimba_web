@@ -77,6 +77,44 @@ export interface CreateCautionInput {
   content: Record<string, string>;
   /** Only takes effect for the very first caution ever created — see the create dialog's KDoc. */
   startingReferenceSequence?: number;
+  /** The dossier this document belongs to, or omitted when created standalone. */
+  dossierId?: string;
+}
+
+export type DossierStatus = "OPEN" | "CLOSED";
+
+export const DOSSIER_STATUS_LABELS: Record<DossierStatus, string> = {
+  OPEN: "Ouvert",
+  CLOSED: "Clôturé",
+};
+
+/** A dossier de caution de soumission: one client request grouping its documents and companions. */
+export interface CautionDossier {
+  id: string;
+  clientId: string;
+  referenceNumber: string;
+  status: DossierStatus;
+  /** Bumped on each amendment; the companion documents are re-issued carrying this version. */
+  version: number;
+  content: Record<string, string>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** A dossier together with the documents attached to it. */
+export interface CautionDossierDetail {
+  dossier: CautionDossier;
+  documents: Caution[];
+}
+
+export interface CreateDossierInput {
+  clientId: string;
+  content: Record<string, string>;
+  startingReferenceSequence?: number;
+}
+
+export interface UpdateDossierInput {
+  content: Record<string, string>;
 }
 
 export interface UpdateCautionInput {

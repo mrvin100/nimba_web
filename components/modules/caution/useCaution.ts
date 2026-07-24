@@ -5,16 +5,21 @@ import { useApiMutation } from "@/lib/mutation";
 import { queryKeys } from "@/lib/query-keys";
 import { usePagedQuery } from "@/lib/use-paged-query";
 import {
+  closeDossier,
   createCaution,
+  createDossier,
   deleteCaution,
   finalizeCaution,
   getCaution,
+  getDossier,
   getReferenceSequenceStatus,
   listCautionDocumentTypes,
   listCautions,
+  listDossiers,
   updateCaution,
+  updateDossier,
 } from "./caution.service";
-import type { CautionDocumentType, CautionStatus, UpdateCautionInput } from "./schema";
+import type { CautionDocumentType, CautionStatus, UpdateCautionInput, UpdateDossierInput } from "./schema";
 
 interface CautionListFilters {
   clientId?: string;
@@ -114,5 +119,66 @@ export function useDeleteCaution() {
     invalidate: [cautionKeys.all],
     successToast: "Caution supprimée",
     errorToast: true,
+  });
+}
+
+// ---- Dossiers ----------------------------------------------------------------
+
+export const dossierKeys = queryKeys<{ clientId?: string }>("caution-dossier");
+
+/** Paginated list of dossiers (server state). */
+export function useDossiers(page: number, size = 20) {
+  return usePagedQuery({
+    keys: dossierKeys,
+    page,
+    size,
+    filters: {},
+    fetch: (p, s) => listDossiers(p, s),
+  });
+}
+
+/** A single dossier with its documents (server state). */
+export function useDossier(id: string) {
+  return useQuery({
+    queryKey: dossierKeys.detail(id),
+    queryFn: () => getDossier(id),
+  });
+}
+
+/** Opens a dossier; refreshes the list and confirms with its reference number. */
+export function useCreateDossier() {
+  return useApiMutation({
+    mutationFn: createDossier,
+    invalidate: [dossierKeys.all],
+    successToast: (created) => `Dossier ${created.referenceNumber} créé`,
+    errorToast: true,
+  });
+}
+
+/** Replaces a dossier's shared content; refreshes its detail and the list. */
+export function useUpdateDossier(id: string) {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: (input: UpdateDossierInput) => updateDossier(id, input),
+    invalidate: [dossierKeys.lists()],
+    successToast: "Dossier mis à jour",
+    errorToast: true,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dossierKeys.detail(id) });
+    },
+  });
+}
+
+/** Closes a dossier (manager-only); refreshes its detail and the list. */
+export function useCloseDossier(id: string) {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: () => closeDossier(id),
+    invalidate: [dossierKeys.lists()],
+    successToast: "Dossier clôturé",
+    errorToast: true,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dossierKeys.detail(id) });
+    },
   });
 }

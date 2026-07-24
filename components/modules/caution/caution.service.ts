@@ -5,11 +5,15 @@ import type {
   Caution,
   CautionDocumentType,
   CautionDocumentTypeInfo,
+  CautionDossier,
+  CautionDossierDetail,
   CautionStatus,
   CautionSummary,
   CreateCautionInput,
+  CreateDossierInput,
   ReferenceSequenceStatus,
   UpdateCautionInput,
+  UpdateDossierInput,
 } from "./schema";
 
 /** The generic document engine's metadata — drives the dynamic creation form, never hardcoded per type. */
@@ -63,4 +67,41 @@ export async function deleteCaution(id: string): Promise<void> {
 /** Same-origin URL of the Word (.docx) export of a finalized caution. */
 export function cautionDocxExportPath(id: string): string {
   return `${env.apiBasePath}/cautions/${id}/export/docx`;
+}
+
+/** Lists caution dossiers, newest first (paginated); the client filter is optional. */
+export function listDossiers(page = 0, size = 20, clientId?: string): Promise<PagedResponse<CautionDossier>> {
+  const searchParams: Record<string, string | number> = { page, size };
+  if (clientId) searchParams.clientId = clientId;
+  return api.get("caution-dossiers", { searchParams }).json<PagedResponse<CautionDossier>>();
+}
+
+/** A dossier together with the documents attached to it. */
+export function getDossier(id: string): Promise<CautionDossierDetail> {
+  return api.get(`caution-dossiers/${id}`).json<CautionDossierDetail>();
+}
+
+/** Opens a dossier; its reference number is assigned immediately. */
+export function createDossier(input: CreateDossierInput): Promise<CautionDossier> {
+  return api.post("caution-dossiers", { json: input }).json<CautionDossier>();
+}
+
+/** Replaces a dossier's shared content (the fields its documents and companions reuse). */
+export function updateDossier(id: string, input: UpdateDossierInput): Promise<CautionDossier> {
+  return api.put(`caution-dossiers/${id}`, { json: input }).json<CautionDossier>();
+}
+
+/** Closes a dossier once its request is fully served (manager-only). */
+export function closeDossier(id: string): Promise<CautionDossier> {
+  return api.post(`caution-dossiers/${id}/close`).json<CautionDossier>();
+}
+
+/** Same-origin URL of the dossier's Notification de caution (.docx). */
+export function dossierNotificationPath(id: string): string {
+  return `${env.apiBasePath}/caution-dossiers/${id}/notification/docx`;
+}
+
+/** Same-origin URL of the dossier's Fiche d'approbation (.docx). */
+export function dossierFichePath(id: string): string {
+  return `${env.apiBasePath}/caution-dossiers/${id}/fiche/docx`;
 }
