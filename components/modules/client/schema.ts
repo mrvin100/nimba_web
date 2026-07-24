@@ -84,3 +84,37 @@ export const createClientSchema = z.object({
 });
 
 export type CreateClientFormInput = z.infer<typeof createClientSchema>;
+
+// A blank date input must be sent as "absent", never "" (the backend's LocalDate
+// parser rejects an empty string) — same treatment as the create form.
+const optionalClientDate = z
+  .string()
+  .optional()
+  .transform((value) => value || undefined);
+
+/**
+ * Full client edit schema — every descriptive field the backend accepts on
+ * PUT /clients/{id} (matricule excluded, it is immutable). Backs the client-file
+ * edit screen; the create dialog keeps its lighter subset.
+ */
+export const updateClientSchema = z.object({
+  raisonSociale: z.string().min(1, "Raison sociale requise").max(200, "200 caractères maximum"),
+  sigle: z.string().max(100, "100 caractères maximum").optional(),
+  formeJuridique: z.string().max(100, "100 caractères maximum").optional(),
+  dateCreation: optionalClientDate,
+  adressePhysique: z.string().max(300, "300 caractères maximum").optional(),
+  activiteDeBase: z.string().max(300, "300 caractères maximum").optional(),
+  codeNif: z.string().max(50, "50 caractères maximum").optional(),
+  rccm: z.string().max(50, "50 caractères maximum").optional(),
+  accountNumber: z.string().max(50, "50 caractères maximum").optional(),
+  principalDirigeant: z.string().max(200, "200 caractères maximum").optional(),
+  dateEntreeRelation: optionalClientDate,
+  dateDerniereVisite: optionalClientDate,
+  agence: z.string().max(100, "100 caractères maximum").optional(),
+  gestionnaire: z.string().max(200, "200 caractères maximum").optional(),
+  analyste: z.string().max(200, "200 caractères maximum").optional(),
+  cotationPrecedente: z.string().max(20, "20 caractères maximum").optional(),
+  cotationActuelle: z.string().max(20, "20 caractères maximum").optional(),
+});
+
+export type UpdateClientFormInput = z.infer<typeof updateClientSchema>;

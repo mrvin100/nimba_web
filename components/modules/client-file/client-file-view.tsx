@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useClientDossiers, DOSSIER_STATUS_LABELS } from "@/components/modules/caution";
-import { useClient } from "@/components/modules/client";
+import { EditClientDialog, useClient } from "@/components/modules/client";
 import { useClientCreditCases } from "@/components/modules/credit-case";
 import { caseDetailPath, ROUTES } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
@@ -40,8 +40,13 @@ export function ClientFileView({ clientId, workspaceBase }: Readonly<{ clientId:
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{client.raisonSociale}</CardTitle>
-          <CardDescription>{client.matricule ? `Matricule ${client.matricule}` : "Matricule non renseigné"}</CardDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1.5">
+              <CardTitle>{client.raisonSociale}</CardTitle>
+              <CardDescription>{client.matricule ? `Matricule ${client.matricule}` : "Matricule non renseigné"}</CardDescription>
+            </div>
+            <EditClientDialog client={client} />
+          </div>
         </CardHeader>
         <CardContent>
           <Row label="Forme juridique">{client.formeJuridique ?? "—"}</Row>
