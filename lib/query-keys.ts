@@ -19,6 +19,8 @@ export const QUERY_SCOPES = {
   pv: "pv",
   fmp: "fmp",
   review: "review",
+  client: "client",
+  caution: "caution",
 } as const;
 
 export type QueryScope = (typeof QUERY_SCOPES)[keyof typeof QUERY_SCOPES];

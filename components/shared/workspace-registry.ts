@@ -1,4 +1,14 @@
-import { Building2, ClipboardList, FileText, FolderOpen, LayoutDashboard, ScrollText, Users, type LucideIcon } from "lucide-react";
+import {
+  Building2,
+  ClipboardList,
+  FileStack,
+  FileText,
+  FolderOpen,
+  LayoutDashboard,
+  ScrollText,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { DEPARTMENT_LABELS, hasDepartment, isAdmin, type Department, type MeResponse } from "@/components/modules/identity";
 
@@ -112,6 +122,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
         icon: FolderOpen,
         subItems: dossierSubItems(/^\/dcm\/dossiers\/[^/]+/),
       },
+      { label: "Cautions", href: `${ROUTES.DCM}/cautions`, icon: FileStack },
       { label: "Membres", href: `${ROUTES.DCM}/equipe`, icon: Users, managerOnly: true },
     ],
   },
