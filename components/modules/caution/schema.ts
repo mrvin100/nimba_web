@@ -9,13 +9,21 @@ export const CAUTION_STATUS_LABELS: Record<CautionStatus, string> = {
   FINAL: "Finalisée",
 };
 
-export type CautionFieldType = "TEXT" | "DATE" | "AMOUNT";
+export type CautionFieldType = "TEXT" | "DATE" | "AMOUNT" | "CURRENCY" | "CIVILITY";
+
+export const CAUTION_CURRENCIES = ["GNF", "USD", "EUR"] as const;
+export type CautionCurrency = (typeof CAUTION_CURRENCIES)[number];
+
+/** Signatory civility options; the empty value means "omit from the document". */
+export const CAUTION_CIVILITIES = ["Monsieur", "Madame"] as const;
 
 /** One field of a document type's form — the frontend's dynamic form is built entirely from this list, never hardcoded per type. */
 export interface CautionFieldDefinition {
   key: string;
   label: string;
   type: CautionFieldType;
+  /** Optional fields (e.g. a signatory's civility) may be left blank and are not required to create or finalize. */
+  optional: boolean;
 }
 
 /** The generic document engine's metadata, as returned by GET /cautions/document-types. */
@@ -67,8 +75,15 @@ export interface CreateCautionInput {
   clientId: string;
   documentType: CautionDocumentType;
   content: Record<string, string>;
+  /** Only takes effect for the very first caution ever created — see the create dialog's KDoc. */
+  startingReferenceSequence?: number;
 }
 
 export interface UpdateCautionInput {
   content: Record<string, string>;
+}
+
+/** Whether the create form should still offer a starting-sequence override (only before the very first caution ever created). */
+export interface ReferenceSequenceStatus {
+  initialized: boolean;
 }

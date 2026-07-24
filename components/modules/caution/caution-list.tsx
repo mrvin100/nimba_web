@@ -49,7 +49,7 @@ export function CautionList() {
         data={data.content}
         emptyMessage="Aucune caution."
         searchable
-        searchPlaceholder="Rechercher une caution…"
+        searchPlaceholder="Rechercher une caution"
       />
       <Pager
         hasPrevious={data.hasPrevious}

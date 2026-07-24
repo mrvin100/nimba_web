@@ -66,6 +66,7 @@ export const createClientSchema = z.object({
   matricule: z.string().min(1, "Matricule requis").max(50, "50 caractères maximum"),
   raisonSociale: z.string().min(1, "Raison sociale requise").max(200, "200 caractères maximum"),
   sigle: z.string().max(100, "100 caractères maximum").optional(),
+  adressePhysique: z.string().max(300, "300 caractères maximum").optional(),
   rccm: z.string().max(50, "50 caractères maximum").optional(),
   accountNumber: z.string().max(50, "50 caractères maximum").optional(),
   agence: z.string().max(100, "100 caractères maximum").optional(),
