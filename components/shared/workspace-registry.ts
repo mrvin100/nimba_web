@@ -101,6 +101,8 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
           return [...items, { label: "Paramètres", href: `${match?.[0]}?tab=parametres` }];
         },
       },
+      { label: "Registres", href: `${ROUTES.DRI}/registres`, icon: Layers },
+      { label: "Clients", href: `${ROUTES.DRI}/clients`, icon: Building2 },
       { label: "Membres", href: `${ROUTES.DRI}/equipe`, icon: Users, managerOnly: true },
     ],
   },
@@ -125,6 +127,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
       },
       { label: "Cautions", href: `${ROUTES.DCM}/cautions`, icon: FileStack },
       { label: "Dossiers de caution", href: `${ROUTES.DCM}/caution-dossiers`, icon: Layers },
+      { label: "Clients", href: `${ROUTES.DCM}/clients`, icon: Building2 },
       { label: "Membres", href: `${ROUTES.DCM}/equipe`, icon: Users, managerOnly: true },
     ],
   },

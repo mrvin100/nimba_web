@@ -30,7 +30,7 @@ export function CreateCaseDialog() {
   const createCase = useCreateCreditCase();
   const form = useForm<CaseFormInput>({
     resolver: zodResolver(caseFormSchema),
-    defaultValues: { clientName: "", productType: "LEASING", contractType: "AVEC_CONTRAT", currency: "GNF", accountNumber: "" },
+    defaultValues: { clientId: "", productType: "LEASING", contractType: "AVEC_CONTRAT", currency: "GNF", accountNumber: "" },
   });
 
   function onSubmit(values: CaseFormInput) {

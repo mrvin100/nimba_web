@@ -32,10 +32,9 @@ export interface CaseType {
 /** Write-form schema (create and edit); the inferred type is the request payload. */
 export const caseFormSchema = z
   .object({
-    clientName: z
-      .string()
-      .min(1, "Le nom du client est requis")
-      .max(200, "200 caractères maximum"),
+    // The dossier links to an existing client (the single source of client identity);
+    // the form selects one via the client picker rather than typing a free-text name.
+    clientId: z.string().min(1, "Le client est requis"),
     productType: z.enum(PRODUCT_TYPES),
     contractType: z.enum(CONTRACT_TYPES).optional(),
     currency: z.string().regex(/^[A-Z]{3}$/, "Code devise à 3 lettres majuscules (ex. GNF)"),
@@ -60,6 +59,9 @@ export type CaseFormInput = z.infer<typeof caseFormSchema>;
 export interface CreditCaseSummary {
   id: string;
   caseNumber: string;
+  /** The linked client (the client module's aggregate). */
+  clientId: string;
+  /** The linked client's name, resolved from the client record. */
   clientName: string;
   productType: ProductType;
   contractType: ContractType | null;
