@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
-import { queryKeys } from "@/lib/query-keys";
+import { QUERY_SCOPES, queryKeys } from "@/lib/query-keys";
 import { usePagedQuery } from "@/lib/use-paged-query";
 import {
   archiveCreditCase,
@@ -11,10 +11,12 @@ import {
   getCreditCase,
   listCaseTypes,
   listCreditCases,
+  resetCaseDocument,
   unarchiveCreditCase,
   updateClientIdentity,
   updateConditionsDeBanque,
   updateCreditCase,
+  type ResettableDocument,
 } from "./credit-case.service";
 import type { CaseFormInput, CaseListFilter, ClientIdentityInput, ConditionsDeBanqueInput } from "./schema";
 
@@ -123,6 +125,29 @@ export function useDeleteCreditCase() {
     mutationFn: (id: string) => deleteCreditCase(id),
     invalidate: [creditCaseKeys.all],
     successToast: "Dossier supprimé",
+    errorToast: true,
+  });
+}
+
+/**
+ * Wipes one document of a BROUILLON dossier (Settings tab critical action).
+ * Every module scope the reset may touch is refetched — the FA reset also
+ * clears its review threads, so the review scope is included.
+ */
+export function useResetCaseDocument(caseId: string) {
+  return useApiMutation({
+    mutationFn: (document: ResettableDocument) => resetCaseDocument(caseId, document),
+    invalidate: [
+      creditCaseKeys.detail(caseId),
+      [QUERY_SCOPES.amortization],
+      [QUERY_SCOPES.analysisSheet, caseId],
+      [QUERY_SCOPES.guarantee, caseId],
+      [QUERY_SCOPES.pv, caseId],
+      [QUERY_SCOPES.fmp, caseId],
+      [QUERY_SCOPES.review, caseId],
+      [QUERY_SCOPES.workflow],
+    ],
+    successToast: "Document réinitialisé",
     errorToast: true,
   });
 }

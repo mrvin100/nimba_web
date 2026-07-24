@@ -3,13 +3,17 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText } from "lucide-react";
+import { useSession } from "@/components/modules/identity";
 import { useWorkflowState } from "@/components/modules/workflow";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { PvDraftEditor } from "./pv-draft-editor";
 import { PvSnapshotView } from "./pv-snapshot-view";
+import { pvDocxExportPath } from "./pv.service";
 import { useCreatePv, usePv } from "./usePv";
 import { createPvSchema, type CreatePvInput } from "./schema";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -58,12 +62,13 @@ function CreatePvForm({ caseId }: Readonly<{ caseId: string }>) {
  * The dossier's PV: not generatable until the comité approves it (§10.3), then
  * a DCM-drafted document (séance date, débats, points forts/faibles,
  * rapporteur/président) that becomes immutable once finalized. DCM-only
- * mutations — the backend enforces this, this panel only hides the create
- * form from a viewer who couldn't use it anyway (403 would be confusing UX,
- * not a security boundary: the panel still renders a finalized PV to every
- * reviewer).
+ * mutations — the backend enforces this, but the create form is also hidden
+ * from every other direction here so a DRI/DRC/comité viewer never sees an
+ * action they'd just get a 403 on; the panel still renders a finalized PV to
+ * every reviewer once one exists.
  */
 export function PvPanel({ caseId }: Readonly<{ caseId: string }>) {
+  const session = useSession();
   const { data: workflowState, isPending: workflowPending } = useWorkflowState(caseId);
   const { data: pv, isPending: pvPending } = usePv(caseId);
 
@@ -79,22 +84,52 @@ export function PvPanel({ caseId }: Readonly<{ caseId: string }>) {
   }
 
   // Not yet reachable: the comité hasn't approved the dossier and no PV exists.
-  if (!pv && workflowState?.status !== "APPROUVE") return null;
+  if (!pv && workflowState?.status !== "APPROUVE") {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">PV de Comité de Crédit</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertTitle>Pas encore disponible</AlertTitle>
+            <AlertDescription>
+              Le PV ne peut être généré qu&apos;une fois le dossier approuvé par le comité de crédit.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const description = !pv
-    ? "Le dossier est approuvé — le PV peut être généré."
+    ? session.hasDepartment("DCM")
+      ? "Le dossier est approuvé, le PV peut être généré."
+      : "Le dossier est approuvé, en attente de génération du PV par la DCM."
     : pv.status === "DRAFT"
       ? "Brouillon en cours de rédaction par la DCM."
-      : "Finalisé — figé au moment de sa validation.";
+      : "Finalisé, figé au moment de sa validation.";
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">PV de Comité de Crédit</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <CardTitle className="text-base">PV de Comité de Crédit</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+          {pv?.status === "FINAL" && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={pvDocxExportPath(caseId)} download>
+                <FileText />
+                Exporter (.docx)
+              </a>
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
-        {!pv && <CreatePvForm caseId={caseId} />}
+        {!pv && session.hasDepartment("DCM") && <CreatePvForm caseId={caseId} />}
         {pv?.status === "DRAFT" && <PvDraftEditor caseId={caseId} pv={pv} />}
         {pv?.status === "FINAL" && <PvSnapshotView pv={pv} />}
       </CardContent>

@@ -6,6 +6,7 @@
 const dateMedium = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
 const dateLong = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" });
 const dateTime = new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "medium" });
+const dateTimeLong = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short" });
 const amount = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
 
 /** Formats an ISO date (yyyy-MM-dd or full ISO); returns a dash when absent. */
@@ -14,10 +15,14 @@ export function formatDate(value: string | null | undefined, style: "medium" | "
   return (style === "long" ? dateLong : dateMedium).format(new Date(value));
 }
 
-/** Formats an ISO instant as a date and time (e.g. 01/07/26 08:42:10). */
-export function formatDateTime(value: string | null | undefined): string {
+/**
+ * Formats an ISO instant as a date and time — "short" for compact table cells
+ * (e.g. 01/07/26 08:42:10), "long" for activity feeds meant to be read, not
+ * scanned (e.g. 1 juillet 2026 à 08:42).
+ */
+export function formatDateTime(value: string | null | undefined, style: "short" | "long" = "short"): string {
   if (!value) return "—";
-  return dateTime.format(new Date(value));
+  return (style === "long" ? dateTimeLong : dateTime).format(new Date(value));
 }
 
 /** Formats a decimal amount with French grouping (e.g. 539 571 123); returns a dash when absent. */

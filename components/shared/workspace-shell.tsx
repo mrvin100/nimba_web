@@ -102,7 +102,7 @@ export function WorkspaceShell({ children }: Readonly<{ children: React.ReactNod
             </Breadcrumb>
           </div>
           <div className="ml-auto px-4">
-            <NotificationBell />
+            <NotificationBell workspaceBase={active.basePath} />
           </div>
         </header>
         <div className="flex flex-1 flex-col">{children}</div>

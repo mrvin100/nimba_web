@@ -2,6 +2,7 @@
 
 import { ShieldCheck } from "lucide-react";
 import { useSession } from "@/components/modules/identity";
+import { isDriEditable, useWorkflowState } from "@/components/modules/workflow";
 import { CreateGuaranteeDialog } from "./create-guarantee-dialog";
 import { GuaranteeCard } from "./guarantee-card";
 import { useGuarantees } from "./useGuarantee";
@@ -9,11 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** A dossier's guarantees — bound into the FA, the PV and the FMP. DRI-only mutations. */
+/**
+ * A dossier's guarantees — bound into the FA, the PV and the FMP. DRI-only
+ * mutations, and only while the dossier is still theirs to constitute.
+ */
 export function GuaranteePanel({ caseId }: Readonly<{ caseId: string }>) {
   const { data: guarantees, isPending, isError } = useGuarantees(caseId);
+  const { data: workflowState } = useWorkflowState(caseId);
   const session = useSession();
-  const canEdit = session.hasDepartment("DRI");
+  const canEdit = session.hasDepartment("DRI") && isDriEditable(workflowState?.status);
 
   return (
     <Card>
@@ -42,7 +47,7 @@ export function GuaranteePanel({ caseId }: Readonly<{ caseId: string }>) {
             </EmptyHeader>
           </Empty>
         ) : (
-          guarantees.map((guarantee) => <GuaranteeCard key={guarantee.id} caseId={caseId} guarantee={guarantee} />)
+          guarantees.map((guarantee) => <GuaranteeCard key={guarantee.id} caseId={caseId} guarantee={guarantee} canEdit={canEdit} />)
         )}
       </CardContent>
     </Card>

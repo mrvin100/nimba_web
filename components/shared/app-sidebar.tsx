@@ -36,7 +36,7 @@ export function AppSidebar({ active, workspaces }: Readonly<AppSidebarProps>) {
         <WorkspaceSwitcher active={active} workspaces={workspaces} />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarNav items={navItems} />
+        <SidebarNav items={navItems} department={active.department} />
       </SidebarContent>
       <SidebarFooter>
         <UserMenu />

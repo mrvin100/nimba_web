@@ -1,6 +1,6 @@
 import { api } from "@/lib/api-client";
 import { env } from "@/lib/env";
-import type { AnalysisSheet, FaSection, FaSectionKey } from "./schema";
+import type { AnalysisSheet, FaSection, FaSectionImage, FaSectionKey } from "./schema";
 
 const basePath = (caseId: string) => `credit-cases/${caseId}/analysis-sheet`;
 
@@ -27,6 +27,34 @@ export function updateFaSection(caseId: string, key: FaSectionKey, contentJson: 
 /** Locks the FA (409 if already published). */
 export function publishAnalysisSheet(caseId: string): Promise<AnalysisSheet> {
   return api.post(`${basePath(caseId)}/publish`).json<AnalysisSheet>();
+}
+
+/** Takes the FA back to draft — only while the dossier was never submitted to review (409 otherwise). */
+export function unpublishAnalysisSheet(caseId: string): Promise<AnalysisSheet> {
+  return api.post(`${basePath(caseId)}/unpublish`).json<AnalysisSheet>();
+}
+
+/** Uploads one figure to an IMAGE section; returns the section's refreshed image list. */
+export function uploadFaSectionImage(
+  caseId: string,
+  key: FaSectionKey,
+  file: File,
+  caption?: string,
+): Promise<FaSectionImage[]> {
+  const body = new FormData();
+  body.append("file", file);
+  if (caption) body.append("caption", caption);
+  return api.post(`${basePath(caseId)}/sections/${key}/images`, { body }).json<FaSectionImage[]>();
+}
+
+/** Removes one figure from an IMAGE section; returns the section's refreshed image list. */
+export function deleteFaSectionImage(caseId: string, key: FaSectionKey, imageId: string): Promise<FaSectionImage[]> {
+  return api.delete(`${basePath(caseId)}/sections/${key}/images/${imageId}`).json<FaSectionImage[]>();
+}
+
+/** Same-origin URL of one uploaded figure, rendered inline with the session cookie. */
+export function faSectionImagePath(caseId: string, key: FaSectionKey, imageId: string): string {
+  return `${env.apiBasePath}/${basePath(caseId)}/sections/${key}/images/${imageId}`;
 }
 
 /**

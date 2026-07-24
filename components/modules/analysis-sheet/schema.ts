@@ -142,25 +142,42 @@ export interface FaSection {
   images: FaSectionImage[];
 }
 
-/** One row of the "1.6 Personnes clés" proof TABLE section — the frontend's own shape for its opaque JSON. */
-export interface PersonneCle {
-  nom: string;
-  fonction: string;
-}
-
 export const faSectionContentSchema = z.object({
   contentJson: z.string().max(20000, "20 000 caractères maximum").optional(),
 });
 
 export type FaSectionContentInput = z.infer<typeof faSectionContentSchema>;
 
-export const personnesClesSchema = z.object({
-  personnes: z.array(
-    z.object({
-      nom: z.string().min(1, "Nom requis").max(200, "200 caractères maximum"),
-      fonction: z.string().min(1, "Fonction requise").max(200, "200 caractères maximum"),
-    }),
-  ),
-});
+/**
+ * The canonical content JSON shapes per section type (mirrored by the backend
+ * export renderer — docs/nimba-fa-document-spec.md). All values are free text;
+ * the analyst types amounts exactly as they must print.
+ */
+export interface FaTableContent {
+  narrative?: string;
+  rows: Record<string, string>[];
+  commentaire?: string;
+}
 
-export type PersonnesClesInput = z.infer<typeof personnesClesSchema>;
+export interface FaFlexTableContent {
+  narrative?: string;
+  columns: string[];
+  rows: string[][];
+  commentaire?: string;
+}
+
+export interface FaFinancialLine {
+  label: string;
+  values: string[];
+}
+
+export interface FaFinancialContent {
+  years: string[];
+  lines: FaFinancialLine[];
+  commentaire?: string;
+}
+
+export interface FaImageContent {
+  narrative?: string;
+  commentaire?: string;
+}
