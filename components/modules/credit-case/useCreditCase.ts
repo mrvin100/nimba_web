@@ -17,7 +17,7 @@ import {
   updateCreditCase,
   type ResettableDocument,
 } from "./credit-case.service";
-import type { CaseFormInput, CaseListFilter, ConditionsDeBanqueInput } from "./schema";
+import type { CaseFormInput, CaseListFilter, ConditionsDeBanqueInput, ProductType } from "./schema";
 
 /** Query keys for the credit-case domain (single source for cache invalidation). */
 export const creditCaseKeys = queryKeys<CaseListFilter>("credit-cases");
@@ -43,6 +43,23 @@ export function useCreditCases(page: number, size = 20, filter: CaseListFilter =
     size,
     filters: filter,
     fetch: (p, s) => listCreditCases(p, s, filter),
+  });
+}
+
+/** Every dossier of one client (the client 360 view), newest first — active and archived alike. */
+export function useClientCreditCases(clientId: string) {
+  return useQuery({
+    queryKey: [...creditCaseKeys.lists(), "by-client", clientId],
+    queryFn: () => listCreditCases(0, 100, "all", { clientId }),
+    enabled: Boolean(clientId),
+  });
+}
+
+/** One product family's registre (active dossiers of that product), paginated. */
+export function useProductRegistre(productType: ProductType, page: number, size = 20) {
+  return useQuery({
+    queryKey: [...creditCaseKeys.lists(), "by-product", productType, page, size],
+    queryFn: () => listCreditCases(page, size, "active", { productType }),
   });
 }
 

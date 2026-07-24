@@ -8,6 +8,7 @@ import type {
   CreditCaseSummary,
   FraisDivers,
   PagedResponse,
+  ProductType,
 } from "./schema";
 
 /**
@@ -35,14 +36,21 @@ export function listCaseTypes(): Promise<CaseType[]> {
   return api.get("credit-cases/types").json<CaseType[]>();
 }
 
-/** Lists credit cases, newest first (paginated); "all" skips the archived filter. */
+/**
+ * Lists credit cases, newest first (paginated); "all" skips the archived filter.
+ * [opts] narrows to one client's dossiers (the client 360) or one product family's
+ * registre.
+ */
 export function listCreditCases(
   page = 0,
   size = 20,
   filter: CaseListFilter = "active",
+  opts: { clientId?: string; productType?: ProductType } = {},
 ): Promise<PagedResponse<CreditCaseSummary>> {
   const searchParams: Record<string, string | number | boolean> = { page, size };
   if (filter !== "all") searchParams.archived = filter === "archived";
+  if (opts.clientId) searchParams.clientId = opts.clientId;
+  if (opts.productType) searchParams.productType = opts.productType;
   return api.get("credit-cases", { searchParams }).json<PagedResponse<CreditCaseSummary>>();
 }
 
