@@ -11,6 +11,8 @@ import type {
   CautionSummary,
   CreateCautionInput,
   CreateDossierInput,
+  DocumentVersion,
+  DossierEvent,
   ReferenceSequenceStatus,
   UpdateCautionInput,
   UpdateDossierInput,
@@ -54,17 +56,17 @@ export function updateCaution(id: string, input: UpdateCautionInput): Promise<Ca
   return api.put(`cautions/${id}`, { json: input }).json<Caution>();
 }
 
-/** Locks the caution, freezing the issuing client's identity. */
-export function finalizeCaution(id: string): Promise<Caution> {
-  return api.post(`cautions/${id}/finalize`).json<Caution>();
-}
-
-/** Deletes a draft caution (409 if already finalized — it is an official record). */
+/** Deletes a document (refused when its dossier is locked). */
 export async function deleteCaution(id: string): Promise<void> {
   await api.delete(`cautions/${id}`);
 }
 
-/** Same-origin URL of the Word (.docx) export of a finalized caution. */
+/** A document's edit history, newest first. */
+export function documentHistory(id: string): Promise<DocumentVersion[]> {
+  return api.get(`cautions/${id}/history`).json<DocumentVersion[]>();
+}
+
+/** Same-origin URL of the Word (.docx) export of a document. */
 export function cautionDocxExportPath(id: string): string {
   return `${env.apiBasePath}/cautions/${id}/export/docx`;
 }
@@ -91,9 +93,24 @@ export function updateDossier(id: string, input: UpdateDossierInput): Promise<Ca
   return api.put(`caution-dossiers/${id}`, { json: input }).json<CautionDossier>();
 }
 
-/** Closes a dossier once its request is fully served (manager-only). */
-export function closeDossier(id: string): Promise<CautionDossier> {
-  return api.post(`caution-dossiers/${id}/close`).json<CautionDossier>();
+/** Finalizes the request: freezes every document and locks the dossier. */
+export function finalizeDossier(id: string): Promise<CautionDossier> {
+  return api.post(`caution-dossiers/${id}/finalize`).json<CautionDossier>();
+}
+
+/** Reopens a finalized dossier to correct a document (manager-only); the reason is journaled. */
+export function prorogeDossier(id: string, reason: string): Promise<CautionDossier> {
+  return api.post(`caution-dossiers/${id}/proroge`, { json: { reason } }).json<CautionDossier>();
+}
+
+/** Re-locks a prorogated dossier once the correction is done. */
+export function refinalizeDossier(id: string): Promise<CautionDossier> {
+  return api.post(`caution-dossiers/${id}/refinalize`).json<CautionDossier>();
+}
+
+/** A dossier's lifecycle journal, newest first. */
+export function dossierEvents(id: string): Promise<DossierEvent[]> {
+  return api.get(`caution-dossiers/${id}/events`).json<DossierEvent[]>();
 }
 
 /** Same-origin URL of the dossier's Notification de caution (.docx). */

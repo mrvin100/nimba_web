@@ -70,6 +70,12 @@ export const createClientSchema = z.object({
   rccm: z.string().max(50, "50 caractères maximum").optional(),
   accountNumber: z.string().max(50, "50 caractères maximum").optional(),
   agence: z.string().max(100, "100 caractères maximum").optional(),
+  gestionnaire: z.string().max(100, "100 caractères maximum").optional(),
+  // Sent to the backend as a LocalDate: omit it when blank rather than sending "" (which can't be parsed).
+  dateEntreeRelation: z
+    .string()
+    .optional()
+    .transform((value) => value || undefined),
   principalDirigeant: z.string().max(200, "200 caractères maximum").optional(),
 });
 

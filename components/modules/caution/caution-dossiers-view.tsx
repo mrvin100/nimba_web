@@ -68,7 +68,7 @@ export function CautionDossiersView() {
                   <p className="truncate text-xs text-muted-foreground">{clientName.get(dossier.clientId) ?? "Client"}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
-                  <Badge variant={dossier.status === "OPEN" ? "default" : "secondary"}>
+                  <Badge variant={dossier.status === "FINALISE" ? "secondary" : "default"}>
                     {DOSSIER_STATUS_LABELS[dossier.status]}
                   </Badge>
                   <span className="text-xs text-muted-foreground">{formatDate(dossier.createdAt)}</span>

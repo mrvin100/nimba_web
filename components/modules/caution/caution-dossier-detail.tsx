@@ -2,18 +2,24 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CircleCheck, Download, FileText, Pencil, ScrollText } from "lucide-react";
+import { ArrowLeft, CircleCheck, FileText, LockOpen, Pencil, RotateCcw, ScrollText } from "lucide-react";
 import { useClients } from "@/components/modules/client";
 import { useSession } from "@/components/modules/identity";
+import { getErrorMessage } from "@/lib/api-error";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { ROUTES } from "@/lib/constants";
-import { formatDate } from "@/lib/format";
-import { dossierKeys, useCloseDossier, useDossier } from "./useCaution";
-import { CreateCautionDialog } from "./create-caution-dialog";
+import { formatDate, formatDateTime } from "@/lib/format";
+import {
+  useCautionDocumentTypes,
+  useDossier,
+  useDossierEvents,
+  useFinalizeDossier,
+  useProrogeDossier,
+  useRefinalizeDossier,
+} from "./useCaution";
 import { DossierFieldsDialog } from "./dossier-fields-dialog";
-import { CautionDocumentTypeBadge } from "./caution-document-type-badge";
-import { CautionStatusBadge } from "./caution-status-badge";
-import { cautionDocxExportPath, dossierFichePath, dossierNotificationPath } from "./caution.service";
+import { CautionDocumentSection } from "./caution-document-section";
+import { dossierFichePath, dossierNotificationPath } from "./caution.service";
 import { DOSSIER_STATUS_LABELS } from "./schema";
 import {
   AlertDialog,
@@ -27,25 +33,36 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 
 /**
- * A dossier's detail: its identity and status, the two companion documents
- * (fiche + notification) to download, the documents attached to it, and the
- * action to attach a new one or edit the shared information.
+ * The dossier workspace: its identity and lifecycle, the common information,
+ * the companion documents, and one section (table) per document family. The
+ * dossier is the aggregate root — finalizing locks everything; a manager can
+ * proroge it to correct a single document, then re-finalize.
  */
 export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
   const [editOpen, setEditOpen] = useState(false);
-  const [confirmClose, setConfirmClose] = useState(false);
-  const queryClient = useQueryClient();
+  const [prorogeOpen, setProrogeOpen] = useState(false);
+  const [confirmFinalize, setConfirmFinalize] = useState(false);
   const session = useSession();
-  const closeDossier = useCloseDossier(dossierId);
   const { data, isPending, isError } = useDossier(dossierId);
+  const { data: documentTypes } = useCautionDocumentTypes();
   const { data: clients } = useClients(0, 200);
-
-  function refreshDossier() {
-    queryClient.invalidateQueries({ queryKey: dossierKeys.detail(dossierId) });
-  }
+  const { data: events } = useDossierEvents(dossierId);
+  const finalize = useFinalizeDossier(dossierId);
+  const refinalize = useRefinalizeDossier(dossierId);
 
   const clientName = useMemo(() => {
     const map = new Map<string, string>();
@@ -83,8 +100,8 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
   }
 
   const { dossier, documents } = data;
-  const isOpen = dossier.status === "OPEN";
-  const canClose = isOpen && session.isManager("DCM");
+  const writable = dossier.status !== "FINALISE";
+  const isManager = session.isManager("DCM");
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8">
@@ -98,28 +115,38 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={isOpen ? "default" : "secondary"}>{DOSSIER_STATUS_LABELS[dossier.status]}</Badge>
-          {isOpen && (
+          <Badge variant={dossier.status === "FINALISE" ? "secondary" : "default"}>{DOSSIER_STATUS_LABELS[dossier.status]}</Badge>
+          {writable && (
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
               <Pencil />
               Informations du dossier
             </Button>
           )}
-          {canClose && (
-            <Button variant="outline" size="sm" onClick={() => setConfirmClose(true)}>
+          {dossier.status === "BROUILLON" && (
+            <Button size="sm" onClick={() => setConfirmFinalize(true)}>
               <CircleCheck />
-              Clôturer
+              Finaliser la demande
+            </Button>
+          )}
+          {dossier.status === "FINALISE" && isManager && (
+            <Button variant="outline" size="sm" onClick={() => setProrogeOpen(true)}>
+              <LockOpen />
+              Proroger
+            </Button>
+          )}
+          {dossier.status === "EN_PROROGATION" && (
+            <Button size="sm" onClick={() => refinalize.mutate()}>
+              <RotateCcw />
+              Re-finaliser
             </Button>
           )}
         </div>
       </div>
 
       <section className="space-y-3 rounded-md border p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Documents d&apos;accompagnement</h2>
-        </div>
+        <h2 className="text-sm font-semibold">Documents d&apos;accompagnement</h2>
         <p className="text-sm text-muted-foreground">
-          Générés à partir des informations du dossier, ils accompagnent toute demande de caution de soumission.
+          Générés à partir des informations du dossier (version {dossier.version}), ils accompagnent toute caution de soumission.
         </p>
         <div className="flex flex-wrap gap-2">
           <a href={dossierFichePath(dossier.id)} download className={buttonVariants({ variant: "outline", size: "sm" })}>
@@ -133,61 +160,103 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
         </div>
       </section>
 
-      <section className="space-y-3 rounded-md border p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold">Documents du dossier</h2>
-          {isOpen && (
-            <CreateCautionDialog
-              presetClientId={dossier.clientId}
-              dossierId={dossier.id}
-              triggerLabel="Ajouter un document"
-              onCreated={refreshDossier}
-            />
-          )}
-        </div>
-        {documents.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Aucun document attaché pour le moment.</p>
-        ) : (
-          <div className="divide-y">
-            {documents.map((document) => (
-              <div key={document.id} className="flex items-center justify-between gap-4 py-2.5">
-                <div className="flex min-w-0 items-center gap-3">
-                  <CautionDocumentTypeBadge documentType={document.documentType} />
-                  <span className="truncate text-sm">{document.referenceNumber}</span>
-                </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  <CautionStatusBadge status={document.status} />
-                  <a
-                    href={cautionDocxExportPath(document.id)}
-                    download
-                    className={buttonVariants({ variant: "ghost", size: "icon" })}
-                    aria-label="Télécharger le document"
-                  >
-                    <Download className="size-4" />
-                  </a>
-                </div>
-              </div>
+      {(documentTypes ?? []).map((type) => (
+        <CautionDocumentSection
+          key={type.code}
+          dossierId={dossier.id}
+          clientId={dossier.clientId}
+          documentType={type.code}
+          typeLabel={`${type.label} (${type.code})`}
+          specificFields={type.specificFields}
+          documents={documents.filter((document) => document.documentType === type.code)}
+          commonContent={dossier.content}
+          writable={writable}
+          requireReasonOnEdit={dossier.status === "EN_PROROGATION"}
+        />
+      ))}
+
+      {events && events.length > 0 && (
+        <section className="space-y-2 rounded-md border p-4">
+          <h2 className="text-sm font-semibold">Journal du dossier</h2>
+          <ul className="space-y-1 text-sm">
+            {events.map((event) => (
+              <li key={event.id} className="flex flex-wrap items-center gap-x-2 text-muted-foreground">
+                <span className="font-medium text-foreground">{DOSSIER_STATUS_LABELS[event.toStatus]}</span>
+                <span>· {formatDateTime(event.createdAt)}</span>
+                {event.reason && <span>· {event.reason}</span>}
+              </li>
             ))}
-          </div>
-        )}
-      </section>
+          </ul>
+        </section>
+      )}
 
       <DossierFieldsDialog dossierId={dossier.id} content={dossier.content} open={editOpen} onOpenChange={setEditOpen} />
+      <ProrogeDialog dossierId={dossier.id} open={prorogeOpen} onOpenChange={setProrogeOpen} />
 
-      <AlertDialog open={confirmClose} onOpenChange={setConfirmClose}>
+      <AlertDialog open={confirmFinalize} onOpenChange={setConfirmFinalize}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Clôturer le dossier {dossier.referenceNumber} ?</AlertDialogTitle>
+            <AlertDialogTitle>Finaliser la demande {dossier.referenceNumber} ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Le dossier sera marqué comme clôturé et ne pourra plus être modifié ni recevoir de nouveaux documents.
+              Tous les documents seront figés et le dossier verrouillé. Seule une prorogation (par un manager) permettra ensuite
+              de corriger un document.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={() => closeDossier.mutate()}>Clôturer</AlertDialogAction>
+            <AlertDialogAction onClick={() => finalize.mutate()}>Finaliser</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+/** Reason-capture dialog for a prorogation (manager-only, journaled). */
+function ProrogeDialog({ dossierId, open, onOpenChange }: { dossierId: string; open: boolean; onOpenChange: (open: boolean) => void }) {
+  const proroge = useProrogeDossier(dossierId);
+  const [reason, setReason] = useState("");
+  const [rootError, setRootError] = useState<string | null>(null);
+
+  async function handleSubmit() {
+    setRootError(null);
+    try {
+      await proroge.mutateAsync(reason.trim());
+      setReason("");
+      onOpenChange(false);
+    } catch (error) {
+      setRootError(getErrorMessage(error));
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Proroger le dossier</DialogTitle>
+          <DialogDescription>Le dossier sera déverrouillé pour correction. Le motif est journalisé.</DialogDescription>
+        </DialogHeader>
+        <Field data-invalid={Boolean(rootError)}>
+          <FieldLabel htmlFor="proroge-reason">Motif de la prorogation</FieldLabel>
+          <Textarea id="proroge-reason" value={reason} onChange={(e) => setReason(e.target.value)} />
+          {rootError && <FieldError errors={[{ message: rootError }]} />}
+        </Field>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Annuler
+            </Button>
+          </DialogClose>
+          <SubmitButton
+            formState={{ isSubmitting: proroge.isPending }}
+            disabled={reason.trim().length === 0}
+            pendingLabel="Prorogation en cours"
+            onClick={handleSubmit}
+          >
+            Proroger
+          </SubmitButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

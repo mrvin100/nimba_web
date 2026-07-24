@@ -5,17 +5,20 @@ import { useApiMutation } from "@/lib/mutation";
 import { queryKeys } from "@/lib/query-keys";
 import { usePagedQuery } from "@/lib/use-paged-query";
 import {
-  closeDossier,
   createCaution,
   createDossier,
   deleteCaution,
-  finalizeCaution,
+  documentHistory,
+  dossierEvents,
+  finalizeDossier,
   getCaution,
   getDossier,
   getReferenceSequenceStatus,
   listCautionDocumentTypes,
   listCautions,
   listDossiers,
+  prorogeDossier,
+  refinalizeDossier,
   updateCaution,
   updateDossier,
 } from "./caution.service";
@@ -28,6 +31,7 @@ interface CautionListFilters {
 }
 
 export const cautionKeys = queryKeys<CautionListFilters>("caution");
+export const dossierKeys = queryKeys<{ clientId?: string }>("caution-dossier");
 
 /**
  * The generic document engine's metadata (shared + type-specific fields per
@@ -74,23 +78,23 @@ export function useCaution(id: string, enabled = true) {
   });
 }
 
-/** Opens a caution in draft; refreshes the list and confirms with its reference number. */
+/** Opens a caution in draft; refreshes the list and any open dossier detail. */
 export function useCreateCaution() {
   return useApiMutation({
     mutationFn: createCaution,
-    invalidate: [cautionKeys.all],
-    successToast: (created) => `Caution ${created.referenceNumber} créée`,
+    invalidate: [cautionKeys.all, dossierKeys.all],
+    successToast: (created) => `Document ${created.referenceNumber} ajouté`,
     errorToast: true,
   });
 }
 
-/** Replaces a draft's field answers; refreshes its detail. */
+/** Replaces a document's field answers; refreshes its detail and any open dossier detail. */
 export function useUpdateCaution(id: string) {
   const queryClient = useQueryClient();
   return useApiMutation({
     mutationFn: (input: UpdateCautionInput) => updateCaution(id, input),
-    invalidate: [cautionKeys.lists()],
-    successToast: "Caution mise à jour",
+    invalidate: [cautionKeys.lists(), dossierKeys.all],
+    successToast: "Document mis à jour",
     errorToast: true,
     onSuccess: (data) => {
       queryClient.setQueryData(cautionKeys.detail(id), data);
@@ -98,33 +102,17 @@ export function useUpdateCaution(id: string) {
   });
 }
 
-/** Locks the caution; refreshes its detail and the list. */
-export function useFinalizeCaution(id: string) {
-  const queryClient = useQueryClient();
-  return useApiMutation({
-    mutationFn: () => finalizeCaution(id),
-    invalidate: [cautionKeys.lists()],
-    successToast: "Caution finalisée",
-    errorToast: true,
-    onSuccess: (data) => {
-      queryClient.setQueryData(cautionKeys.detail(id), data);
-    },
-  });
-}
-
-/** Deletes a draft caution (409 if already finalized). */
+/** Deletes a document; refreshes the list and any open dossier detail. */
 export function useDeleteCaution() {
   return useApiMutation({
     mutationFn: (id: string) => deleteCaution(id),
-    invalidate: [cautionKeys.all],
-    successToast: "Caution supprimée",
+    invalidate: [cautionKeys.all, dossierKeys.all],
+    successToast: "Document supprimé",
     errorToast: true,
   });
 }
 
 // ---- Dossiers ----------------------------------------------------------------
-
-export const dossierKeys = queryKeys<{ clientId?: string }>("caution-dossier");
 
 /** Paginated list of dossiers (server state). */
 export function useDossiers(page: number, size = 20) {
@@ -169,16 +157,57 @@ export function useUpdateDossier(id: string) {
   });
 }
 
-/** Closes a dossier (manager-only); refreshes its detail and the list. */
-export function useCloseDossier(id: string) {
+/** The query key of a dossier's lifecycle journal. */
+const dossierEventsKey = (id: string) => [...dossierKeys.detail(id), "events"];
+
+/** Refreshes a dossier's detail, its journal and the list after a lifecycle change. */
+function refreshDossierAfter(queryClient: ReturnType<typeof useQueryClient>, id: string) {
+  queryClient.invalidateQueries({ queryKey: dossierKeys.detail(id) });
+  queryClient.invalidateQueries({ queryKey: dossierEventsKey(id) });
+}
+
+/** Finalizes the request (freezes and locks the dossier). */
+export function useFinalizeDossier(id: string) {
   const queryClient = useQueryClient();
   return useApiMutation({
-    mutationFn: () => closeDossier(id),
+    mutationFn: () => finalizeDossier(id),
     invalidate: [dossierKeys.lists()],
-    successToast: "Dossier clôturé",
+    successToast: "Demande finalisée",
     errorToast: true,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dossierKeys.detail(id) });
-    },
+    onSuccess: () => refreshDossierAfter(queryClient, id),
   });
+}
+
+/** Reopens a finalized dossier for a correction (manager-only); the reason is journaled. */
+export function useProrogeDossier(id: string) {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: (reason: string) => prorogeDossier(id, reason),
+    invalidate: [dossierKeys.lists()],
+    successToast: "Dossier prorogé",
+    errorToast: true,
+    onSuccess: () => refreshDossierAfter(queryClient, id),
+  });
+}
+
+/** Re-locks a prorogated dossier once the correction is done. */
+export function useRefinalizeDossier(id: string) {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: () => refinalizeDossier(id),
+    invalidate: [dossierKeys.lists()],
+    successToast: "Dossier re-finalisé",
+    errorToast: true,
+    onSuccess: () => refreshDossierAfter(queryClient, id),
+  });
+}
+
+/** A dossier's lifecycle journal. */
+export function useDossierEvents(id: string, enabled = true) {
+  return useQuery({ queryKey: dossierEventsKey(id), queryFn: () => dossierEvents(id), enabled });
+}
+
+/** A document's edit history. */
+export function useDocumentHistory(id: string, enabled = true) {
+  return useQuery({ queryKey: [...cautionKeys.detail(id), "history"], queryFn: () => documentHistory(id), enabled });
 }

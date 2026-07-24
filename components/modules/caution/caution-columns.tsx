@@ -1,11 +1,13 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { Download } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import type { CautionSummary } from "./schema";
-import { CautionActionMenu } from "./caution-action-menu";
+import { cautionDocxExportPath } from "./caution.service";
 import { CautionDocumentTypeBadge } from "./caution-document-type-badge";
 import { CautionStatusBadge } from "./caution-status-badge";
+import { buttonVariants } from "@/components/ui/button";
 
 export const cautionColumns: ColumnDef<CautionSummary>[] = [
   {
@@ -44,8 +46,15 @@ export const cautionColumns: ColumnDef<CautionSummary>[] = [
     header: "",
     enableHiding: false,
     cell: ({ row }) => (
-      <div className="text-right">
-        <CautionActionMenu caution={row.original} />
+      <div className="text-right" onClick={(event) => event.stopPropagation()}>
+        <a
+          href={cautionDocxExportPath(row.original.id)}
+          download
+          className={buttonVariants({ variant: "ghost", size: "icon" })}
+          aria-label="Télécharger le document"
+        >
+          <Download className="size-4" />
+        </a>
       </div>
     ),
   },

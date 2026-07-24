@@ -36,6 +36,8 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
       rccm: "",
       accountNumber: "",
       agence: "",
+      gestionnaire: "",
+      dateEntreeRelation: "",
       principalDirigeant: "",
     },
   });
@@ -145,6 +147,30 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
                 </Field>
               )}
             />
+            <div className="grid grid-cols-2 gap-3">
+              <Controller
+                control={form.control}
+                name="gestionnaire"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Gestionnaire</FieldLabel>
+                    <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="dateEntreeRelation"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Date d&apos;entrée en relation</FieldLabel>
+                    <Input {...field} id={field.name} type="date" aria-invalid={fieldState.invalid} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            </div>
             <Controller
               control={form.control}
               name="principalDirigeant"
