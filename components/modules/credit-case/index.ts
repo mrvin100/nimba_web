@@ -13,7 +13,6 @@ export {
   useCreditCase,
   useCreateCreditCase,
   useUpdateCreditCase,
-  useUpdateClientIdentity,
   useUpdateConditionsDeBanque,
   useCaseTypes,
   creditCaseKeys,

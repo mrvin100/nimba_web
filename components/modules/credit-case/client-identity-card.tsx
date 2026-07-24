@@ -48,7 +48,7 @@ export function ClientIdentityCard({ caseId }: Readonly<{ caseId: string }>) {
             <CardTitle className="text-base">Identité du client</CardTitle>
             <CardDescription>Réutilisée sur la fiche d&apos;analyse, le PV et la fiche de mise en place.</CardDescription>
           </div>
-          {canEdit && <EditClientIdentityDialog caseId={caseId} identity={identity} />}
+          {canEdit && <EditClientIdentityDialog caseId={caseId} clientId={data.clientId} identity={identity} />}
         </div>
       </CardHeader>
       <CardContent>

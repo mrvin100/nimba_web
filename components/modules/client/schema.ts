@@ -3,7 +3,8 @@ import { z } from "zod";
 /** A bank client, independent of any credit case — backs the Caution module so documents can be grouped by matricule. */
 export interface Client {
   id: string;
-  matricule: string;
+  /** The bank's internal client code; null until captured (optional for a leasing client). */
+  matricule: string | null;
   raisonSociale: string;
   sigle: string | null;
   formeJuridique: string | null;
@@ -28,7 +29,7 @@ export interface Client {
 /** Row of the client picker used when starting a new caution. */
 export interface ClientSummary {
   id: string;
-  matricule: string;
+  matricule: string | null;
   raisonSociale: string;
   agence: string | null;
 }
@@ -54,7 +55,7 @@ export interface ClientFormInput {
   cotationActuelle?: string;
 }
 
-export type CreateClientInput = ClientFormInput & { matricule: string };
+export type CreateClientInput = ClientFormInput & { matricule?: string };
 
 /**
  * Only the fields the Caution module's SMS/ACF renderers actually consume —
@@ -63,7 +64,10 @@ export type CreateClientInput = ClientFormInput & { matricule: string };
  * same way a credit case's own identity is filled in over time.
  */
 export const createClientSchema = z.object({
-  matricule: z.string().min(1, "Matricule requis").max(50, "50 caractères maximum"),
+  // Optional: the bank's internal code is not always known when the dossier opens
+  // (a leasing client may have none yet); the Caution module requires it to issue a
+  // document, enforced at that point.
+  matricule: z.string().max(50, "50 caractères maximum").optional(),
   raisonSociale: z.string().min(1, "Raison sociale requise").max(200, "200 caractères maximum"),
   sigle: z.string().max(100, "100 caractères maximum").optional(),
   adressePhysique: z.string().max(300, "300 caractères maximum").optional(),

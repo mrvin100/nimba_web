@@ -3,7 +3,6 @@ import type {
   CaseFormInput,
   CaseListFilter,
   CaseType,
-  ClientIdentityInput,
   ConditionsDeBanqueInput,
   CreditCase,
   CreditCaseSummary,
@@ -67,14 +66,6 @@ export function createCreditCase(input: CaseFormInput): Promise<CreditCase> {
 export function updateCreditCase(id: string, input: CaseFormInput): Promise<CreditCase> {
   return api
     .put(`credit-cases/${id}`, { json: input })
-    .json<CreditCaseWire>()
-    .then(toCreditCase);
-}
-
-/** Replaces a case's client-identity details and returns the case. */
-export function updateClientIdentity(id: string, input: ClientIdentityInput): Promise<CreditCase> {
-  return api
-    .put(`credit-cases/${id}/identity`, { json: input })
     .json<CreditCaseWire>()
     .then(toCreditCase);
 }
