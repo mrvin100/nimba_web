@@ -26,7 +26,8 @@ export function ClientPicker({
     const query = search.trim().toLowerCase();
     if (!query) return clients;
     return clients.filter(
-      (client) => client.raisonSociale.toLowerCase().includes(query) || client.matricule.toLowerCase().includes(query),
+      (client) =>
+        client.raisonSociale.toLowerCase().includes(query) || (client.matricule?.toLowerCase().includes(query) ?? false),
     );
   }, [data, search]);
 
@@ -51,7 +52,8 @@ export function ClientPicker({
           <SelectContent>
             {filtered.map((client) => (
               <SelectItem key={client.id} value={client.id}>
-                {client.raisonSociale} ({client.matricule})
+                {client.raisonSociale}
+                {client.matricule ? ` (${client.matricule})` : ""}
               </SelectItem>
             ))}
           </SelectContent>

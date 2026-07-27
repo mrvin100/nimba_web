@@ -73,7 +73,7 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
               name="matricule"
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Matricule</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Matricule (optionnel)</FieldLabel>
                   <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>

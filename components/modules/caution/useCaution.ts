@@ -125,6 +125,18 @@ export function useDossiers(page: number, size = 20) {
   });
 }
 
+/** Every caution dossier of one client (the client 360 view). */
+export function useClientDossiers(clientId: string) {
+  const filters: { clientId?: string } = { clientId };
+  return usePagedQuery({
+    keys: dossierKeys,
+    page: 0,
+    size: 100,
+    filters,
+    fetch: (p, s) => listDossiers(p, s, clientId),
+  });
+}
+
 /** A single dossier with its documents (server state). */
 export function useDossier(id: string) {
   return useQuery({

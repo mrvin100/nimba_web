@@ -24,7 +24,7 @@ import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 
 function toFormValues(creditCase: CreditCase): CaseFormInput {
   return {
-    clientName: creditCase.clientName,
+    clientId: creditCase.clientId,
     productType: creditCase.productType,
     contractType: creditCase.contractType ?? undefined,
     currency: creditCase.currency,

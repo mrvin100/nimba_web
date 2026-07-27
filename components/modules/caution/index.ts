@@ -14,6 +14,7 @@ export {
   useDeleteCaution,
   cautionKeys,
   useDossiers,
+  useClientDossiers,
   useDossier,
   useCreateDossier,
   useUpdateDossier,
