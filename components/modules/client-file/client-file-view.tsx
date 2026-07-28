@@ -37,7 +37,7 @@ export function ClientFileView({ clientId, workspaceBase }: Readonly<{ clientId:
   if (!client) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8">
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
