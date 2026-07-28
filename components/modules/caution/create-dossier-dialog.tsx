@@ -63,7 +63,7 @@ export function CreateDossierDialog() {
       });
       setOpen(false);
       reset();
-      router.push(`${ROUTES.DCM}/caution-dossiers/${created.id}`);
+      router.push(`${ROUTES.DCM}/cautions/${created.id}`);
     } catch (error) {
       setRootError(getErrorMessage(error));
     }
@@ -96,7 +96,7 @@ export function CreateDossierDialog() {
           <FieldGroup>
             <Field>
               <FieldLabel>Client</FieldLabel>
-              <ClientPicker value={clientId} onChange={setClientId} />
+              <ClientPicker value={clientId} onChange={setClientId} workspaceBase={ROUTES.DCM} />
             </Field>
             <Field>
               <FieldLabel htmlFor="dossier-beneficiaire">Bénéficiaire (Maître d&apos;ouvrage)</FieldLabel>
