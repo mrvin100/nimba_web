@@ -1,6 +1,6 @@
-import { WorkflowQueueView } from "@/components/modules/workflow";
+import { ReviewerCaseListView } from "@/components/modules/credit-case";
 import { ROUTES } from "@/lib/constants";
 
 export default function DcmPage() {
-  return <WorkflowQueueView workspaceBase={ROUTES.DCM} />;
+  return <ReviewerCaseListView workspaceBase={ROUTES.DCM} />;
 }

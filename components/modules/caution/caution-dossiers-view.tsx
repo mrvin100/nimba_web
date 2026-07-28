@@ -62,7 +62,7 @@ export function CautionDossiersView() {
             emptyMessage="Aucun dossier."
             searchable
             searchPlaceholder="Rechercher un dossier…"
-            onRowClick={(dossier) => router.push(`${ROUTES.DCM}/caution-dossiers/${dossier.id}`)}
+            onRowClick={(dossier) => router.push(`${ROUTES.DCM}/cautions/${dossier.id}`)}
           />
           <Pager
             hasPrevious={data.hasPrevious}

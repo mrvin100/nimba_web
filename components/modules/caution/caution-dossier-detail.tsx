@@ -77,7 +77,7 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
 
   const backLink = (
     <Link
-      href={`${ROUTES.DCM}/caution-dossiers`}
+      href={`${ROUTES.DCM}/cautions`}
       className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
     >
       <ArrowLeft className="size-4" />
@@ -232,7 +232,7 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               className={buttonVariants({ variant: "destructive" })}
-              onClick={() => remove.mutate(dossier.id, { onSuccess: () => router.push(`${ROUTES.DCM}/caution-dossiers`) })}
+              onClick={() => remove.mutate(dossier.id, { onSuccess: () => router.push(`${ROUTES.DCM}/cautions`) })}
             >
               Supprimer définitivement
             </AlertDialogAction>

@@ -2,7 +2,6 @@ import {
   Building2,
   ClipboardList,
   FileText,
-  FolderOpen,
   Layers,
   LayoutDashboard,
   ScrollText,
@@ -113,18 +112,13 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     basePath: ROUTES.DCM,
     nav: [
       {
-        label: "Dossiers à revoir",
+        label: "Dossiers",
         href: ROUTES.DCM,
         icon: ClipboardList,
         queueBadge: true,
-      },
-      {
-        label: "Tous les dossiers",
-        href: `${ROUTES.DCM}/dossiers`,
-        icon: FolderOpen,
         subItems: dossierSubItems(/^\/dcm\/dossiers\/[^/]+/),
       },
-      { label: "Cautions", href: `${ROUTES.DCM}/caution-dossiers`, icon: Layers },
+      { label: "Cautions", href: `${ROUTES.DCM}/cautions`, icon: Layers },
       { label: "Clients", href: `${ROUTES.DCM}/clients`, icon: Building2 },
       { label: "Membres", href: `${ROUTES.DCM}/equipe`, icon: Users, managerOnly: true },
     ],
@@ -137,15 +131,10 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     basePath: ROUTES.DRC,
     nav: [
       {
-        label: "Dossiers à revoir",
+        label: "Dossiers",
         href: ROUTES.DRC,
         icon: ClipboardList,
         queueBadge: true,
-      },
-      {
-        label: "Tous les dossiers",
-        href: `${ROUTES.DRC}/dossiers`,
-        icon: FolderOpen,
         subItems: dossierSubItems(/^\/drc\/dossiers\/[^/]+/),
       },
       { label: "Membres", href: `${ROUTES.DRC}/equipe`, icon: Users, managerOnly: true },
@@ -159,15 +148,10 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
     basePath: ROUTES.COMITE,
     nav: [
       {
-        label: "Dossiers à revoir",
+        label: "Dossiers",
         href: ROUTES.COMITE,
         icon: ClipboardList,
         queueBadge: true,
-      },
-      {
-        label: "Tous les dossiers",
-        href: `${ROUTES.COMITE}/dossiers`,
-        icon: FolderOpen,
         subItems: dossierSubItems(/^\/comite\/dossiers\/[^/]+/),
       },
       { label: "Membres", href: `${ROUTES.COMITE}/equipe`, icon: Users, managerOnly: true },

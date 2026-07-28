@@ -36,13 +36,14 @@ export function useCaseTypes() {
 }
 
 /** Paginated list of credit cases (server state); archived ones are hidden by default. */
-export function useCreditCases(page: number, size = 20, filter: CaseListFilter = "active") {
+export function useCreditCases(page: number, size = 20, filter: CaseListFilter = "active", enabled = true) {
   return usePagedQuery({
     keys: creditCaseKeys,
     page,
     size,
     filters: filter,
     fetch: (p, s) => listCreditCases(p, s, filter),
+    enabled,
   });
 }
 

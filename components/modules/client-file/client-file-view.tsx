@@ -124,7 +124,7 @@ export function ClientFileView({ clientId, workspaceBase }: Readonly<{ clientId:
                   <TableRow key={dossier.id}>
                     <TableCell className="font-medium">
                       {canOpenCautions ? (
-                        <Link className="underline-offset-4 hover:underline" href={`${ROUTES.DCM}/caution-dossiers/${dossier.id}`}>
+                        <Link className="underline-offset-4 hover:underline" href={`${ROUTES.DCM}/cautions/${dossier.id}`}>
                           {dossier.referenceNumber}
                         </Link>
                       ) : (
