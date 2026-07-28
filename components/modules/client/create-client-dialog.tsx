@@ -31,6 +31,7 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
     defaultValues: {
       matricule: "",
       raisonSociale: "",
+      codeNif: "",
       sigle: "",
       adressePhysique: "",
       rccm: "",
@@ -85,6 +86,17 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Raison sociale</FieldLabel>
+                  <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="codeNif"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Numéro d&apos;identification fiscale (optionnel)</FieldLabel>
                   <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>

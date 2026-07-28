@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useClients } from "@/components/modules/client";
+import { useRouter } from "next/navigation";
+import { CreateClientDialog, useClients } from "@/components/modules/client";
+import { PageHeader } from "@/components/shared/page-header";
 import { Pager } from "@/components/shared/pager";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
  * scopes the links to the current workspace.
  */
 export function ClientsRegistryView({ workspaceBase }: Readonly<{ workspaceBase: string }>) {
+  const router = useRouter();
   const [page, setPage] = useState(0);
   const { data, isPending } = useClients(page, 20);
 
@@ -23,6 +26,9 @@ export function ClientsRegistryView({ workspaceBase }: Readonly<{ workspaceBase:
 
   return (
     <div className="space-y-4">
+      <PageHeader title="Clients" description="Chaque client de la banque, indépendamment des produits qu'il a souscrits.">
+        <CreateClientDialog onCreated={(client) => router.push(`${workspaceBase}/clients/${client.id}`)} />
+      </PageHeader>
       <Card>
         <CardContent className="pt-6">
           {clients.length === 0 ? (
