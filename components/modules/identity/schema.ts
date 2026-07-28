@@ -42,6 +42,8 @@ export interface MeResponse {
   admin: boolean;
   hasAvatar: boolean;
   memberships: Membership[];
+  titre: string | null;
+  signatoryOptIn: boolean;
 }
 
 /** One-time first-admin bootstrap form (self-sets its own password). */
@@ -77,10 +79,17 @@ export interface InvitationInfo {
   email: string;
 }
 
-/** Self-service profile edit (display name). */
-export const updateProfileSchema = z.object({
-  fullName: z.string().min(1, "Nom complet requis").max(200, "200 caractères maximum"),
-});
+/** Self-service profile edit (display name, job title, and the signatory opt-in). */
+export const updateProfileSchema = z
+  .object({
+    fullName: z.string().min(1, "Nom complet requis").max(200, "200 caractères maximum"),
+    titre: z.string().max(200, "200 caractères maximum").optional(),
+    signatoryOptIn: z.boolean(),
+  })
+  .refine((data) => !data.signatoryOptIn || Boolean(data.titre?.trim()), {
+    message: "Un titre est requis pour apparaître comme signataire",
+    path: ["titre"],
+  });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 

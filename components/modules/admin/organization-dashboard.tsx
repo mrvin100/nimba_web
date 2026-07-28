@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/shared/page-header";
+import { SignatoryManagementCard } from "@/components/modules/signatory";
 import { OrganizationForm } from "./organization-form";
 import { OrganizationLogoCard } from "./organization-logo-card";
 
@@ -9,6 +10,7 @@ export function OrganizationDashboard() {
       <PageHeader title="Organisation" description="Paramètres généraux, logo et expéditeur des e-mails" />
       <OrganizationLogoCard />
       <OrganizationForm />
+      <SignatoryManagementCard />
     </div>
   );
 }

@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /** Maps the server's nullable fields to the form's (blank instead of null). */
@@ -20,14 +19,10 @@ function toFormValues(settings: OrganizationSettings): OrganizationInput {
     organizationName: settings.organizationName,
     senderName: settings.senderName,
     senderEmail: settings.senderEmail,
-    signataire1Nom: settings.signataire1Nom ?? "",
-    signataire1Titre: settings.signataire1Titre ?? "",
-    signataire2Nom: settings.signataire2Nom ?? "",
-    signataire2Titre: settings.signataire2Titre ?? "",
   };
 }
 
-/** Organisation settings form: name, the invitation e-mail sender identity, and the standing signatories printed on generated legal documents. */
+/** Organisation settings form: name and the invitation e-mail sender identity. */
 export function OrganizationForm() {
   const { data, isPending, isError } = useOrganization();
   const update = useUpdateOrganization();
@@ -43,10 +38,6 @@ export function OrganizationForm() {
       organizationName: "",
       senderName: "",
       senderEmail: "",
-      signataire1Nom: "",
-      signataire1Titre: "",
-      signataire2Nom: "",
-      signataire2Titre: "",
     },
   });
 
@@ -114,59 +105,6 @@ export function OrganizationForm() {
                 </Field>
               )}
             />
-
-            <Separator className="my-2" />
-            <FieldDescription>
-              Signataires standards imprimés sur les documents générés (cautions, attestations...).
-            </FieldDescription>
-            <div className="grid grid-cols-2 gap-3">
-              <Controller
-                control={control}
-                name="signataire1Nom"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Signataire 1 — Nom</FieldLabel>
-                    <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-              <Controller
-                control={control}
-                name="signataire1Titre"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Signataire 1 — Titre</FieldLabel>
-                    <Input {...field} id={field.name} placeholder="Directeur Crédit Marketing" aria-invalid={fieldState.invalid} />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Controller
-                control={control}
-                name="signataire2Nom"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Signataire 2 — Nom</FieldLabel>
-                    <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-              <Controller
-                control={control}
-                name="signataire2Titre"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Signataire 2 — Titre</FieldLabel>
-                    <Input {...field} id={field.name} placeholder="Directrice Générale Adjointe" aria-invalid={fieldState.invalid} />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-            </div>
             {errors.root && <FieldError errors={[errors.root]} />}
           </FieldGroup>
           <div className="mt-6 flex items-center gap-2">

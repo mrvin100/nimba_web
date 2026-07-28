@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
+import { SignatoryCombobox } from "@/components/modules/signatory";
 import { useUpdateDossier } from "./useCaution";
 import { DOSSIER_FIELD_GROUPS, type DossierFieldDef } from "./dossier-fields";
 import { Button } from "@/components/ui/button";
@@ -115,6 +116,22 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
           {DOSSIER_FIELD_GROUPS.map((group) => (
             <div key={group.title} className="space-y-3">
               <p className="text-sm font-semibold text-foreground">{group.title}</p>
+              {group.title === "Signataires" && (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <SignatoryCombobox
+                    onSelect={(nom, titre) => {
+                      setValue("signataire1Nom", nom);
+                      setValue("signataire1Titre", titre);
+                    }}
+                  />
+                  <SignatoryCombobox
+                    onSelect={(nom, titre) => {
+                      setValue("signataire2Nom", nom);
+                      setValue("signataire2Titre", titre);
+                    }}
+                  />
+                </div>
+              )}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {group.fields.map((field) => (
                   <Field key={field.key} className={field.type === "textarea" ? "sm:col-span-2" : undefined}>

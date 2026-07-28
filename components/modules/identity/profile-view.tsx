@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,16 +48,16 @@ export function ProfileView() {
     formState: { errors, isDirty },
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
-    defaultValues: { fullName: "" },
+    defaultValues: { fullName: "", titre: "", signatoryOptIn: false },
   });
 
   useEffect(() => {
-    if (user) reset({ fullName: user.fullName });
+    if (user) reset({ fullName: user.fullName, titre: user.titre ?? "", signatoryOptIn: user.signatoryOptIn });
   }, [user, reset]);
 
   function onSubmit(values: UpdateProfileInput) {
     updateProfile.mutate(values, {
-      onSuccess: (updated) => reset({ fullName: updated.fullName }),
+      onSuccess: (updated) => reset({ fullName: updated.fullName, titre: updated.titre ?? "", signatoryOptIn: updated.signatoryOptIn }),
       onError: (error) => setError("root", { message: getErrorMessage(error) }),
     });
   }
@@ -133,6 +134,30 @@ export function ProfileView() {
                   </Field>
                 )}
               />
+              <Controller
+                control={control}
+                name="titre"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Titre</FieldLabel>
+                    <Input {...field} id={field.name} placeholder="Directeur Crédit Marketing" aria-invalid={fieldState.invalid} />
+                    <FieldDescription>Utilisé si vous apparaissez comme signataire sur un document.</FieldDescription>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                control={control}
+                name="signatoryOptIn"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid} orientation="horizontal">
+                    <Checkbox id={field.name} checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
+                    <FieldLabel htmlFor={field.name} className="font-normal">
+                      Apparaître comme signataire sélectionnable sur les documents
+                    </FieldLabel>
+                  </Field>
+                )}
+              />
               {errors.root && <FieldError errors={[errors.root]} />}
             </FieldGroup>
             <div className="mt-4 flex items-center gap-2">
@@ -143,7 +168,12 @@ export function ProfileView() {
               >
                 Enregistrer
               </SubmitButton>
-              <Button type="button" variant="outline" disabled={!isDirty} onClick={() => reset({ fullName: user.fullName })}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!isDirty}
+                onClick={() => reset({ fullName: user.fullName, titre: user.titre ?? "", signatoryOptIn: user.signatoryOptIn })}
+              >
                 Annuler
               </Button>
             </div>
