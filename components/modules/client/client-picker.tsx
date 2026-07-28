@@ -1,11 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { CreateClientDialog } from "./create-client-dialog";
 import { useClients } from "./useClient";
-import type { Client } from "./schema";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Client, ClientSummary } from "./schema";
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
@@ -18,18 +16,10 @@ export function ClientPicker({
   value,
   onChange,
 }: Readonly<{ value: string | null; onChange: (clientId: string) => void }>) {
-  const [search, setSearch] = useState("");
   const { data, isPending } = useClients(0, 100);
 
-  const filtered = useMemo(() => {
-    const clients = data?.content ?? [];
-    const query = search.trim().toLowerCase();
-    if (!query) return clients;
-    return clients.filter(
-      (client) =>
-        client.raisonSociale.toLowerCase().includes(query) || (client.matricule?.toLowerCase().includes(query) ?? false),
-    );
-  }, [data, search]);
+  const clients = data?.content ?? [];
+  const selected = clients.find((client) => client.id === value) ?? null;
 
   function handleCreated(client: Client) {
     onChange(client.id);
@@ -39,25 +29,26 @@ export function ClientPicker({
 
   return (
     <div className="flex items-end gap-2">
-      <div className="flex-1 space-y-2">
-        <Input
-          placeholder="Rechercher par nom ou matricule"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-        <Select value={value ?? undefined} onValueChange={onChange}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Choisir un client" />
-          </SelectTrigger>
-          <SelectContent>
-            {filtered.map((client) => (
-              <SelectItem key={client.id} value={client.id}>
-                {client.raisonSociale}
-                {client.matricule ? ` (${client.matricule})` : ""}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex-1">
+        <Combobox
+          items={clients}
+          value={selected}
+          onValueChange={(client) => client && onChange(client.id)}
+          itemToStringValue={(client: ClientSummary) => `${client.raisonSociale}${client.matricule ? ` (${client.matricule})` : ""}`}
+        >
+          <ComboboxInput placeholder="Rechercher par nom ou matricule" className="w-full" />
+          <ComboboxContent>
+            <ComboboxEmpty>Aucun client trouvé.</ComboboxEmpty>
+            <ComboboxList>
+              {(client: ClientSummary) => (
+                <ComboboxItem key={client.id} value={client}>
+                  {client.raisonSociale}
+                  {client.matricule ? ` (${client.matricule})` : ""}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
       </div>
       <CreateClientDialog onCreated={handleCreated} />
     </div>
