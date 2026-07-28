@@ -1,22 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FolderOpen } from "lucide-react";
 import { useClients } from "@/components/modules/client";
 import { PageHeader } from "@/components/shared/page-header";
 import { Pager } from "@/components/shared/pager";
+import { DataTable } from "@/components/shared/data-table";
 import { ROUTES } from "@/lib/constants";
-import { formatDate } from "@/lib/format";
 import { useDossiers } from "./useCaution";
 import { CreateDossierDialog } from "./create-dossier-dialog";
-import { DOSSIER_STATUS_LABELS } from "./schema";
-import { Badge } from "@/components/ui/badge";
+import { cautionDossierColumns } from "./caution-dossier-columns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
 /** DCM's dossiers workspace: each dossier groups a client's caution request with its companion documents. */
 export function CautionDossiersView() {
+  const router = useRouter();
   const [page, setPage] = useState(0);
   const { data, isPending, isError } = useDossiers(page, 20);
   const { data: clients } = useClients(0, 200);
@@ -39,7 +39,7 @@ export function CautionDossiersView() {
       {isPending ? (
         <div className="space-y-2" aria-busy>
           {Array.from({ length: 5 }).map((_, index) => (
-            <Skeleton key={index} className="h-14 w-full" />
+            <Skeleton key={index} className="h-11 w-full" />
           ))}
         </div>
       ) : isError ? (
@@ -56,26 +56,14 @@ export function CautionDossiersView() {
         </Empty>
       ) : (
         <div className="space-y-4">
-          <div className="divide-y overflow-hidden rounded-md border">
-            {data.content.map((dossier) => (
-              <Link
-                key={dossier.id}
-                href={`${ROUTES.DCM}/caution-dossiers/${dossier.id}`}
-                className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{dossier.referenceNumber}</p>
-                  <p className="truncate text-xs text-muted-foreground">{clientName.get(dossier.clientId) ?? "Client"}</p>
-                </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  <Badge variant={dossier.status === "FINALISE" ? "secondary" : "default"}>
-                    {DOSSIER_STATUS_LABELS[dossier.status]}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">{formatDate(dossier.createdAt)}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <DataTable
+            columns={cautionDossierColumns(clientName)}
+            data={data.content}
+            emptyMessage="Aucun dossier."
+            searchable
+            searchPlaceholder="Rechercher un dossier…"
+            onRowClick={(dossier) => router.push(`${ROUTES.DCM}/caution-dossiers/${dossier.id}`)}
+          />
           <Pager
             hasPrevious={data.hasPrevious}
             hasNext={data.hasNext}

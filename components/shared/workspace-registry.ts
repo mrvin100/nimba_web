@@ -124,7 +124,7 @@ export const WORKSPACES: readonly WorkspaceConfig[] = [
         icon: FolderOpen,
         subItems: dossierSubItems(/^\/dcm\/dossiers\/[^/]+/),
       },
-      { label: "Dossiers de caution", href: `${ROUTES.DCM}/caution-dossiers`, icon: Layers },
+      { label: "Cautions", href: `${ROUTES.DCM}/caution-dossiers`, icon: Layers },
       { label: "Clients", href: `${ROUTES.DCM}/clients`, icon: Building2 },
       { label: "Membres", href: `${ROUTES.DCM}/equipe`, icon: Users, managerOnly: true },
     ],
