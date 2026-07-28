@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { addDays, format, isValid, parseISO } from "date-fns";
 import { CAUTION_CIVILITIES, CAUTION_CURRENCIES, type CautionFieldDefinition } from "./schema";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -27,14 +29,78 @@ export function isFieldSatisfied(field: CautionFieldDefinition, values: Record<s
   return field.optional || valueFor(field, values).trim().length > 0;
 }
 
+/**
+ * A date that can also be set as "N jours après" another date field, instead
+ * of always picking the date directly — the two-way relationship the real
+ * SMS document has between dateOffre and dateExpiration (often a fixed 90/120/180
+ * day validity period). Entering a day count computes and fills the date;
+ * picking the date directly works exactly as before and simply clears the
+ * day count (they are two entry paths to the same single stored value, not
+ * two fields).
+ */
+function DateWithDurationInput({
+  fieldKey,
+  baseDate,
+  value,
+  onChange,
+}: {
+  fieldKey: string;
+  baseDate: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [days, setDays] = useState("");
+
+  function applyDays(rawDays: string) {
+    setDays(rawDays);
+    const parsedBase = parseISO(baseDate);
+    const count = Number(rawDays);
+    if (rawDays.trim() && baseDate && isValid(parsedBase) && Number.isFinite(count)) {
+      onChange(format(addDays(parsedBase, count), "yyyy-MM-dd"));
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Input
+        id={fieldKey}
+        type="date"
+        value={value}
+        onChange={(event) => {
+          onChange(event.target.value);
+          setDays("");
+        }}
+        className="flex-1"
+      />
+      <span className="shrink-0 text-xs text-muted-foreground">ou</span>
+      <Input
+        type="number"
+        inputMode="numeric"
+        min={0}
+        placeholder="Nb jours"
+        value={days}
+        onChange={(event) => applyDays(event.target.value)}
+        disabled={!baseDate}
+        title={baseDate ? undefined : "Renseignez d'abord la date de l'offre"}
+        className="w-24 shrink-0"
+      />
+    </div>
+  );
+}
+
 interface CautionFieldInputProps {
   field: CautionFieldDefinition;
   value: string;
   onChange: (value: string) => void;
+  /** The dateOffre value, only passed when rendering dateExpiration (their computed-duration pairing). */
+  baseDateForDuration?: string;
 }
 
 /** One field of the dynamic form. A currency or civility picks from a select, everything else is a typed input. */
-export function CautionFieldInput({ field, value, onChange }: CautionFieldInputProps) {
+export function CautionFieldInput({ field, value, onChange, baseDateForDuration }: CautionFieldInputProps) {
+  if (field.key === "dateExpiration" && baseDateForDuration !== undefined) {
+    return <DateWithDurationInput fieldKey={field.key} baseDate={baseDateForDuration} value={value} onChange={onChange} />;
+  }
   if (field.type === "CURRENCY") {
     return (
       <Select value={value || DEFAULT_CURRENCY} onValueChange={onChange}>
@@ -87,12 +153,18 @@ interface CautionFieldsGridProps {
 
 /** Renders a set of fields in a responsive two-column grid (single column on narrow screens) for a compact, scannable form. */
 export function CautionFieldsGrid({ fields, values, onChange }: CautionFieldsGridProps) {
+  const hasDateOffre = fields.some((field) => field.key === "dateOffre");
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {fields.map((field) => (
-        <Field key={field.key}>
+        <Field key={field.key} className={field.key === "dateExpiration" && hasDateOffre ? "sm:col-span-2" : undefined}>
           <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
-          <CautionFieldInput field={field} value={valueFor(field, values)} onChange={(value) => onChange(field.key, value)} />
+          <CautionFieldInput
+            field={field}
+            value={valueFor(field, values)}
+            onChange={(value) => onChange(field.key, value)}
+            baseDateForDuration={field.key === "dateExpiration" && hasDateOffre ? (values.dateOffre ?? "") : undefined}
+          />
         </Field>
       ))}
     </div>

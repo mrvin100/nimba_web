@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Pencil } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { SignatoryCombobox } from "@/components/modules/signatory";
 import { useUpdateDossier } from "./useCaution";
-import { DOSSIER_FIELD_GROUPS, type DossierFieldDef } from "./dossier-fields";
+import { DOSSIER_SECTIONS, type DossierFieldDef, type DossierSectionId } from "./dossier-fields";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -25,6 +30,10 @@ const NO_ANSWER = "__none__";
 
 /** Section 6 condition rows, in the order the Fiche renderer expects (row index 0..3). */
 const CONDITION_LABELS = ["Com. d'engagement", "Frais de caution", "Frais de délivrance", "Frais d'attestation"];
+
+/** The dossier's content is a free-form key/value bag (dynamic per-lot keys included) — a permissive record, not a fixed shape. */
+const dossierContentSchema = z.record(z.string(), z.string());
+type DossierContentInput = z.infer<typeof dossierContentSchema>;
 
 interface DossierFieldsDialogProps {
   dossierId: string;
@@ -37,17 +46,19 @@ function DossierFieldInput({
   field,
   value,
   onChange,
+  disabled,
 }: {
   field: DossierFieldDef;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }) {
   if (field.type === "textarea") {
-    return <Textarea id={field.key} value={value} onChange={(e) => onChange(e.target.value)} />;
+    return <Textarea id={field.key} value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} />;
   }
   if (field.type === "ouinon") {
     return (
-      <Select value={value || NO_ANSWER} onValueChange={(next) => onChange(next === NO_ANSWER ? "" : next)}>
+      <Select value={value || NO_ANSWER} onValueChange={(next) => onChange(next === NO_ANSWER ? "" : next)} disabled={disabled}>
         <SelectTrigger id={field.key} className="w-full">
           <SelectValue />
         </SelectTrigger>
@@ -60,47 +71,123 @@ function DossierFieldInput({
     );
   }
   return (
-    <Input id={field.key} type={field.type === "date" ? "date" : "text"} value={value} onChange={(e) => onChange(e.target.value)} />
+    <Input
+      id={field.key}
+      type={field.type === "date" ? "date" : "text"}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+    />
+  );
+}
+
+/** A signataire slot (nom + titre) locks once filled from the combobox — "Modifier" reopens it for a manual correction. */
+function SignatoryFieldsGroup({
+  index,
+  civiliteField,
+  nomField,
+  titreField,
+  form,
+}: {
+  index: 1 | 2;
+  civiliteField: DossierFieldDef;
+  nomField: DossierFieldDef;
+  titreField: DossierFieldDef;
+  form: ReturnType<typeof useForm<DossierContentInput>>;
+}) {
+  const [locked, setLocked] = useState(false);
+
+  return (
+    <div className="space-y-3 rounded-md border p-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">Signataire {index}</p>
+        <SignatoryCombobox
+          onSelect={(nom, titre) => {
+            form.setValue(nomField.key, nom, { shouldDirty: true });
+            form.setValue(titreField.key, titre, { shouldDirty: true });
+            setLocked(true);
+          }}
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Controller
+          control={form.control}
+          name={civiliteField.key}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel htmlFor={civiliteField.key}>{civiliteField.label}</FieldLabel>
+              <DossierFieldInput field={civiliteField} value={field.value ?? ""} onChange={field.onChange} />
+            </Field>
+          )}
+        />
+        <Controller
+          control={form.control}
+          name={nomField.key}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel htmlFor={nomField.key}>{nomField.label}</FieldLabel>
+              <DossierFieldInput field={nomField} value={field.value ?? ""} onChange={field.onChange} disabled={locked} />
+            </Field>
+          )}
+        />
+        <Controller
+          control={form.control}
+          name={titreField.key}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel htmlFor={titreField.key}>{titreField.label}</FieldLabel>
+              <div className="flex items-center gap-1">
+                <DossierFieldInput field={titreField} value={field.value ?? ""} onChange={field.onChange} disabled={locked} />
+                {locked && (
+                  <Button type="button" variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => setLocked(false)}>
+                    <Pencil className="size-3.5" />
+                    <span className="sr-only">Modifier</span>
+                  </Button>
+                )}
+              </div>
+            </Field>
+          )}
+        />
+      </div>
+    </div>
   );
 }
 
 /**
  * Edits a dossier's shared content — the market context plus the fields the
- * Notification and Fiche companions consume — grouped by section. Seeded from
- * the current content when opened.
+ * Notification and Fiche companions consume — organized in one tab per
+ * consumer (see dossier-fields.ts) so filling it in stays scannable instead
+ * of one long page.
  */
 export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: DossierFieldsDialogProps) {
   const update = useUpdateDossier(dossierId);
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [rootError, setRootError] = useState<string | null>(null);
-  const [seeded, setSeeded] = useState(false);
+  const [activeTab, setActiveTab] = useState<DossierSectionId>(DOSSIER_SECTIONS[0].id);
+  const form = useForm<DossierContentInput>({
+    resolver: zodResolver(dossierContentSchema),
+    defaultValues: content,
+  });
 
-  // Seed from the current content when the dialog opens; reset the marker when it closes.
-  if (open && !seeded) {
-    setValues(content);
-    setRootError(null);
-    setSeeded(true);
-  }
-  if (!open && seeded) {
-    setSeeded(false);
-  }
+  useEffect(() => {
+    if (open) {
+      form.reset(content);
+      setActiveTab(DOSSIER_SECTIONS[0].id);
+    }
+    // Only re-seed when the dialog opens, not on every content/form identity change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
-  function setValue(key: string, value: string) {
-    setValues((prev) => ({ ...prev, [key]: value }));
-  }
-
-  const lots = (values.lots ?? "")
+  const lotsValue = form.watch("lots") ?? "";
+  const lots = lotsValue
     .split(",")
     .map((lot) => lot.trim())
     .filter((lot) => lot.length > 0);
 
-  async function handleSubmit() {
-    setRootError(null);
+  async function onSubmit(values: DossierContentInput) {
     try {
       await update.mutateAsync({ content: values });
       onOpenChange(false);
     } catch (error) {
-      setRootError(getErrorMessage(error));
+      form.setError("root", { message: getErrorMessage(error) });
     }
   }
 
@@ -112,83 +199,122 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
           <DialogDescription>Ces informations alimentent la fiche d&apos;approbation et la notification.</DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[70vh] space-y-6 overflow-y-auto px-6 py-5">
-          {DOSSIER_FIELD_GROUPS.map((group) => (
-            <div key={group.title} className="space-y-3">
-              <p className="text-sm font-semibold text-foreground">{group.title}</p>
-              {group.title === "Signataires" && (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <SignatoryCombobox
-                    onSelect={(nom, titre) => {
-                      setValue("signataire1Nom", nom);
-                      setValue("signataire1Titre", titre);
-                    }}
-                  />
-                  <SignatoryCombobox
-                    onSelect={(nom, titre) => {
-                      setValue("signataire2Nom", nom);
-                      setValue("signataire2Titre", titre);
-                    }}
-                  />
-                </div>
-              )}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {group.fields.map((field) => (
-                  <Field key={field.key} className={field.type === "textarea" ? "sm:col-span-2" : undefined}>
-                    <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
-                    <DossierFieldInput field={field} value={values[field.key] ?? ""} onChange={(v) => setValue(field.key, v)} />
-                  </Field>
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="contents">
+          <div className="max-h-[70vh] overflow-y-auto px-6 py-5">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DossierSectionId)}>
+              <TabsList>
+                {DOSSIER_SECTIONS.map((section) => (
+                  <TabsTrigger key={section.id} value={section.id}>
+                    {section.title}
+                  </TabsTrigger>
                 ))}
-              </div>
-            </div>
-          ))}
-          <div className="space-y-3">
-            <p className="text-sm font-semibold text-foreground">Fiche : conditions par lot</p>
-            {lots.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Renseignez d&apos;abord les lots (section « Contexte du marché ») pour saisir les montants par lot.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {CONDITION_LABELS.map((label, row) => (
-                  <div key={label} className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">{label}</p>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      {lots.map((lot, col) => (
-                        <Field key={`${row}-${col}`}>
-                          <FieldLabel htmlFor={`cond_${row}_${col}`}>{lot}</FieldLabel>
-                          <Input
-                            id={`cond_${row}_${col}`}
-                            inputMode="numeric"
-                            value={values[`cond_${row}_${col}`] ?? ""}
-                            onChange={(e) => setValue(`cond_${row}_${col}`, e.target.value)}
+              </TabsList>
+              {DOSSIER_SECTIONS.map((section) => (
+                <TabsContent key={section.id} value={section.id} className="space-y-6 pt-4">
+                  <p className="text-xs text-muted-foreground">{section.description}</p>
+                  {section.groups.map((group) => (
+                    <div key={group.title} className="space-y-3">
+                      <p className="text-sm font-semibold text-foreground">{group.title}</p>
+                      {group.title === "Signataires" ? (
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <SignatoryFieldsGroup
+                            index={1}
+                            civiliteField={group.fields[0]}
+                            nomField={group.fields[1]}
+                            titreField={group.fields[2]}
+                            form={form}
                           />
-                        </Field>
-                      ))}
+                          <SignatoryFieldsGroup
+                            index={2}
+                            civiliteField={group.fields[3]}
+                            nomField={group.fields[4]}
+                            titreField={group.fields[5]}
+                            form={form}
+                          />
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          {group.fields.map((fieldDef) => (
+                            <Controller
+                              key={fieldDef.key}
+                              control={form.control}
+                              name={fieldDef.key}
+                              render={({ field }) => (
+                                <Field className={fieldDef.type === "textarea" ? "sm:col-span-2" : undefined}>
+                                  <FieldLabel htmlFor={fieldDef.key}>{fieldDef.label}</FieldLabel>
+                                  <DossierFieldInput field={fieldDef} value={field.value ?? ""} onChange={field.onChange} />
+                                </Field>
+                              )}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+
+                  {section.id === "fiche" && (
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-foreground">Conditions par lot</p>
+                      {lots.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          Renseignez d&apos;abord les lots (onglet « Informations communes ») pour saisir les montants par lot.
+                        </p>
+                      ) : (
+                        <div className="space-y-4">
+                          {CONDITION_LABELS.map((label, row) => (
+                            <div key={label} className="space-y-2">
+                              <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                {lots.map((lot, col) => {
+                                  const key = `cond_${row}_${col}`;
+                                  return (
+                                    <Controller
+                                      key={key}
+                                      control={form.control}
+                                      name={key}
+                                      render={({ field }) => (
+                                        <Field>
+                                          <FieldLabel htmlFor={key}>{lot}</FieldLabel>
+                                          <Input
+                                            id={key}
+                                            inputMode="numeric"
+                                            value={field.value ?? ""}
+                                            onChange={field.onChange}
+                                          />
+                                        </Field>
+                                      )}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </TabsContent>
+              ))}
+            </Tabs>
+
+            {form.formState.errors.root && (
+              <Field data-invalid className="mt-4">
+                <FieldError errors={[form.formState.errors.root]} />
+              </Field>
             )}
           </div>
 
-          {rootError && (
-            <Field data-invalid>
-              <FieldError errors={[{ message: rootError }]} />
-            </Field>
-          )}
-        </div>
-
-        <DialogFooter className="border-t px-6 py-4">
-          <DialogClose asChild>
-            <Button type="button" variant="outline">
-              Annuler
-            </Button>
-          </DialogClose>
-          <SubmitButton formState={{ isSubmitting: update.isPending }} pendingLabel="Enregistrement en cours" onClick={handleSubmit}>
-            Enregistrer
-          </SubmitButton>
-        </DialogFooter>
+          <DialogFooter className="border-t px-6 py-4">
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Annuler
+              </Button>
+            </DialogClose>
+            <SubmitButton formState={{ isSubmitting: update.isPending }} pendingLabel="Enregistrement en cours">
+              Enregistrer
+            </SubmitButton>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
