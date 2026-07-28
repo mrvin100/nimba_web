@@ -17,7 +17,12 @@ export function createClient(input: CreateClientInput): Promise<Client> {
   return api.post("clients", { json: input }).json<Client>();
 }
 
-/** Updates a client's descriptive details (matricule never changes). */
+/** Updates a client's descriptive details (matricule untouched — see updateClientMatricule). */
 export function updateClient(id: string, input: ClientFormInput): Promise<Client> {
   return api.put(`clients/${id}`, { json: input }).json<Client>();
+}
+
+/** Corrects a data-entry mistake in the matricule (manager-only, 409 if already taken). */
+export function updateClientMatricule(id: string, matricule: string): Promise<Client> {
+  return api.put(`clients/${id}/matricule`, { json: { matricule } }).json<Client>();
 }

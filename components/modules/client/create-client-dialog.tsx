@@ -65,10 +65,13 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Nouveau client</DialogTitle>
-          <DialogDescription>Le matricule est le code interne de la banque. Il ne pourra plus être modifié ensuite.</DialogDescription>
+          <DialogDescription>
+            Le matricule est le code interne de la banque. Sa correction sera ensuite réservée à un manager.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <FieldGroup>
+            <p className="text-xs text-muted-foreground">Les champs marqués d&apos;un * sont obligatoires.</p>
             <Controller
               control={form.control}
               name="matricule"
@@ -85,7 +88,7 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
               name="raisonSociale"
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Raison sociale</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Raison sociale *</FieldLabel>
                   <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>

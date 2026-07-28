@@ -7,18 +7,10 @@ import { Pencil } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { useUpdateClient } from "./useClient";
+import { MatriculeField } from "./matricule-field";
 import { updateClientSchema, type Client, type UpdateClientFormInput } from "./schema";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
@@ -101,18 +93,17 @@ export function EditClientDialog({ client }: Readonly<{ client: Client }>) {
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Fiche client</DialogTitle>
-          <DialogDescription>
-            {client.matricule ? `Matricule ${client.matricule}` : "Matricule non renseigné"}, non modifiable.
-          </DialogDescription>
         </DialogHeader>
+        <MatriculeField clientId={client.id} matricule={client.matricule} />
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <FieldGroup>
+            <p className="text-xs text-muted-foreground">Les champs marqués d&apos;un * sont obligatoires.</p>
             <Controller
               control={form.control}
               name="raisonSociale"
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Raison sociale</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Raison sociale *</FieldLabel>
                   <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
