@@ -71,6 +71,11 @@ index.ts              barrel
   `AlertDialog` — never fire straight from a menu item. Account lifecycle rows
   use the shared `StatusActionMenu`.
 - **Every screen has loading / empty / error states.**
+- **No em dash ("—") as sentence punctuation in UI-facing text** (JSX copy, toasts,
+  dialogs, labels, placeholders, error messages) — use a comma, period, or colon
+  instead. Code comments are exempt, and the "—" placeholder for an empty/missing
+  value (`formatDate`'s fallback, a table cell's `?? "—"`) is a different, legitimate
+  convention and stays as-is.
 - **shadcn on demand**: `pnpm dlx shadcn@latest add <component>`; never `add --all`.
   `components/ui/` is external — excluded from lint/format/test. Unused
   primitives are removed, not kept "just in case".

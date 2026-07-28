@@ -67,7 +67,7 @@ export function EditCaseDialog({ creditCase }: { creditCase: CreditCase }) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Modifier le dossier</DialogTitle>
-          <DialogDescription>{creditCase.caseNumber} — le numéro de dossier n&apos;est pas modifiable.</DialogDescription>
+          <DialogDescription>{creditCase.caseNumber}, le numéro de dossier n&apos;est pas modifiable.</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <FieldGroup>

@@ -65,7 +65,7 @@ export function CaseActionMenu({ creditCase }: Readonly<{ creditCase: CreditCase
             <AlertDialogTitle>Supprimer le dossier {creditCase.caseNumber} ?</AlertDialogTitle>
             <AlertDialogDescription>
               Le dossier de {creditCase.clientName}, ses échéanciers importés et ses traités générés seront
-              définitivement supprimés. Cette action est irréversible — pour simplement le retirer de la liste,
+              définitivement supprimés. Cette action est irréversible : pour simplement le retirer de la liste,
               préférez l&apos;archivage.
             </AlertDialogDescription>
           </AlertDialogHeader>

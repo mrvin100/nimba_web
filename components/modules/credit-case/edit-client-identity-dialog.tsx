@@ -121,7 +121,7 @@ export function EditClientIdentityDialog({
         <DialogHeader>
           <DialogTitle>Identité du client</DialogTitle>
           <DialogDescription>
-            Réutilisée sur la fiche d&apos;analyse, le PV et la fiche de mise en place — enregistrée sur la fiche client.
+            Réutilisée sur la fiche d&apos;analyse, le PV et la fiche de mise en place, enregistrée sur la fiche client.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>

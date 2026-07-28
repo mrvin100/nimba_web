@@ -171,7 +171,7 @@ export function AnalysisSheetPanel({ caseId }: Readonly<{ caseId: string }>) {
           <Alert>
             <AlertTitle>Aucun échéancier importé</AlertTitle>
             <AlertDescription>
-              La fiche d&apos;analyse reprend les chiffres du tableau d&apos;amortissement — importez-le d&apos;abord
+              La fiche d&apos;analyse reprend les chiffres du tableau d&apos;amortissement, importez-le d&apos;abord
               depuis l&apos;onglet Amortissement.
             </AlertDescription>
           </Alert>

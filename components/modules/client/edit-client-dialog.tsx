@@ -102,7 +102,7 @@ export function EditClientDialog({ client }: Readonly<{ client: Client }>) {
         <DialogHeader>
           <DialogTitle>Fiche client</DialogTitle>
           <DialogDescription>
-            {client.matricule ? `Matricule ${client.matricule}` : "Matricule non renseigné"} — non modifiable.
+            {client.matricule ? `Matricule ${client.matricule}` : "Matricule non renseigné"}, non modifiable.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>

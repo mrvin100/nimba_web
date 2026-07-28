@@ -23,7 +23,7 @@ export function FaComputedSection({
     return (
       <div className="space-y-2 text-sm">
         <p className="text-muted-foreground">
-          Cette section correspond exactement à l&apos;échéancier importé — aucune saisie séparée.
+          Cette section correspond exactement à l&apos;échéancier importé, aucune saisie séparée.
         </p>
         <Link href="?tab=amortissement" className="underline underline-offset-4">
           Voir l&apos;échéancier

@@ -35,7 +35,7 @@ export function AmortizationPanel({ caseId }: Readonly<{ caseId: string }>) {
   const description = hasTrades
     ? "Trades générés à partir de l'échéancier importé."
     : hasSchedule
-      ? "Échéancier importé — générez les trades ou réimportez un fichier corrigé."
+      ? "Échéancier importé, générez les trades ou réimportez un fichier corrigé."
       : "Importez l'échéancier d'amortissement puis générez les trades.";
 
   const generateButton = (

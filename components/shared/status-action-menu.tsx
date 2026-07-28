@@ -77,7 +77,7 @@ export function StatusActionMenu({ name, status, pending, onAction, extraActions
   async function run(action: LifecycleAction) {
     try {
       await onAction(action);
-      toast.success(`${name} — ${ACTION_LABELS[action].toLowerCase()}`);
+      toast.success(`${name} : ${ACTION_LABELS[action].toLowerCase()}`);
     } catch (error) {
       toast.error(getErrorMessage(error, "Une erreur est survenue. Veuillez réessayer."));
     }

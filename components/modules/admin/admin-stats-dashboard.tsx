@@ -278,7 +278,7 @@ export function AdminStatsDashboard() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium">Dossiers — tous produits</h2>
+        <h2 className="text-sm font-medium">Dossiers (tous produits)</h2>
         {dossiers.isPending || cautions.isPending ? (
           <SectionSkeleton cards={4} />
         ) : dossiers.isError || cautions.isError || !dossiers.data || !cautions.data ? (
@@ -333,7 +333,7 @@ export function AdminStatsDashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Financement — état de l&apos;échéancier</CardTitle>
+                  <CardTitle className="text-base">Financement : état de l&apos;échéancier</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {dossierData.length === 0 ? (
@@ -354,7 +354,7 @@ export function AdminStatsDashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Caution — état des dossiers</CardTitle>
+                  <CardTitle className="text-base">Caution : état des dossiers</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {cautionStatusData.length === 0 ? (
@@ -378,7 +378,7 @@ export function AdminStatsDashboard() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium">Traitement du workflow — financement</h2>
+        <h2 className="text-sm font-medium">Traitement du workflow (financement)</h2>
         {workflow.isPending ? (
           <SectionSkeleton cards={3} />
         ) : workflow.isError || !workflow.data ? (

@@ -176,7 +176,7 @@ export function CreditCaseSettings({ caseId, backHref }: Readonly<{ caseId: stri
       <CardHeader>
         <CardTitle className="text-base">Zone critique</CardTitle>
         <CardDescription>
-          Actions irréversibles sur le dossier {creditCase.caseNumber} — chaque action demande une confirmation
+          Actions irréversibles sur le dossier {creditCase.caseNumber}. Chaque action demande une confirmation
           explicite.
         </CardDescription>
       </CardHeader>

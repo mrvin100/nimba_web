@@ -38,5 +38,5 @@ export function FaSectionBody({
 }
 
 function FaPendingEditor() {
-  return <p className="text-sm text-muted-foreground">Éditeur dédié en cours de construction — la section est déjà exportée dans le document Word.</p>;
+  return <p className="text-sm text-muted-foreground">Éditeur dédié en cours de construction. La section est déjà exportée dans le document Word.</p>;
 }

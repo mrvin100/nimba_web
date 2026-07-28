@@ -47,7 +47,7 @@ export function FmpView({ fmp }: Readonly<{ fmp: Fmp }>) {
       </div>
 
       <div>
-        <p className="mb-1 text-sm font-medium">Décision du comité — articulation des financements</p>
+        <p className="mb-1 text-sm font-medium">Décision du comité : articulation des financements</p>
         <Row label="Montant financé">{formatAmount(fmp.articulation.loanAmount)}</Row>
         <Row label="Durée">{fmp.articulation.durationMonths} échéances</Row>
         <Row label="1er loyer TTC">{formatAmount(fmp.articulation.premierLoyerTtc)}</Row>

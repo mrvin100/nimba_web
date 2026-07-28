@@ -85,7 +85,7 @@ export function BulkImportDialog() {
             <Info />
             <AlertTitle>Comment procéder</AlertTitle>
             <AlertDescription>
-              Une ligne par utilisateur — colonnes <code>fullName, email, department, role, admin</code>. Laissez
+              Une ligne par utilisateur, avec les colonnes <code>fullName, email, department, role, admin</code>. Laissez
               direction/rôle vides pour un administrateur. Depuis Excel, enregistrez en{" "}
               <strong>CSV UTF-8</strong> (virgule ou point-virgule acceptés). Chaque compte créé reçoit une invitation.
               <div className="mt-2">

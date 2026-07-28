@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 const VERDICT_DESCRIPTIONS: Record<ReviewVerdict, string> = {
   APPROUVE: "Le dossier passe à l'analyse de la DRC.",
   CHANGEMENTS_DEMANDES: "Le dossier retourne au DRI, qui corrige puis resoumet à votre revue.",
-  AVIS_FAVORABLE: "Aucune observation bloquante — le dossier passe à la vérification DCM.",
+  AVIS_FAVORABLE: "Aucune observation bloquante, le dossier passe à la vérification DCM.",
   OBSERVATIONS: "Le DRI applique vos observations ; la DCM vérifie avant l'envoi au comité.",
 };
 
@@ -61,8 +61,8 @@ export function ReviewSubmitBar({
         <p className="text-sm">
           <span className="font-medium">Revue en cours</span>
           {pendingComments > 0
-            ? ` — ${pendingComments} commentaire${pendingComments > 1 ? "s" : ""} en attente de publication.`
-            : " — commentez les sections puis rendez votre verdict."}
+            ? ` : ${pendingComments} commentaire${pendingComments > 1 ? "s" : ""} en attente de publication.`
+            : " : commentez les sections puis rendez votre verdict."}
         </p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
