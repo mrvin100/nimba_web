@@ -22,7 +22,14 @@ import {
 } from "@/components/ui/dialog";
 import { FieldError, FieldGroup } from "@/components/ui/field";
 
-const DEFAULTS: SignatoryInput = { nom: "", titre: "", category: "INTERNE", creationReason: "", authorizations: [] };
+const DEFAULTS: SignatoryInput = {
+  nom: "",
+  titre: "",
+  civility: "MONSIEUR",
+  category: "INTERNE",
+  creationReason: "",
+  authorizations: [],
+};
 
 export function CreateSignatoryDialog() {
   const [open, setOpen] = useState(false);

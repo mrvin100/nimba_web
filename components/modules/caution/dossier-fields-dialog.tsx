@@ -8,6 +8,7 @@ import { Pencil } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { SignatoryCombobox } from "@/components/modules/signatory";
+import { CIVILITY_LABELS } from "@/components/modules/identity";
 import { useUpdateDossier } from "./useCaution";
 import { DOSSIER_SECTIONS, type DossierFieldDef, type DossierSectionId } from "./dossier-fields";
 import { Button } from "@/components/ui/button";
@@ -81,45 +82,47 @@ function DossierFieldInput({
   );
 }
 
-/** A signataire slot (nom + titre) locks once filled from the combobox — "Modifier" reopens it for a manual correction. */
+/**
+ * A signataire slot (nom + titre) locks once filled from the combobox — "Modifier"
+ * reopens it for a manual correction. Civilité is never typed by hand: it is
+ * resolved from whichever signatory the combobox picks (their profile or standalone
+ * record) and written straight into [civiliteFieldKey], which stays out of the
+ * visible form since nothing here can pick it. A manual (non-combobox) nom/titre
+ * still submits with whatever civilité was last resolved, or none.
+ */
 function SignatoryFieldsGroup({
   index,
-  civiliteField,
+  civiliteFieldKey,
   nomField,
   titreField,
   form,
 }: {
   index: 1 | 2;
-  civiliteField: DossierFieldDef;
+  civiliteFieldKey: string;
   nomField: DossierFieldDef;
   titreField: DossierFieldDef;
   form: ReturnType<typeof useForm<DossierContentInput>>;
 }) {
   const [locked, setLocked] = useState(false);
+  const civilite = form.watch(civiliteFieldKey);
 
   return (
     <div className="space-y-3 rounded-md border p-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-muted-foreground">Signataire {index}</p>
+        <p className="text-xs font-medium text-muted-foreground">
+          Signataire {index}
+          {civilite && ` (${civilite})`}
+        </p>
         <SignatoryCombobox
-          onSelect={(nom, titre) => {
+          onSelect={(nom, titre, civility) => {
             form.setValue(nomField.key, nom, { shouldDirty: true });
             form.setValue(titreField.key, titre, { shouldDirty: true });
+            form.setValue(civiliteFieldKey, civility ? CIVILITY_LABELS[civility] : "", { shouldDirty: true });
             setLocked(true);
           }}
         />
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Controller
-          control={form.control}
-          name={civiliteField.key}
-          render={({ field }) => (
-            <Field>
-              <FieldLabel htmlFor={civiliteField.key}>{civiliteField.label}</FieldLabel>
-              <DossierFieldInput field={civiliteField} value={field.value ?? ""} onChange={field.onChange} />
-            </Field>
-          )}
-        />
+      <div className="space-y-3">
         <Controller
           control={form.control}
           name={nomField.key}
@@ -219,14 +222,14 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <SignatoryFieldsGroup
                             index={1}
-                            civiliteField={group.fields[0]}
+                            civiliteFieldKey={group.fields[0].key}
                             nomField={group.fields[1]}
                             titreField={group.fields[2]}
                             form={form}
                           />
                           <SignatoryFieldsGroup
                             index={2}
-                            civiliteField={group.fields[3]}
+                            civiliteFieldKey={group.fields[3].key}
                             nomField={group.fields[4]}
                             titreField={group.fields[5]}
                             form={form}

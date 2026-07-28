@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DEPARTMENTS, DEPARTMENT_ROLES, type Department, type DepartmentRole } from "@/components/modules/identity";
+import { CIVILITIES, DEPARTMENTS, DEPARTMENT_ROLES, type Civility, type Department, type DepartmentRole } from "@/components/modules/identity";
 
 /** Whether a standalone signatory (no account) is a bank employee or outside the bank. */
 export const SIGNATORY_CATEGORIES = ["INTERNE", "EXTERNE"] as const;
@@ -18,6 +18,7 @@ export interface SignatoryOption {
   refId: string;
   nom: string;
   titre: string;
+  civility: Civility | null;
   category: SignatoryCategory | null;
 }
 
@@ -31,6 +32,7 @@ export interface Signatory {
   id: string;
   nom: string;
   titre: string;
+  civility: Civility;
   category: SignatoryCategory;
   creationReason: string;
   createdAt: string;
@@ -45,6 +47,7 @@ const authorizationSchema = z.object({
 export const signatorySchema = z.object({
   nom: z.string().min(1, "Nom requis").max(200, "200 caractères maximum"),
   titre: z.string().min(1, "Titre requis").max(200, "200 caractères maximum"),
+  civility: z.enum(CIVILITIES),
   category: z.enum(SIGNATORY_CATEGORIES),
   creationReason: z.string().min(1, "Le motif de création est requis").max(500, "500 caractères maximum"),
   authorizations: z.array(authorizationSchema),

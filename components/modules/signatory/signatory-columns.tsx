@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { formatDate } from "@/lib/format";
 import { SIGNATORY_CATEGORY_LABELS, type Signatory } from "./schema";
 import { SignatoryRowActions } from "./signatory-row-actions";
+import { CIVILITY_LABELS } from "@/components/modules/identity";
 import { Badge } from "@/components/ui/badge";
 
 const ROLE_LABELS = { MANAGER: "Manager", MEMBER: "Membre" } as const;
@@ -19,6 +20,12 @@ export const signatoryColumns: ColumnDef<Signatory>[] = [
     accessorKey: "titre",
     header: "Titre",
     meta: { label: "Titre" },
+  },
+  {
+    accessorKey: "civility",
+    header: "Civilité",
+    meta: { label: "Civilité" },
+    cell: ({ row }) => CIVILITY_LABELS[row.original.civility],
   },
   {
     accessorKey: "category",

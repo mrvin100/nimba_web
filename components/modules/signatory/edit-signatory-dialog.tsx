@@ -16,6 +16,7 @@ function toFormValues(signatory: Signatory): SignatoryInput {
   return {
     nom: signatory.nom,
     titre: signatory.titre,
+    civility: signatory.civility,
     category: signatory.category,
     creationReason: signatory.creationReason,
     authorizations: signatory.authorizations,

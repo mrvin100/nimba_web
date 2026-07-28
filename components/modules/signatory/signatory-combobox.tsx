@@ -4,14 +4,19 @@ import { useState } from "react";
 import { useSignatoryOptions } from "./useSignatory";
 import { SIGNATORY_CATEGORY_LABELS, type SignatoryOption } from "./schema";
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
+import type { Civility } from "@/components/modules/identity";
 
 /**
  * Picks a known signatory (a profile that opted in, or an authorized standalone
- * record) and reports its live nom/titre — the caller prefills its own text fields
- * with them, still editable afterward. Never writes anything itself; this is purely
- * a convenience over retyping, the document's own fields remain the source of truth.
+ * record) and reports its live nom/titre/civilité — the caller prefills its own
+ * fields with them, still editable afterward for nom/titre. The civility is
+ * resolved from whichever the signatory confirmed on their profile or record, so
+ * it is never retyped by hand. Never writes anything itself; this is purely a
+ * convenience over retyping, the document's own fields remain the source of truth.
  */
-export function SignatoryCombobox({ onSelect }: Readonly<{ onSelect: (nom: string, titre: string) => void }>) {
+export function SignatoryCombobox({
+  onSelect,
+}: Readonly<{ onSelect: (nom: string, titre: string, civility: Civility | null) => void }>) {
   const { data: options } = useSignatoryOptions();
   const [value, setValue] = useState<SignatoryOption | null>(null);
 
@@ -21,7 +26,7 @@ export function SignatoryCombobox({ onSelect }: Readonly<{ onSelect: (nom: strin
       value={value}
       onValueChange={(option) => {
         setValue(option);
-        if (option) onSelect(option.nom, option.titre);
+        if (option) onSelect(option.nom, option.titre, option.civility);
       }}
       itemToStringValue={(option: SignatoryOption) => `${option.nom}, ${option.titre}`}
     >

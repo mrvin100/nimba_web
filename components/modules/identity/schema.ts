@@ -27,6 +27,15 @@ export type DepartmentRole = (typeof DEPARTMENT_ROLES)[number];
 /** Account lifecycle; only ACTIVE accounts can authenticate. */
 export type AccountStatus = "ACTIVE" | "SUSPENDED" | "REVOKED";
 
+/** A signatory's civility, as printed on a generated document. */
+export const CIVILITIES = ["MONSIEUR", "MADAME"] as const;
+export type Civility = (typeof CIVILITIES)[number];
+
+export const CIVILITY_LABELS: Record<Civility, string> = {
+  MONSIEUR: "Monsieur",
+  MADAME: "Madame",
+};
+
 /** One (direction, role) assignment. A user holds at most one role per direction. */
 export interface Membership {
   department: Department;
@@ -43,6 +52,7 @@ export interface MeResponse {
   hasAvatar: boolean;
   memberships: Membership[];
   titre: string | null;
+  civility: Civility | null;
   signatoryOptIn: boolean;
 }
 
@@ -79,16 +89,21 @@ export interface InvitationInfo {
   email: string;
 }
 
-/** Self-service profile edit (display name, job title, and the signatory opt-in). */
+/** Self-service profile edit (display name, job title, civility, and the signatory opt-in). */
 export const updateProfileSchema = z
   .object({
     fullName: z.string().min(1, "Nom complet requis").max(200, "200 caractères maximum"),
     titre: z.string().max(200, "200 caractères maximum").optional(),
+    civility: z.enum(CIVILITIES).optional(),
     signatoryOptIn: z.boolean(),
   })
   .refine((data) => !data.signatoryOptIn || Boolean(data.titre?.trim()), {
     message: "Un titre est requis pour apparaître comme signataire",
     path: ["titre"],
+  })
+  .refine((data) => !data.signatoryOptIn || data.civility !== undefined, {
+    message: "Une civilité est requise pour apparaître comme signataire",
+    path: ["civility"],
   });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

@@ -8,7 +8,7 @@ import { getErrorMessage } from "@/lib/api-error";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useDeleteAvatar, useSession, useUpdateProfile, useUploadAvatar } from "./useIdentity";
 import { avatarPath } from "./identity.service";
-import { DEPARTMENT_LABELS, updateProfileSchema, type UpdateProfileInput } from "./schema";
+import { CIVILITIES, CIVILITY_LABELS, DEPARTMENT_LABELS, updateProfileSchema, type UpdateProfileInput } from "./schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/shared/submit-button";
@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { initials } from "@/lib/format";
@@ -48,16 +49,24 @@ export function ProfileView() {
     formState: { errors, isDirty },
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
-    defaultValues: { fullName: "", titre: "", signatoryOptIn: false },
+    defaultValues: { fullName: "", titre: "", civility: undefined, signatoryOptIn: false },
   });
 
   useEffect(() => {
-    if (user) reset({ fullName: user.fullName, titre: user.titre ?? "", signatoryOptIn: user.signatoryOptIn });
+    if (user) {
+      reset({ fullName: user.fullName, titre: user.titre ?? "", civility: user.civility ?? undefined, signatoryOptIn: user.signatoryOptIn });
+    }
   }, [user, reset]);
 
   function onSubmit(values: UpdateProfileInput) {
     updateProfile.mutate(values, {
-      onSuccess: (updated) => reset({ fullName: updated.fullName, titre: updated.titre ?? "", signatoryOptIn: updated.signatoryOptIn }),
+      onSuccess: (updated) =>
+        reset({
+          fullName: updated.fullName,
+          titre: updated.titre ?? "",
+          civility: updated.civility ?? undefined,
+          signatoryOptIn: updated.signatoryOptIn,
+        }),
       onError: (error) => setError("root", { message: getErrorMessage(error) }),
     });
   }
@@ -148,6 +157,31 @@ export function ProfileView() {
               />
               <Controller
                 control={control}
+                name="civility"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Civilité</FieldLabel>
+                    <Select value={field.value ?? ""} onValueChange={(value) => field.onChange(value)}>
+                      <SelectTrigger id={field.name} className="w-full" aria-invalid={fieldState.invalid}>
+                        <SelectValue placeholder="Choisir" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CIVILITIES.map((civility) => (
+                          <SelectItem key={civility} value={civility}>
+                            {CIVILITY_LABELS[civility]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FieldDescription>
+                      Utilisée pour vous désigner (Monsieur / Madame) si vous apparaissez comme signataire.
+                    </FieldDescription>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                control={control}
                 name="signatoryOptIn"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid} orientation="horizontal">
@@ -172,7 +206,14 @@ export function ProfileView() {
                 type="button"
                 variant="outline"
                 disabled={!isDirty}
-                onClick={() => reset({ fullName: user.fullName, titre: user.titre ?? "", signatoryOptIn: user.signatoryOptIn })}
+                onClick={() =>
+                  reset({
+                    fullName: user.fullName,
+                    titre: user.titre ?? "",
+                    civility: user.civility ?? undefined,
+                    signatoryOptIn: user.signatoryOptIn,
+                  })
+                }
               >
                 Annuler
               </Button>
