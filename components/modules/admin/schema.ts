@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { PagedResponse } from "@/lib/pagination";
 import { DEPARTMENTS, type AccountStatus, type Department, type Membership } from "@/components/modules/identity";
+import type { DossierStatus } from "@/components/modules/caution";
+import type { WorkflowStatus } from "@/components/modules/workflow";
 
 /** A managed user, as returned by the admin endpoints. */
 export interface AdminUser {
@@ -175,8 +177,22 @@ export interface UserStats {
   byDepartment: { department: Department; count: number }[];
 }
 
-/** Aggregate credit-case counts for the admin dashboard. */
+/** Aggregate credit-case (financement) counts for the admin dashboard. */
 export interface DossierStats {
   total: number;
   byStatus: { status: "EN_ATTENTE_AMORTISSEMENT" | "TRADES_GENERES"; count: number }[];
+  byProductType: { productType: "LEASING" | "MC2_MUFFA"; count: number }[];
+}
+
+/** Aggregate caution-dossier (engagement) counts for the admin dashboard. */
+export interface CautionStats {
+  total: number;
+  byStatus: { status: DossierStatus; count: number }[];
+}
+
+/** Aggregate financement-workflow figures for the admin dashboard. */
+export interface WorkflowStats {
+  byStatus: { status: WorkflowStatus; count: number }[];
+  pendingByDepartment: { department: Department; count: number }[];
+  averageDurationByStatus: { status: WorkflowStatus; averageHours: number }[];
 }

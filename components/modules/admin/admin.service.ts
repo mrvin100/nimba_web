@@ -6,6 +6,7 @@ import type {
   AdminUserPage,
   BulkImportResult,
   BulkPreviewResponse,
+  CautionStats,
   CreateUserPayload,
   DossierStats,
   OrganizationInput,
@@ -13,6 +14,7 @@ import type {
   UpdateMembershipsPayload,
   UserStats,
   UserStatusAction,
+  WorkflowStats,
 } from "./schema";
 
 /** Lists managed users, newest first (paginated). */
@@ -111,7 +113,17 @@ export function getUserStats(): Promise<UserStats> {
   return api.get("admin/stats/users").json<UserStats>();
 }
 
-/** Aggregate credit-case counts for the admin dashboard. */
+/** Aggregate credit-case (financement) counts for the admin dashboard. */
 export function getDossierStats(): Promise<DossierStats> {
   return api.get("admin/stats/dossiers").json<DossierStats>();
+}
+
+/** Aggregate caution-dossier (engagement) counts for the admin dashboard. */
+export function getCautionStats(): Promise<CautionStats> {
+  return api.get("admin/stats/cautions").json<CautionStats>();
+}
+
+/** Aggregate financement-workflow figures (funnel, charge par direction, délais) for the admin dashboard. */
+export function getWorkflowStats(): Promise<WorkflowStats> {
+  return api.get("admin/stats/workflow").json<WorkflowStats>();
 }

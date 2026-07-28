@@ -1,11 +1,25 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { Building2, Clock, FileCheck2, Folder, UserCheck, UserMinus, Users, UserX } from "lucide-react";
+import {
+  Building2,
+  Clock,
+  Folder,
+  Hourglass,
+  Landmark,
+  ShieldCheck,
+  UserCheck,
+  UserMinus,
+  Users,
+  UserX,
+  Workflow,
+} from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, Label, Pie, PieChart, XAxis, YAxis } from "recharts";
 import { PageHeader } from "@/components/shared/page-header";
-import { DEPARTMENT_LABELS } from "@/components/modules/identity";
-import { useDossierStats, useUserStats } from "./useAdmin";
+import { DEPARTMENT_LABELS, type Department } from "@/components/modules/identity";
+import { WORKFLOW_STATUS_LABELS } from "@/components/modules/workflow";
+import { DOSSIER_STATUS_LABELS as CAUTION_DOSSIER_STATUS_LABELS } from "@/components/modules/caution";
+import { useCautionStats, useDossierStats, useUserStats, useWorkflowStats } from "./useAdmin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
@@ -26,6 +40,20 @@ const departmentChartConfig = {
   count: { label: "Utilisateurs", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
+/** Short form for the direction-distribution chart's x-axis (full name on hover). */
+const DEPARTMENT_ABBREVIATIONS: Record<Department, string> = {
+  DRI: "DRI",
+  DCM: "DCM",
+  DRC: "DRC",
+  COMITE: "EXCO",
+};
+
+/** Hover label for the chart — COMITE also sits as the exécutif committee (FMP visa row). */
+const DEPARTMENT_CHART_TOOLTIP_LABELS: Record<Department, string> = {
+  ...DEPARTMENT_LABELS,
+  COMITE: "Comité Exécutif | Comité de Crédit",
+};
+
 const statusChartConfig = {
   active: { label: "Actifs", color: "var(--chart-1)" },
   pending: { label: "En attente", color: "var(--chart-2)" },
@@ -35,6 +63,25 @@ const statusChartConfig = {
 
 const dossierChartConfig = {
   count: { label: "Dossiers", color: "var(--chart-1)" },
+} satisfies ChartConfig;
+
+const productChartConfig = {
+  leasing: { label: "Leasing", color: "var(--chart-1)" },
+  mc2Muffa: { label: "MC2 / MUFFA", color: "var(--chart-2)" },
+  caution: { label: "Caution", color: "var(--chart-3)" },
+} satisfies ChartConfig;
+
+/** Distinct from `departmentChartConfig` (users): this counts pending dossiers, not people. */
+const chargeChartConfig = {
+  count: { label: "Dossiers en attente", color: "var(--chart-2)" },
+} satisfies ChartConfig;
+
+const workflowFunnelChartConfig = {
+  count: { label: "Dossiers", color: "var(--chart-1)" },
+} satisfies ChartConfig;
+
+const delayChartConfig = {
+  averageHours: { label: "Délai moyen (heures)", color: "var(--chart-4)" },
 } satisfies ChartConfig;
 
 function StatCard({ label, value, icon: Icon }: { label: string; value: number; icon: LucideIcon }) {
@@ -67,6 +114,8 @@ function SectionSkeleton({ cards }: { cards: number }) {
 export function AdminStatsDashboard() {
   const users = useUserStats();
   const dossiers = useDossierStats();
+  const cautions = useCautionStats();
+  const workflow = useWorkflowStats();
 
   const statusData = users.data
     ? [
@@ -79,7 +128,8 @@ export function AdminStatsDashboard() {
 
   const departmentData =
     users.data?.byDepartment.map((entry) => ({
-      department: DEPARTMENT_LABELS[entry.department],
+      department: DEPARTMENT_ABBREVIATIONS[entry.department],
+      fullName: DEPARTMENT_CHART_TOOLTIP_LABELS[entry.department],
       count: entry.count,
     })) ?? [];
 
@@ -87,6 +137,45 @@ export function AdminStatsDashboard() {
     dossiers.data?.byStatus.map((entry) => ({
       status: DOSSIER_STATUS_LABELS[entry.status] ?? entry.status,
       count: entry.count,
+    })) ?? [];
+
+  const totalDossiersAllProducts = (dossiers.data?.total ?? 0) + (cautions.data?.total ?? 0);
+  const leasingCount = dossiers.data?.byProductType.find((entry) => entry.productType === "LEASING")?.count ?? 0;
+  const mc2MuffaCount = dossiers.data?.byProductType.find((entry) => entry.productType === "MC2_MUFFA")?.count ?? 0;
+  const cautionCount = cautions.data?.total ?? 0;
+
+  const productData =
+    dossiers.data && cautions.data
+      ? [
+          { product: "leasing", label: "Leasing", value: leasingCount, fill: "var(--color-leasing)" },
+          { product: "mc2Muffa", label: "MC2 / MUFFA", value: mc2MuffaCount, fill: "var(--color-mc2Muffa)" },
+          { product: "caution", label: "Caution", value: cautionCount, fill: "var(--color-caution)" },
+        ].filter((entry) => entry.value > 0)
+      : [];
+
+  const cautionStatusData =
+    cautions.data?.byStatus.map((entry) => ({
+      status: CAUTION_DOSSIER_STATUS_LABELS[entry.status] ?? entry.status,
+      count: entry.count,
+    })) ?? [];
+
+  const chargeData =
+    workflow.data?.pendingByDepartment.map((entry) => ({
+      department: DEPARTMENT_ABBREVIATIONS[entry.department],
+      fullName: DEPARTMENT_CHART_TOOLTIP_LABELS[entry.department],
+      count: entry.count,
+    })) ?? [];
+
+  const workflowFunnelData =
+    workflow.data?.byStatus.map((entry) => ({
+      status: WORKFLOW_STATUS_LABELS[entry.status] ?? entry.status,
+      count: entry.count,
+    })) ?? [];
+
+  const delayData =
+    workflow.data?.averageDurationByStatus.map((entry) => ({
+      status: WORKFLOW_STATUS_LABELS[entry.status] ?? entry.status,
+      averageHours: Math.round(entry.averageHours * 10) / 10,
     })) ?? [];
 
   return (
@@ -126,7 +215,16 @@ export function AdminStatsDashboard() {
                         <CartesianGrid vertical={false} />
                         <XAxis dataKey="department" tickLine={false} axisLine={false} tickMargin={8} />
                         <YAxis tickLine={false} axisLine={false} allowDecimals={false} width={30} />
-                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <ChartTooltip
+                          content={
+                            <ChartTooltipContent
+                              labelFormatter={(_, payload) => {
+                                const point = payload?.[0]?.payload as { fullName: string } | undefined;
+                                return point?.fullName ?? null;
+                              }}
+                            />
+                          }
+                        />
                         <Bar dataKey="count" fill="var(--color-count)" radius={4} />
                       </BarChart>
                     </ChartContainer>
@@ -180,36 +278,185 @@ export function AdminStatsDashboard() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium">Dossiers</h2>
-        {dossiers.isPending ? (
-          <SectionSkeleton cards={3} />
-        ) : dossiers.isError || !dossiers.data ? (
+        <h2 className="text-sm font-medium">Dossiers — tous produits</h2>
+        {dossiers.isPending || cautions.isPending ? (
+          <SectionSkeleton cards={4} />
+        ) : dossiers.isError || cautions.isError || !dossiers.data || !cautions.data ? (
           <p className="text-sm text-destructive">Impossible de charger les statistiques dossiers.</p>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-3">
-            <StatCard label="Total" value={dossiers.data.total} icon={Folder} />
-            {dossiers.data.byStatus.map((entry) => (
-              <StatCard
-                key={entry.status}
-                label={DOSSIER_STATUS_LABELS[entry.status] ?? entry.status}
-                value={entry.count}
-                icon={FileCheck2}
-              />
-            ))}
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard label="Total" value={totalDossiersAllProducts} icon={Folder} />
+              <StatCard label="Leasing" value={leasingCount} icon={Landmark} />
+              <StatCard label="MC2 / MUFFA" value={mc2MuffaCount} icon={Landmark} />
+              <StatCard label="Caution" value={cautionCount} icon={ShieldCheck} />
+            </div>
 
-            <Card className="lg:col-span-3">
+            <div className="grid gap-4 lg:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Répartition par produit</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {productData.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-muted-foreground">Aucun dossier pour le moment.</p>
+                  ) : (
+                    <ChartContainer config={productChartConfig} className="mx-auto aspect-square max-h-56">
+                      <PieChart>
+                        <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="label" />} />
+                        <Pie data={productData} dataKey="value" nameKey="label" innerRadius={55} strokeWidth={4}>
+                          {productData.map((entry) => (
+                            <Cell key={entry.product} fill={entry.fill} />
+                          ))}
+                          <Label
+                            content={({ viewBox }) => {
+                              if (!viewBox || !("cx" in viewBox) || !("cy" in viewBox)) return null;
+                              return (
+                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                                  <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-2xl font-bold">
+                                    {totalDossiersAllProducts}
+                                  </tspan>
+                                  <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) + 20} className="fill-muted-foreground text-xs">
+                                    dossiers
+                                  </tspan>
+                                </text>
+                              );
+                            }}
+                          />
+                        </Pie>
+                        <ChartLegend content={<ChartLegendContent nameKey="label" />} />
+                      </PieChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Financement — état de l&apos;échéancier</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {dossierData.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-muted-foreground">Aucun dossier pour le moment.</p>
+                  ) : (
+                    <ChartContainer config={dossierChartConfig} className="h-56 w-full">
+                      <BarChart data={dossierData} layout="vertical" margin={{ left: 16 }}>
+                        <CartesianGrid horizontal={false} />
+                        <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} />
+                        <YAxis type="category" dataKey="status" tickLine={false} axisLine={false} width={170} />
+                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                      </BarChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Caution — état des dossiers</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {cautionStatusData.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-muted-foreground">Aucun dossier pour le moment.</p>
+                  ) : (
+                    <ChartContainer config={dossierChartConfig} className="h-56 w-full">
+                      <BarChart data={cautionStatusData} layout="vertical" margin={{ left: 16 }}>
+                        <CartesianGrid horizontal={false} />
+                        <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} />
+                        <YAxis type="category" dataKey="status" tickLine={false} axisLine={false} width={110} />
+                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                      </BarChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium">Traitement du workflow — financement</h2>
+        {workflow.isPending ? (
+          <SectionSkeleton cards={3} />
+        ) : workflow.isError || !workflow.data ? (
+          <p className="text-sm text-destructive">Impossible de charger les statistiques de workflow.</p>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-base">Dossiers par statut</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Workflow className="size-4" />
+                  Charge par direction
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                {dossierData.length === 0 ? (
+                {chargeData.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">Aucun dossier en attente.</p>
+                ) : (
+                  <ChartContainer config={chargeChartConfig} className="h-56 w-full">
+                    <BarChart data={chargeData}>
+                      <CartesianGrid vertical={false} />
+                      <XAxis dataKey="department" tickLine={false} axisLine={false} tickMargin={8} />
+                      <YAxis tickLine={false} axisLine={false} allowDecimals={false} width={30} />
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent
+                            labelFormatter={(_, payload) => {
+                              const point = payload?.[0]?.payload as { fullName: string } | undefined;
+                              return point?.fullName ?? null;
+                            }}
+                          />
+                        }
+                      />
+                      <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                    </BarChart>
+                  </ChartContainer>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Hourglass className="size-4" />
+                  Délai moyen par étape
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {delayData.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">
+                    Pas encore assez de transitions pour calculer un délai.
+                  </p>
+                ) : (
+                  <ChartContainer config={delayChartConfig} className="h-56 w-full">
+                    <BarChart data={delayData} layout="vertical" margin={{ left: 16 }}>
+                      <CartesianGrid horizontal={false} />
+                      <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} unit="h" />
+                      <YAxis type="category" dataKey="status" tickLine={false} axisLine={false} width={130} />
+                      <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                      <Bar dataKey="averageHours" fill="var(--color-averageHours)" radius={4} />
+                    </BarChart>
+                  </ChartContainer>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-base">Entonnoir des statuts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {workflowFunnelData.length === 0 ? (
                   <p className="py-8 text-center text-sm text-muted-foreground">Aucun dossier pour le moment.</p>
                 ) : (
-                  <ChartContainer config={dossierChartConfig} className="h-40 w-full">
-                    <BarChart data={dossierData} layout="vertical" margin={{ left: 16 }}>
+                  <ChartContainer config={workflowFunnelChartConfig} className="h-96 w-full">
+                    <BarChart data={workflowFunnelData} layout="vertical" margin={{ left: 16 }}>
                       <CartesianGrid horizontal={false} />
                       <XAxis type="number" tickLine={false} axisLine={false} allowDecimals={false} />
-                      <YAxis type="category" dataKey="status" tickLine={false} axisLine={false} width={170} />
+                      <YAxis type="category" dataKey="status" tickLine={false} axisLine={false} width={150} />
                       <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                       <Bar dataKey="count" fill="var(--color-count)" radius={4} />
                     </BarChart>
