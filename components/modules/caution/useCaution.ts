@@ -8,6 +8,7 @@ import {
   createCaution,
   createDossier,
   deleteCaution,
+  deleteDossier,
   documentHistory,
   dossierEvents,
   finalizeDossier,
@@ -189,6 +190,16 @@ export function useRefinalizeDossier(id: string) {
     successToast: "Dossier re-finalisé",
     errorToast: true,
     onSuccess: () => refreshDossierAfter(queryClient, id),
+  });
+}
+
+/** Deletes a dossier and every document it holds (only while still a draft; admin-only). */
+export function useDeleteDossier() {
+  return useApiMutation({
+    mutationFn: (id: string) => deleteDossier(id),
+    invalidate: [dossierKeys.all],
+    successToast: "Dossier supprimé",
+    errorToast: true,
   });
 }
 

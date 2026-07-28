@@ -87,6 +87,11 @@ export function refinalizeDossier(id: string): Promise<CautionDossier> {
   return api.post(`caution-dossiers/${id}/refinalize`).json<CautionDossier>();
 }
 
+/** Deletes a dossier and every document it holds (only while still a draft; admin-only). */
+export async function deleteDossier(id: string): Promise<void> {
+  await api.delete(`caution-dossiers/${id}`);
+}
+
 /** A dossier's lifecycle journal, newest first. */
 export function dossierEvents(id: string): Promise<DossierEvent[]> {
   return api.get(`caution-dossiers/${id}/events`).json<DossierEvent[]>();
