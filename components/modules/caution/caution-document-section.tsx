@@ -63,7 +63,8 @@ export function CautionDocumentSection({
   const [history, setHistory] = useState<Caution | null>(null);
   const [deleting, setDeleting] = useState<Caution | null>(null);
   const remove = useDeleteCaution();
-  const { isAdmin } = useSession();
+  const { isAdmin, isManager } = useSession();
+  const canDelete = isAdmin || isManager("DCM");
 
   return (
     <section className="space-y-3 rounded-md border p-4">
@@ -130,7 +131,7 @@ export function CautionDocumentSection({
                             <History />
                             Historique
                           </DropdownMenuItem>
-                          {writable && isAdmin && (
+                          {writable && canDelete && (
                             <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(document)}>
                               <Trash2 />
                               Supprimer

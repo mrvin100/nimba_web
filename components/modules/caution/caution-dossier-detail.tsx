@@ -145,7 +145,7 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
               Re-finaliser
             </Button>
           )}
-          {dossier.status === "BROUILLON" && session.isAdmin && (
+          {dossier.status === "BROUILLON" && (session.isAdmin || isManager) && (
             <Button variant="destructive" size="sm" onClick={() => setConfirmDelete(true)}>
               <Trash2 />
               Supprimer le dossier
