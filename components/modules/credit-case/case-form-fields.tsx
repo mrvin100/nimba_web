@@ -2,6 +2,7 @@
 
 import { Controller, useWatch, type UseFormReturn } from "react-hook-form";
 import { ClientPicker } from "@/components/modules/client";
+import { ROUTES } from "@/lib/constants";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -41,7 +42,7 @@ export function CaseFormFields({ form }: { form: UseFormReturn<CaseFormInput> })
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor="clientId">Client</FieldLabel>
-            <ClientPicker value={field.value ?? null} onChange={(clientId) => field.onChange(clientId)} />
+            <ClientPicker value={field.value ?? null} onChange={(clientId) => field.onChange(clientId)} workspaceBase={ROUTES.DRI} />
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}

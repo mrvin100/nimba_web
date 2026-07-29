@@ -39,7 +39,7 @@ export function RegistreView({ workspaceBase }: Readonly<{ workspaceBase: string
         <SelectContent>
           {families.map((product) => (
             <SelectItem key={product.family} value={product.family}>
-              Registre — {product.label}
+              Registre : {product.label}
             </SelectItem>
           ))}
         </SelectContent>

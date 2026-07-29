@@ -1,65 +1,63 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CreateClientDialog } from "./create-client-dialog";
+import Link from "next/link";
 import { useClients } from "./useClient";
-import type { Client } from "./schema";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { ClientSummary } from "./schema";
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Client search-or-create picker for the caution creation form. Filters
- * client-side over the first page of clients — fine at the bank's current
- * scale; if the client base grows well past a couple hundred, this should
- * move to a server-side search endpoint instead.
+ * Client search-and-select for a dossier creation form. Filters client-side
+ * over the first page of clients — fine at the bank's current scale; if the
+ * client base grows well past a couple hundred, this should move to a
+ * server-side search endpoint instead. Creation is centralized on the
+ * clients registry now (not inline here) — the empty state links there
+ * instead of opening its own dialog, so there is exactly one place a client
+ * gets created.
  */
 export function ClientPicker({
   value,
   onChange,
-}: Readonly<{ value: string | null; onChange: (clientId: string) => void }>) {
-  const [search, setSearch] = useState("");
+  workspaceBase,
+}: Readonly<{ value: string | null; onChange: (clientId: string) => void; workspaceBase: string }>) {
   const { data, isPending } = useClients(0, 100);
 
-  const filtered = useMemo(() => {
-    const clients = data?.content ?? [];
-    const query = search.trim().toLowerCase();
-    if (!query) return clients;
-    return clients.filter(
-      (client) =>
-        client.raisonSociale.toLowerCase().includes(query) || (client.matricule?.toLowerCase().includes(query) ?? false),
-    );
-  }, [data, search]);
-
-  function handleCreated(client: Client) {
-    onChange(client.id);
-  }
+  const clients = data?.content ?? [];
+  const selected = clients.find((client) => client.id === value) ?? null;
 
   if (isPending) return <Skeleton className="h-9 w-full" />;
 
+  function label(client: ClientSummary): string {
+    return `${client.raisonSociale}${client.matricule ? ` (${client.matricule})` : ""}`;
+  }
+
   return (
-    <div className="flex items-end gap-2">
-      <div className="flex-1 space-y-2">
-        <Input
-          placeholder="Rechercher par nom ou matricule"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-        <Select value={value ?? undefined} onValueChange={onChange}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Choisir un client" />
-          </SelectTrigger>
-          <SelectContent>
-            {filtered.map((client) => (
-              <SelectItem key={client.id} value={client.id}>
-                {client.raisonSociale}
-                {client.matricule ? ` (${client.matricule})` : ""}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <CreateClientDialog onCreated={handleCreated} />
-    </div>
+    <Combobox
+      items={clients}
+      value={selected}
+      onValueChange={(client) => client && onChange(client.id)}
+      itemToStringLabel={label}
+      itemToStringValue={label}
+    >
+      <ComboboxInput placeholder="Rechercher par nom ou matricule" className="w-full" />
+      <ComboboxContent>
+        <ComboboxEmpty>
+          <div className="space-y-1 py-1 text-center">
+            <p>Aucun client trouvé.</p>
+            <Link href={`${workspaceBase}/clients`} className="text-xs underline underline-offset-4">
+              Créer un client
+            </Link>
+          </div>
+        </ComboboxEmpty>
+        <ComboboxList>
+          {(client: ClientSummary) => (
+            <ComboboxItem key={client.id} value={client}>
+              {client.raisonSociale}
+              {client.matricule ? ` (${client.matricule})` : ""}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }

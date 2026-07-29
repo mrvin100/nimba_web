@@ -24,7 +24,7 @@ export function ActorAvatar({
   className,
 }: Readonly<{ name: string; department: Department; size?: "sm" | "default"; className?: string }>) {
   return (
-    <Avatar size={size} className={className} title={`${name} — ${DEPARTMENT_LABELS[department]}`}>
+    <Avatar size={size} className={className} title={`${name} (${DEPARTMENT_LABELS[department]})`}>
       <AvatarFallback className={cn(DEPARTMENT_AVATAR_CLASSES[department], "font-medium")}>
         {initials(name)}
       </AvatarFallback>

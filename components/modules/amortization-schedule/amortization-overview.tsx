@@ -149,7 +149,7 @@ export function AmortizationOverview({ caseId }: Readonly<{ caseId: string }>) {
               </CardTitle>
               <CardDescription>
                 Période {overview.timeline.currentPeriod} sur{" "}
-                {overview.timeline.currentPeriod + overview.timeline.remainingPeriods} — la zone ombrée couvre les
+                {overview.timeline.currentPeriod + overview.timeline.remainingPeriods}, la zone ombrée couvre les
                 échéances déjà remboursées ({overview.status.completion} % au {formatDate(overview.timeline.today)})
               </CardDescription>
             </div>

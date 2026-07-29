@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Download, History, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { useSession } from "@/components/modules/identity";
 import { cautionDocxExportPath } from "./caution.service";
 import { useDeleteCaution } from "./useCaution";
 import { CautionDocumentDialog } from "./caution-document-dialog";
@@ -62,6 +63,8 @@ export function CautionDocumentSection({
   const [history, setHistory] = useState<Caution | null>(null);
   const [deleting, setDeleting] = useState<Caution | null>(null);
   const remove = useDeleteCaution();
+  const { isAdmin, isManager } = useSession();
+  const canDelete = isAdmin || isManager("DCM");
 
   return (
     <section className="space-y-3 rounded-md border p-4">
@@ -128,7 +131,7 @@ export function CautionDocumentSection({
                             <History />
                             Historique
                           </DropdownMenuItem>
-                          {writable && (
+                          {writable && canDelete && (
                             <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(document)}>
                               <Trash2 />
                               Supprimer

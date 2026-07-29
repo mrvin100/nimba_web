@@ -15,10 +15,13 @@ export function usePagedQuery<TItem, TFilters = undefined>(options: {
   size: number;
   filters?: TFilters;
   fetch: (page: number, size: number, filters: TFilters) => Promise<PagedResponse<TItem>>;
+  /** Defaults to true — set false to skip the request (e.g. a view toggled to a different data source). */
+  enabled?: boolean;
 }) {
-  const { keys, page, size, filters, fetch } = options;
+  const { keys, page, size, filters, fetch, enabled = true } = options;
   return useQuery({
     queryKey: keys.list(page, size, filters),
     queryFn: () => fetch(page, size, filters as TFilters),
+    enabled,
   });
 }

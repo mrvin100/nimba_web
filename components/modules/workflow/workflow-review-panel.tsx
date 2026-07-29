@@ -145,7 +145,7 @@ function ArchiveAction({ caseId }: Readonly<{ caseId: string }>) {
         <AlertDialogHeader>
           <AlertDialogTitle>Archiver le dossier rejeté</AlertDialogTitle>
           <AlertDialogDescription>
-            Le dossier sera définitivement archivé avec le motif du comité et votre note d&apos;archivage — seules
+            Le dossier sera définitivement archivé avec le motif du comité et votre note d&apos;archivage. Seules
             les traces de son traitement restent consultables.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -241,7 +241,7 @@ export function WorkflowReviewPanel({ caseId }: Readonly<{ caseId: string }>) {
                 action="SEND_TO_COMITE"
                 triggerLabel="Envoyer au comité"
                 title="Envoyer au comité"
-                description="Vérifiez que les observations sont traitées (fils résolus sur la fiche d'analyse) — le comité prend ensuite la main."
+                description="Vérifiez que les observations sont traitées (fils résolus sur la fiche d'analyse), le comité prend ensuite la main."
                 requireComment={false}
               />
             )}

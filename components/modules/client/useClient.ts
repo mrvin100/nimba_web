@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiMutation } from "@/lib/mutation";
 import { queryKeys } from "@/lib/query-keys";
 import { usePagedQuery } from "@/lib/use-paged-query";
-import { createClient, getClient, listClients, updateClient } from "./client.service";
+import { createClient, getClient, listClients, updateClient, updateClientMatricule } from "./client.service";
 import type { ClientFormInput } from "./schema";
 
 export const clientKeys = queryKeys("client");
@@ -44,6 +44,20 @@ export function useUpdateClient(id: string) {
     mutationFn: (input: ClientFormInput) => updateClient(id, input),
     invalidate: [clientKeys.lists()],
     successToast: "Client mis à jour",
+    errorToast: true,
+    onSuccess: (data) => {
+      queryClient.setQueryData(clientKeys.detail(id), data);
+    },
+  });
+}
+
+/** Corrects the matricule (manager-only, 409 if already taken by another client); refreshes its detail. */
+export function useUpdateClientMatricule(id: string) {
+  const queryClient = useQueryClient();
+  return useApiMutation({
+    mutationFn: (matricule: string) => updateClientMatricule(id, matricule),
+    invalidate: [clientKeys.lists()],
+    successToast: "Matricule corrigé",
     errorToast: true,
     onSuccess: (data) => {
       queryClient.setQueryData(clientKeys.detail(id), data);

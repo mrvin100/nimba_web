@@ -1,5 +1,5 @@
-import { CautionsView } from "@/components/modules/caution";
+import { CautionDossiersView } from "@/components/modules/caution";
 
 export default function DcmCautionsPage() {
-  return <CautionsView />;
+  return <CautionDossiersView />;
 }

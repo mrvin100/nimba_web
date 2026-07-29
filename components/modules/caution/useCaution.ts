@@ -8,14 +8,13 @@ import {
   createCaution,
   createDossier,
   deleteCaution,
+  deleteDossier,
   documentHistory,
   dossierEvents,
   finalizeDossier,
-  getCaution,
   getDossier,
   getReferenceSequenceStatus,
   listCautionDocumentTypes,
-  listCautions,
   listDossiers,
   prorogeDossier,
   refinalizeDossier,
@@ -55,26 +54,6 @@ export function useReferenceSequenceStatus() {
   return useQuery({
     queryKey: [...cautionKeys.all, "reference-sequence-status"],
     queryFn: getReferenceSequenceStatus,
-  });
-}
-
-/** Paginated list of cautions (server state). */
-export function useCautions(page: number, size = 20, filters: CautionListFilters = {}) {
-  return usePagedQuery({
-    keys: cautionKeys,
-    page,
-    size,
-    filters,
-    fetch: (p, s, f) => listCautions(p, s, f),
-  });
-}
-
-/** A single caution by id (server state). `enabled` lets a dialog defer the fetch until it actually opens. */
-export function useCaution(id: string, enabled = true) {
-  return useQuery({
-    queryKey: cautionKeys.detail(id),
-    queryFn: () => getCaution(id),
-    enabled,
   });
 }
 
@@ -211,6 +190,16 @@ export function useRefinalizeDossier(id: string) {
     successToast: "Dossier re-finalisé",
     errorToast: true,
     onSuccess: () => refreshDossierAfter(queryClient, id),
+  });
+}
+
+/** Deletes a dossier and every document it holds (only while still a draft; admin-only). */
+export function useDeleteDossier() {
+  return useApiMutation({
+    mutationFn: (id: string) => deleteDossier(id),
+    invalidate: [dossierKeys.all],
+    successToast: "Dossier supprimé",
+    errorToast: true,
   });
 }
 

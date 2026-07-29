@@ -69,6 +69,9 @@ export const createClientSchema = z.object({
   // document, enforced at that point.
   matricule: z.string().max(50, "50 caractères maximum").optional(),
   raisonSociale: z.string().min(1, "Raison sociale requise").max(200, "200 caractères maximum"),
+  // The national tax id — unlike raisonSociale, genuinely unique, so the backend
+  // rejects a create/update that would duplicate another client's codeNif.
+  codeNif: z.string().max(50, "50 caractères maximum").optional(),
   sigle: z.string().max(100, "100 caractères maximum").optional(),
   adressePhysique: z.string().max(300, "300 caractères maximum").optional(),
   rccm: z.string().max(50, "50 caractères maximum").optional(),

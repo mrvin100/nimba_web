@@ -37,7 +37,7 @@ export function ClientFileView({ clientId, workspaceBase }: Readonly<{ clientId:
   if (!client) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8">
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
@@ -124,7 +124,7 @@ export function ClientFileView({ clientId, workspaceBase }: Readonly<{ clientId:
                   <TableRow key={dossier.id}>
                     <TableCell className="font-medium">
                       {canOpenCautions ? (
-                        <Link className="underline-offset-4 hover:underline" href={`${ROUTES.DCM}/caution-dossiers/${dossier.id}`}>
+                        <Link className="underline-offset-4 hover:underline" href={`${ROUTES.DCM}/cautions/${dossier.id}`}>
                           {dossier.referenceNumber}
                         </Link>
                       ) : (

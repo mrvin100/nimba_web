@@ -1,4 +1,5 @@
 import type { Department } from "@/components/modules/identity";
+import type { ContractType, ProductType } from "@/components/modules/credit-case";
 
 /** The dossier's cross-directorate lifecycle (mirrors the backend enum, design §12.1). */
 export const WORKFLOW_STATUSES = [
@@ -109,12 +110,20 @@ export interface WorkflowState {
   timeline: WorkflowEvent[];
 }
 
-/** One dossier awaiting the caller's review, for a direction's queue. */
+/**
+ * One dossier awaiting the caller's review, for a direction's queue. Carries the
+ * same descriptive fields as CreditCaseSummary so the queue and the full dossier
+ * list can render through the same table and columns.
+ */
 export interface QueueItem {
   creditCaseId: string;
   caseNumber: string;
+  clientId: string;
   clientName: string;
+  productType: ProductType;
+  contractType: ContractType | null;
   status: WorkflowStatus;
+  createdAt: string;
   updatedAt: string;
 }
 

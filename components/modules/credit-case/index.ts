@@ -1,5 +1,5 @@
 export { CreditCaseDashboard } from "./credit-case-dashboard";
-export { AllCasesView } from "./all-cases-view";
+export { ReviewerCaseListView } from "./reviewer-case-list-view";
 export { CreditCaseDetail } from "./credit-case-detail";
 export { CreditCaseDetailPage } from "./credit-case-detail-page";
 export { CreditCaseTabs } from "./credit-case-tabs";

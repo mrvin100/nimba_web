@@ -21,7 +21,7 @@ export {
 } from "./useIdentity";
 // Only URL builders cross the module boundary — API calls stay behind the hooks.
 export { avatarPath, publicOrganizationLogoPath } from "./identity.service";
-export { loginSchema, DEPARTMENTS, DEPARTMENT_ROLES, DEPARTMENT_LABELS } from "./schema";
+export { loginSchema, DEPARTMENTS, DEPARTMENT_ROLES, DEPARTMENT_LABELS, CIVILITIES, CIVILITY_LABELS } from "./schema";
 export type {
   LoginInput,
   MeResponse,
@@ -32,6 +32,7 @@ export type {
   BootstrapInput,
   SetPasswordInput,
   InvitationInfo,
+  Civility,
 } from "./schema";
 export {
   isAdmin,

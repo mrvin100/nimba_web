@@ -3,12 +3,9 @@ import { env } from "@/lib/env";
 import type { PagedResponse } from "@/lib/pagination";
 import type {
   Caution,
-  CautionDocumentType,
   CautionDocumentTypeInfo,
   CautionDossier,
   CautionDossierDetail,
-  CautionStatus,
-  CautionSummary,
   CreateCautionInput,
   CreateDossierInput,
   DocumentVersion,
@@ -26,24 +23,6 @@ export function listCautionDocumentTypes(): Promise<CautionDocumentTypeInfo[]> {
 /** Whether the create form should still offer a starting-sequence override (only before the very first caution ever created). */
 export function getReferenceSequenceStatus(): Promise<ReferenceSequenceStatus> {
   return api.get("cautions/reference-sequence-status").json<ReferenceSequenceStatus>();
-}
-
-/** Lists cautions, newest first (paginated); every filter is optional. */
-export function listCautions(
-  page = 0,
-  size = 20,
-  filters: { clientId?: string; documentType?: CautionDocumentType; status?: CautionStatus } = {},
-): Promise<PagedResponse<CautionSummary>> {
-  const searchParams: Record<string, string | number> = { page, size };
-  if (filters.clientId) searchParams.clientId = filters.clientId;
-  if (filters.documentType) searchParams.documentType = filters.documentType;
-  if (filters.status) searchParams.status = filters.status;
-  return api.get("cautions", { searchParams }).json<PagedResponse<CautionSummary>>();
-}
-
-/** Resolves a single caution by id. */
-export function getCaution(id: string): Promise<Caution> {
-  return api.get(`cautions/${id}`).json<Caution>();
 }
 
 /** Opens a caution in draft; the reference number is assigned immediately (409 on a missing required field). */
@@ -106,6 +85,11 @@ export function prorogeDossier(id: string, reason: string): Promise<CautionDossi
 /** Re-locks a prorogated dossier once the correction is done. */
 export function refinalizeDossier(id: string): Promise<CautionDossier> {
   return api.post(`caution-dossiers/${id}/refinalize`).json<CautionDossier>();
+}
+
+/** Deletes a dossier and every document it holds (only while still a draft; admin-only). */
+export async function deleteDossier(id: string): Promise<void> {
+  await api.delete(`caution-dossiers/${id}`);
 }
 
 /** A dossier's lifecycle journal, newest first. */

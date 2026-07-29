@@ -6,9 +6,11 @@ import { queryKeys } from "@/lib/query-keys";
 import {
   createUser,
   deleteOrganizationLogo,
+  getCautionStats,
   getDossierStats,
   getOrganization,
   getUserStats,
+  getWorkflowStats,
   importBulkUsers,
   listUsers,
   previewBulkUsers,
@@ -26,6 +28,8 @@ export const adminKeys = {
   organization: ["admin-organization"] as const,
   userStats: ["admin-stats", "users"] as const,
   dossierStats: ["admin-stats", "dossiers"] as const,
+  cautionStats: ["admin-stats", "cautions"] as const,
+  workflowStats: ["admin-stats", "workflow"] as const,
 };
 
 /** Paginated list of managed users (server state). */
@@ -99,6 +103,22 @@ export function useDossierStats() {
   return useQuery({
     queryKey: adminKeys.dossierStats,
     queryFn: getDossierStats,
+  });
+}
+
+/** Aggregate caution-dossier counts (server state), for the cross-product dashboard. */
+export function useCautionStats() {
+  return useQuery({
+    queryKey: adminKeys.cautionStats,
+    queryFn: getCautionStats,
+  });
+}
+
+/** Aggregate financement-workflow figures (server state), for the cross-product dashboard. */
+export function useWorkflowStats() {
+  return useQuery({
+    queryKey: adminKeys.workflowStats,
+    queryFn: getWorkflowStats,
   });
 }
 

@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { PagedResponse } from "@/lib/pagination";
 import { DEPARTMENTS, type AccountStatus, type Department, type Membership } from "@/components/modules/identity";
+import type { DossierStatus } from "@/components/modules/caution";
+import type { WorkflowStatus } from "@/components/modules/workflow";
 
 /** A managed user, as returned by the admin endpoints. */
 export interface AdminUser {
@@ -136,20 +138,12 @@ export interface BulkImportResult {
   created: number;
 }
 
-/**
- * Organisation settings (sender identity for invitation e-mails, plus the two
- * standing signatories printed on generated legal documents — first
- * consumer: the Caution module's SMS/ACF).
- */
+/** Organisation settings: name and the sender identity for invitation e-mails. */
 export interface OrganizationSettings {
   organizationName: string;
   senderName: string;
   senderEmail: string;
   hasLogo: boolean;
-  signataire1Nom: string | null;
-  signataire1Titre: string | null;
-  signataire2Nom: string | null;
-  signataire2Titre: string | null;
   updatedAt: string;
 }
 
@@ -157,10 +151,6 @@ export const organizationSchema = z.object({
   organizationName: z.string().min(1, "Nom de l'organisation requis").max(200, "200 caractères maximum"),
   senderName: z.string().min(1, "Nom de l'expéditeur requis").max(200, "200 caractères maximum"),
   senderEmail: z.string().min(1, "Adresse e-mail requise").email("Adresse e-mail invalide"),
-  signataire1Nom: z.string().max(200, "200 caractères maximum").optional(),
-  signataire1Titre: z.string().max(200, "200 caractères maximum").optional(),
-  signataire2Nom: z.string().max(200, "200 caractères maximum").optional(),
-  signataire2Titre: z.string().max(200, "200 caractères maximum").optional(),
 });
 
 export type OrganizationInput = z.infer<typeof organizationSchema>;
@@ -175,8 +165,22 @@ export interface UserStats {
   byDepartment: { department: Department; count: number }[];
 }
 
-/** Aggregate credit-case counts for the admin dashboard. */
+/** Aggregate credit-case (financement) counts for the admin dashboard. */
 export interface DossierStats {
   total: number;
   byStatus: { status: "EN_ATTENTE_AMORTISSEMENT" | "TRADES_GENERES"; count: number }[];
+  byProductType: { productType: "LEASING" | "MC2_MUFFA"; count: number }[];
+}
+
+/** Aggregate caution-dossier (engagement) counts for the admin dashboard. */
+export interface CautionStats {
+  total: number;
+  byStatus: { status: DossierStatus; count: number }[];
+}
+
+/** Aggregate financement-workflow figures for the admin dashboard. */
+export interface WorkflowStats {
+  byStatus: { status: WorkflowStatus; count: number }[];
+  pendingByDepartment: { department: Department; count: number }[];
+  averageDurationByStatus: { status: WorkflowStatus; averageHours: number }[];
 }

@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CircleCheck, FileText, LockOpen, Pencil, RotateCcw, ScrollText } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, CircleCheck, FileText, LockOpen, Pencil, RotateCcw, ScrollText, Trash2 } from "lucide-react";
 import { useClients } from "@/components/modules/client";
 import { useSession } from "@/components/modules/identity";
 import { getErrorMessage } from "@/lib/api-error";
@@ -11,6 +12,7 @@ import { ROUTES } from "@/lib/constants";
 import { formatDate, formatDateTime } from "@/lib/format";
 import {
   useCautionDocumentTypes,
+  useDeleteDossier,
   useDossier,
   useDossierEvents,
   useFinalizeDossier,
@@ -53,9 +55,11 @@ import { Textarea } from "@/components/ui/textarea";
  * proroge it to correct a single document, then re-finalize.
  */
 export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
+  const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [prorogeOpen, setProrogeOpen] = useState(false);
   const [confirmFinalize, setConfirmFinalize] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const session = useSession();
   const { data, isPending, isError } = useDossier(dossierId);
   const { data: documentTypes } = useCautionDocumentTypes();
@@ -63,6 +67,7 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
   const { data: events } = useDossierEvents(dossierId);
   const finalize = useFinalizeDossier(dossierId);
   const refinalize = useRefinalizeDossier(dossierId);
+  const remove = useDeleteDossier();
 
   const clientName = useMemo(() => {
     const map = new Map<string, string>();
@@ -72,11 +77,11 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
 
   const backLink = (
     <Link
-      href={`${ROUTES.DCM}/caution-dossiers`}
+      href={`${ROUTES.DCM}/cautions`}
       className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
     >
       <ArrowLeft className="size-4" />
-      Dossiers de caution
+      Cautions
     </Link>
   );
 
@@ -138,6 +143,12 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
             <Button size="sm" onClick={() => refinalize.mutate()}>
               <RotateCcw />
               Re-finaliser
+            </Button>
+          )}
+          {dossier.status === "BROUILLON" && (session.isAdmin || isManager) && (
+            <Button variant="destructive" size="sm" onClick={() => setConfirmDelete(true)}>
+              <Trash2 />
+              Supprimer le dossier
             </Button>
           )}
         </div>
@@ -205,6 +216,26 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={() => finalize.mutate()}>Finaliser</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le dossier {dossier.referenceNumber} ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Le dossier et tous ses documents seront définitivement supprimés. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={() => remove.mutate(dossier.id, { onSuccess: () => router.push(`${ROUTES.DCM}/cautions`) })}
+            >
+              Supprimer définitivement
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

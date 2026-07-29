@@ -57,20 +57,6 @@ export interface Caution {
   finalizedAt: string | null;
 }
 
-/** Row of the Cautions data table. */
-export interface CautionSummary {
-  id: string;
-  clientId: string;
-  clientMatricule: string;
-  clientRaisonSociale: string;
-  documentType: CautionDocumentType;
-  referenceNumber: string;
-  status: CautionStatus;
-  createdByName: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface CreateCautionInput {
   clientId: string;
   documentType: CautionDocumentType;
