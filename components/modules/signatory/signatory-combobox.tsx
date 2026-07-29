@@ -20,6 +20,10 @@ export function SignatoryCombobox({
   const { data: options } = useSignatoryOptions();
   const [value, setValue] = useState<SignatoryOption | null>(null);
 
+  function label(option: SignatoryOption): string {
+    return `${option.nom}, ${option.titre}`;
+  }
+
   return (
     <Combobox
       items={options ?? []}
@@ -28,9 +32,10 @@ export function SignatoryCombobox({
         setValue(option);
         if (option) onSelect(option.nom, option.titre, option.civility);
       }}
-      itemToStringValue={(option: SignatoryOption) => `${option.nom}, ${option.titre}`}
+      itemToStringLabel={label}
+      itemToStringValue={label}
     >
-      <ComboboxInput placeholder="Choisir un signataire connu" className="w-full" />
+      <ComboboxInput placeholder="Choisir un signataire connu" className="w-56 shrink-0" />
       <ComboboxContent>
         <ComboboxEmpty>Aucun signataire trouvé.</ComboboxEmpty>
         <ComboboxList>

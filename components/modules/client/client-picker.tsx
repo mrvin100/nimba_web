@@ -27,12 +27,17 @@ export function ClientPicker({
 
   if (isPending) return <Skeleton className="h-9 w-full" />;
 
+  function label(client: ClientSummary): string {
+    return `${client.raisonSociale}${client.matricule ? ` (${client.matricule})` : ""}`;
+  }
+
   return (
     <Combobox
       items={clients}
       value={selected}
       onValueChange={(client) => client && onChange(client.id)}
-      itemToStringValue={(client: ClientSummary) => `${client.raisonSociale}${client.matricule ? ` (${client.matricule})` : ""}`}
+      itemToStringLabel={label}
+      itemToStringValue={label}
     >
       <ComboboxInput placeholder="Rechercher par nom ou matricule" className="w-full" />
       <ComboboxContent>
