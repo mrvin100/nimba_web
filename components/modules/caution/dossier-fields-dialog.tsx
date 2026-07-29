@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Pencil } from "lucide-react";
@@ -104,12 +104,12 @@ function SignatoryFieldsGroup({
   form: ReturnType<typeof useForm<DossierContentInput>>;
 }) {
   const [locked, setLocked] = useState(false);
-  const civilite = form.watch(civiliteFieldKey);
+  const civilite = useWatch({ control: form.control, name: civiliteFieldKey });
 
   return (
     <div className="space-y-3 rounded-md border p-3">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-muted-foreground">
+      <div className="flex items-center justify-between gap-2">
+        <p className="min-w-0 truncate text-xs font-medium text-muted-foreground">
           Signataire {index}
           {civilite && ` (${civilite})`}
         </p>
@@ -142,9 +142,15 @@ function SignatoryFieldsGroup({
               <div className="flex items-center gap-1">
                 <DossierFieldInput field={titreField} value={field.value ?? ""} onChange={field.onChange} disabled={locked} />
                 {locked && (
-                  <Button type="button" variant="ghost" size="icon" className="size-8 shrink-0" onClick={() => setLocked(false)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => setLocked(false)}
+                  >
                     <Pencil className="size-3.5" />
-                    <span className="sr-only">Modifier</span>
+                    Modifier
                   </Button>
                 )}
               </div>
