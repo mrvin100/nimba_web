@@ -16,6 +16,14 @@ export interface DossierFieldDef {
   key: string;
   label: string;
   type: DossierFieldType;
+  /** Required fields are marked with "*", validated by Zod, and block the save when empty. */
+  required?: boolean;
+  /** Zod error shown under the field when a required field is left empty. */
+  requiredMessage?: string;
+  /** Placeholder shown in the empty input to hint at the expected value/format. */
+  placeholder?: string;
+  /** One-line helper rendered under the field to make its purpose explicit. */
+  description?: string;
 }
 
 export interface DossierFieldGroup {
@@ -41,22 +49,82 @@ export const DOSSIER_SECTIONS: DossierSection[] = [
       {
         title: "Contexte du marché",
         fields: [
-          { key: "beneficiaire", label: "Bénéficiaire (Maître d'ouvrage)", type: "text" },
-          { key: "referenceAppelOffres", label: "Référence de l'appel d'offres", type: "text" },
-          { key: "objetMarche", label: "Objet du marché", type: "textarea" },
-          { key: "dateEmission", label: "Date d'émission", type: "date" },
-          { key: "lots", label: "Lots (séparés par des virgules)", type: "text" },
+          {
+            key: "beneficiaire",
+            label: "Bénéficiaire (Maître d'ouvrage)",
+            type: "text",
+            required: true,
+            requiredMessage: "Indiquez le bénéficiaire (maître d'ouvrage).",
+            placeholder: "Nom de l'organisme maître d'ouvrage",
+          },
+          {
+            key: "referenceAppelOffres",
+            label: "Référence de l'appel d'offres",
+            type: "text",
+            required: true,
+            requiredMessage: "Indiquez la référence de l'appel d'offres.",
+            placeholder: "Ex : AO N° 2026/DCM/001",
+          },
+          {
+            key: "objetMarche",
+            label: "Objet du marché",
+            type: "textarea",
+            required: true,
+            requiredMessage: "Décrivez l'objet du marché.",
+            description: "Repris tel quel sur la caution, la notification et la fiche.",
+          },
+          {
+            key: "dateEmission",
+            label: "Date d'émission",
+            type: "date",
+            required: true,
+            requiredMessage: "Choisissez la date d'émission.",
+            description: "Date figurant sur les documents générés.",
+          },
+          {
+            key: "lots",
+            label: "Lots (séparés par des virgules)",
+            type: "text",
+            required: true,
+            requiredMessage: "Renseignez au moins un lot.",
+            placeholder: "Lot 1, Lot 2, Lot 3",
+            description: "Séparez chaque lot par une virgule. Ils créent les colonnes de « Conditions par lot ».",
+          },
         ],
       },
       {
         title: "Signataires",
         fields: [
           { key: "signataire1Civilite", label: "Signataire 1 : civilité (Monsieur / Madame)", type: "text" },
-          { key: "signataire1Nom", label: "Signataire 1 : nom complet", type: "text" },
-          { key: "signataire1Titre", label: "Signataire 1 : titre", type: "text" },
+          {
+            key: "signataire1Nom",
+            label: "Signataire 1 : nom complet",
+            type: "text",
+            required: true,
+            requiredMessage: "Indiquez le nom du premier signataire.",
+          },
+          {
+            key: "signataire1Titre",
+            label: "Signataire 1 : titre",
+            type: "text",
+            required: true,
+            requiredMessage: "Indiquez le titre du premier signataire.",
+          },
           { key: "signataire2Civilite", label: "Signataire 2 : civilité (Monsieur / Madame)", type: "text" },
-          { key: "signataire2Nom", label: "Signataire 2 : nom complet", type: "text" },
-          { key: "signataire2Titre", label: "Signataire 2 : titre", type: "text" },
+          {
+            key: "signataire2Nom",
+            label: "Signataire 2 : nom complet",
+            type: "text",
+            required: true,
+            requiredMessage: "Indiquez le nom du second signataire.",
+          },
+          {
+            key: "signataire2Titre",
+            label: "Signataire 2 : titre",
+            type: "text",
+            required: true,
+            requiredMessage: "Indiquez le titre du second signataire.",
+          },
         ],
       },
     ],

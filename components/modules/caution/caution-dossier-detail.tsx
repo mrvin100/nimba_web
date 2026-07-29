@@ -193,7 +193,7 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
             {events.map((event) => (
               <li key={event.id} className="flex flex-wrap items-center gap-x-2 text-muted-foreground">
                 <span className="font-medium text-foreground">{DOSSIER_STATUS_LABELS[event.toStatus]}</span>
-                <span>· {formatDateTime(event.createdAt)}</span>
+                <span>· {formatDateTime(event.createdAt, "long")}</span>
                 {event.reason && <span>· {event.reason}</span>}
               </li>
             ))}
