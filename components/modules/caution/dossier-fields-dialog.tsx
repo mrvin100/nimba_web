@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm, useWatch, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -341,15 +341,6 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
     defaultValues,
   });
 
-  useEffect(() => {
-    if (open) {
-      form.reset(buildDefaultValues(content));
-      setActiveTab(DOSSIER_SECTIONS[0].id);
-    }
-    // Only re-seed when the dialog opens, not on every content/form identity change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
   async function onSubmit(values: DossierContentInput) {
     try {
       await update.mutateAsync({ content: values });
@@ -370,7 +361,16 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (next) {
+          form.reset(buildDefaultValues(content));
+          setActiveTab(DOSSIER_SECTIONS[0].id);
+        }
+        onOpenChange(next);
+      }}
+    >
       <DialogContent className="max-h-[90vh] w-[95vw] gap-0 overflow-hidden p-0 sm:max-w-3xl">
         <DialogHeader className="border-b px-6 py-4">
           <DialogTitle>Informations du dossier</DialogTitle>

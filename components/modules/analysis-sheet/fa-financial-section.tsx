@@ -42,7 +42,9 @@ export function FaFinancialSection({
 }: Readonly<{ caseId: string; section: FaSection; locked: boolean }>) {
   const update = useUpdateFaSection(caseId);
   const form = useForm<FaFinancialContent>({ values: parseContent(section) });
-  const years = form.watch("years") ?? [];
+  // eslint-disable-next-line react-hooks/incompatible-library
+const years = form.watch("years") ?? [];
+// eslint-enable-react-hooks/incompatible-library
   const lines = form.watch("lines") ?? [];
 
   if (locked) {

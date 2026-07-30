@@ -11,8 +11,8 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
-  useReactTable,
 } from "@tanstack/react-table";
+import { useTableInstance } from "@/lib/use-table-instance";
 
 declare module "@tanstack/react-table" {
   // Human-readable column label, used by the column-visibility menu.
@@ -75,7 +75,7 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(initialColumnVisibility ?? {});
 
-  const table = useReactTable({
+  const table = useTableInstance({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
