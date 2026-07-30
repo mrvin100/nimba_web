@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { addDays, format, isValid, parseISO } from "date-fns";
 import { CAUTION_CIVILITIES, CAUTION_CURRENCIES, type CautionFieldDefinition } from "./schema";
+import { RequiredMark } from "./required-mark";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -70,6 +71,7 @@ function DateWithDurationInput({
           onChange(event.target.value);
           setDays("");
         }}
+        aria-required
         className="flex-1"
       />
       <span className="shrink-0 text-xs text-muted-foreground">ou</span>
@@ -98,13 +100,14 @@ interface CautionFieldInputProps {
 
 /** One field of the dynamic form. A currency or civility picks from a select, everything else is a typed input. */
 export function CautionFieldInput({ field, value, onChange, baseDateForDuration }: CautionFieldInputProps) {
+  const required = !field.optional;
   if (field.key === "dateExpiration" && baseDateForDuration !== undefined) {
     return <DateWithDurationInput fieldKey={field.key} baseDate={baseDateForDuration} value={value} onChange={onChange} />;
   }
   if (field.type === "CURRENCY") {
     return (
       <Select value={value || DEFAULT_CURRENCY} onValueChange={onChange}>
-        <SelectTrigger id={field.key} className="w-full">
+        <SelectTrigger id={field.key} className="w-full" aria-required={required}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -120,7 +123,7 @@ export function CautionFieldInput({ field, value, onChange, baseDateForDuration 
   if (field.type === "CIVILITY") {
     return (
       <Select value={value || NO_CIVILITY} onValueChange={(next) => onChange(next === NO_CIVILITY ? "" : next)}>
-        <SelectTrigger id={field.key} className="w-full">
+        <SelectTrigger id={field.key} className="w-full" aria-required={required}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -141,6 +144,7 @@ export function CautionFieldInput({ field, value, onChange, baseDateForDuration 
       inputMode={field.type === "AMOUNT" ? "numeric" : undefined}
       value={value}
       onChange={(event) => onChange(event.target.value)}
+      aria-required={required}
     />
   );
 }
@@ -158,7 +162,10 @@ export function CautionFieldsGrid({ fields, values, onChange }: CautionFieldsGri
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {fields.map((field) => (
         <Field key={field.key} className={field.key === "dateExpiration" && hasDateOffre ? "sm:col-span-2" : undefined}>
-          <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
+          <FieldLabel htmlFor={field.key}>
+            {field.label}
+            {!field.optional && <RequiredMark />}
+          </FieldLabel>
           <CautionFieldInput
             field={field}
             value={valueFor(field, values)}

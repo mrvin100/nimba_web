@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
@@ -42,8 +42,8 @@ export function FaFlexTableSection({
       ...parseContent(section.contentJson ?? section.defaultContentJson),
     },
   });
-  const columns = form.watch("columns") ?? [];
-  const rows = form.watch("rows") ?? [];
+  const columns = useWatch({ control: form.control, name: "columns" }) ?? [];
+  const rows = useWatch({ control: form.control, name: "rows" }) ?? [];
 
   if (locked) {
     const content = parseContent(section.contentJson ?? section.defaultContentJson);

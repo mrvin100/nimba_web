@@ -49,7 +49,7 @@ export function DocumentHistoryDialog({ documentId, reference, open, onOpenChang
             {data.map((version) => (
               <li key={version.id} className="rounded-md border p-3">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{formatDateTime(version.createdAt)}</span>
+                  <span>{formatDateTime(version.createdAt, "long")}</span>
                   {version.reason && <span className="italic">{version.reason}</span>}
                 </div>
                 <ul className="mt-2 space-y-1 text-sm">

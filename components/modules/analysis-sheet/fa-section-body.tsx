@@ -36,7 +36,3 @@ export function FaSectionBody({
       return <FaBoundSection caseId={caseId} sectionKey={section.key} taSummary={taSummary} />;
   }
 }
-
-function FaPendingEditor() {
-  return <p className="text-sm text-muted-foreground">Éditeur dédié en cours de construction. La section est déjà exportée dans le document Word.</p>;
-}
