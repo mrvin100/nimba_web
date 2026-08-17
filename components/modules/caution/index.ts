@@ -5,6 +5,8 @@ export { CautionDossierDetailView } from "./caution-dossier-detail";
 export { CreateDossierDialog } from "./create-dossier-dialog";
 export {
   useCautionDocumentTypes,
+  useNextSequence,
+  useNextDossierSequence,
   useCreateCaution,
   useUpdateCaution,
   useDeleteCaution,
@@ -41,4 +43,5 @@ export type {
   DossierStatus,
   CreateDossierInput,
   UpdateDossierInput,
+  SuggestedSequence,
 } from "./schema";

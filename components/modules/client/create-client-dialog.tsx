@@ -35,7 +35,6 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
       sigle: "",
       adressePhysique: "",
       rccm: "",
-      accountNumber: "",
       agence: "",
       gestionnaire: "",
       dateEntreeRelation: "",
@@ -62,11 +61,12 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
           Nouveau client
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Nouveau client</DialogTitle>
           <DialogDescription>
-            Le matricule est le code interne de la banque. Sa correction sera ensuite réservée à un manager.
+            Le matricule est le code interne de la banque et l&apos;identifiant unique du client dans Nimba. Sa correction
+            sera ensuite réservée à un manager.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
@@ -77,7 +77,7 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
               name="matricule"
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Matricule (optionnel)</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Matricule *</FieldLabel>
                   <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -141,27 +141,16 @@ export function CreateClientDialog({ onCreated }: Readonly<{ onCreated: (client:
               />
               <Controller
                 control={form.control}
-                name="accountNumber"
+                name="rccm"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>N° de compte</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>RCCM</FieldLabel>
                     <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
               />
             </div>
-            <Controller
-              control={form.control}
-              name="rccm"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>RCCM</FieldLabel>
-                  <Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
             <div className="grid grid-cols-2 gap-3">
               <Controller
                 control={form.control}
