@@ -6,10 +6,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { landingPath, useSession } from "@/components/modules/identity";
 import { NotificationBell } from "@/components/modules/notification";
 import { AppSidebar } from "./app-sidebar";
+import { BreadcrumbRecordProvider, useBreadcrumbRecordValue } from "./breadcrumb-record";
 import {
   accessibleWorkspaces,
   canAccessWorkspace,
   workspaceForPath,
+  type NavItem,
+  type WorkspaceConfig,
 } from "./workspace-registry";
 import {
   Breadcrumb,
@@ -62,51 +65,84 @@ export function WorkspaceShell({ children }: Readonly<{ children: React.ReactNod
     );
   }
 
-  const section = active.nav
-    .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
-    .reduce<string | undefined>(
-      (best, item) => (best === undefined || item.href.length > best.length ? item.label : best),
-      undefined,
-    );
+  return (
+    <BreadcrumbRecordProvider>
+      <SidebarProvider>
+        <AppSidebar active={active} workspaces={accessibleWorkspaces(user)} />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 data-vertical:h-4 data-vertical:self-auto" />
+              <WorkspaceBreadcrumb active={active} pathname={pathname} />
+            </div>
+            <div className="ml-auto px-4">
+              <NotificationBell workspaceBase={active.basePath} />
+            </div>
+          </header>
+          <div className="flex flex-1 flex-col">{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
+    </BreadcrumbRecordProvider>
+  );
+}
+
+/**
+ * Up to three crumbs: the workspace, the active nav section, and — on a
+ * detail page nested below that section — the current record's name (a
+ * client's raison sociale, a caution's reference…), registered by the page
+ * itself via `useBreadcrumbRecord`. Only the last crumb is ever plain text;
+ * every crumb above it links back to that level, including the section
+ * (previously static text, so it couldn't take you back to the list).
+ */
+function WorkspaceBreadcrumb({ active, pathname }: Readonly<{ active: WorkspaceConfig; pathname: string }>) {
+  const recordLabel = useBreadcrumbRecordValue();
+
+  const activeNavItem = active.nav.reduce<NavItem | undefined>((best, item) => {
+    const matches = pathname === item.href || pathname.startsWith(`${item.href}/`);
+    if (!matches) return best;
+    return best === undefined || item.href.length > best.href.length ? item : best;
+  }, undefined);
 
   const onWorkspaceRoot = pathname === active.basePath;
+  const onSectionRoot = activeNavItem !== undefined && activeNavItem.href === pathname;
+  const showRecord = !onSectionRoot && recordLabel !== null;
 
   return (
-    <SidebarProvider>
-      <AppSidebar active={active} workspaces={accessibleWorkspaces(user)} />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 data-vertical:h-4 data-vertical:self-auto" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  {section && !onWorkspaceRoot ? (
-                    <BreadcrumbLink asChild>
-                      <Link href={active.basePath}>{active.label}</Link>
-                    </BreadcrumbLink>
-                  ) : (
-                    <BreadcrumbPage>{active.label}</BreadcrumbPage>
-                  )}
-                </BreadcrumbItem>
-                {section && (
-                  <>
-                    <BreadcrumbSeparator className="hidden md:block" />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>{section}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </>
-                )}
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-          <div className="ml-auto px-4">
-            <NotificationBell workspaceBase={active.basePath} />
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem className="hidden md:block">
+          {activeNavItem && !onWorkspaceRoot ? (
+            <BreadcrumbLink asChild>
+              <Link href={active.basePath}>{active.label}</Link>
+            </BreadcrumbLink>
+          ) : (
+            <BreadcrumbPage>{active.label}</BreadcrumbPage>
+          )}
+        </BreadcrumbItem>
+        {activeNavItem && (
+          <>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              {!onSectionRoot ? (
+                <BreadcrumbLink asChild>
+                  <Link href={activeNavItem.href}>{activeNavItem.label}</Link>
+                </BreadcrumbLink>
+              ) : (
+                <BreadcrumbPage>{activeNavItem.label}</BreadcrumbPage>
+              )}
+            </BreadcrumbItem>
+          </>
+        )}
+        {showRecord && (
+          <>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{recordLabel}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </>
+        )}
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }

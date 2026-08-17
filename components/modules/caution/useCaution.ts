@@ -13,7 +13,8 @@ import {
   dossierEvents,
   finalizeDossier,
   getDossier,
-  getReferenceSequenceStatus,
+  getNextDossierSequence,
+  getNextSequence,
   listCautionDocumentTypes,
   listDossiers,
   prorogeDossier,
@@ -46,14 +47,24 @@ export function useCautionDocumentTypes() {
 }
 
 /**
- * Whether the create form should still offer a starting-sequence override —
- * only relevant before the very first caution ever created, so this is worth
- * re-checking each time the create dialog opens rather than caching forever.
+ * The next free number in documentType's own series — pre-fills the create
+ * form's editable sequence field. Re-checked each time the form opens rather
+ * than cached, since it changes with every document created in that series.
  */
-export function useReferenceSequenceStatus() {
+export function useNextSequence(documentType: CautionDocumentType | undefined, enabled = true) {
   return useQuery({
-    queryKey: [...cautionKeys.all, "reference-sequence-status"],
-    queryFn: getReferenceSequenceStatus,
+    queryKey: [...cautionKeys.all, "next-sequence", documentType],
+    queryFn: () => getNextSequence(documentType as CautionDocumentType),
+    enabled: enabled && documentType !== undefined,
+  });
+}
+
+/** The next free number in the dossier series — pre-fills the create dialog's editable sequence field. */
+export function useNextDossierSequence(enabled = true) {
+  return useQuery({
+    queryKey: [...dossierKeys.all, "next-sequence"],
+    queryFn: getNextDossierSequence,
+    enabled,
   });
 }
 

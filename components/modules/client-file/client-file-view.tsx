@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useClientDossiers, DOSSIER_STATUS_LABELS } from "@/components/modules/caution";
-import { EditClientDialog, useClient } from "@/components/modules/client";
+import { CLIENT_TYPE_LABELS, EditClientDialog, useClient } from "@/components/modules/client";
 import { useClientCreditCases } from "@/components/modules/credit-case";
+import { useBreadcrumbRecord } from "@/components/shared/breadcrumb-record";
 import { caseDetailPath, ROUTES } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,78 @@ function Row({ label, children }: Readonly<{ label: string; children: React.Reac
   );
 }
 
+/** One label/value row's skeleton, same footprint as {@link Row}. */
+function RowSkeleton() {
+  return (
+    <div className="flex justify-between gap-4 border-b py-2 last:border-b-0">
+      <Skeleton className="h-4 w-28" />
+      <Skeleton className="h-4 w-40" />
+    </div>
+  );
+}
+
+/** A products table's skeleton, same footprint as its real header + a couple of rows. */
+function TableSkeleton({ columns }: Readonly<{ columns: number }>) {
+  return (
+    <div className="space-y-3 py-1">
+      <div className="flex gap-4 border-b pb-2">
+        {Array.from({ length: columns }).map((_, index) => (
+          <Skeleton key={index} className="h-3 w-24" />
+        ))}
+      </div>
+      {Array.from({ length: 2 }).map((_, row) => (
+        <div key={row} className="flex gap-4">
+          {Array.from({ length: columns }).map((_, col) => (
+            <Skeleton key={col} className="h-4 w-24" />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Matches the real page's shape (identity card + two product cards) instead of one generic block. */
+function ClientFileSkeleton() {
+  return (
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8" aria-busy>
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-56" />
+              <Skeleton className="h-4 w-40" />
+            </div>
+            <Skeleton className="h-8 w-32" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {Array.from({ length: 9 }).map((_, index) => (
+            <RowSkeleton key={index} />
+          ))}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3 w-56" />
+        </CardHeader>
+        <CardContent>
+          <TableSkeleton columns={4} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3 w-56" />
+        </CardHeader>
+        <CardContent>
+          <TableSkeleton columns={3} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 /**
  * A client's 360 view: their identity plus every product they hold — credit
  * dossiers (financement) and caution dossiers (engagement par signature) — the
@@ -32,8 +105,9 @@ export function ClientFileView({ clientId, workspaceBase }: Readonly<{ clientId:
   const cases = useClientCreditCases(clientId);
   const cautions = useClientDossiers(clientId);
   const canOpenCautions = workspaceBase === ROUTES.DCM;
+  useBreadcrumbRecord(client?.raisonSociale);
 
-  if (isPending) return <Skeleton className="h-64 w-full" />;
+  if (isPending) return <ClientFileSkeleton />;
   if (!client) return null;
 
   return (
@@ -49,6 +123,7 @@ export function ClientFileView({ clientId, workspaceBase }: Readonly<{ clientId:
           </div>
         </CardHeader>
         <CardContent>
+          <Row label="Nature">{CLIENT_TYPE_LABELS[client.type]}</Row>
           <Row label="Forme juridique">{client.formeJuridique ?? "—"}</Row>
           <Row label="Sigle">{client.sigle ?? "—"}</Row>
           <Row label="Code NIF">{client.codeNif ?? "—"}</Row>
@@ -57,7 +132,6 @@ export function ClientFileView({ clientId, workspaceBase }: Readonly<{ clientId:
           <Row label="Adresse physique">{client.adressePhysique ?? "—"}</Row>
           <Row label="Agence">{client.agence ?? "—"}</Row>
           <Row label="Gestionnaire">{client.gestionnaire ?? "—"}</Row>
-          <Row label="N° de compte">{client.accountNumber ?? "—"}</Row>
         </CardContent>
       </Card>
 

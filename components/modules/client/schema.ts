@@ -1,10 +1,21 @@
 import { z } from "zod";
 
+/** A client's nature — today only ENTREPRISE (personne morale) is a fully supported product line. */
+export const CLIENT_TYPES = ["ENTREPRISE", "PARTICULIER", "AUTRE"] as const;
+export type ClientType = (typeof CLIENT_TYPES)[number];
+
+export const CLIENT_TYPE_LABELS: Record<ClientType, string> = {
+  ENTREPRISE: "Entreprise (personne morale)",
+  PARTICULIER: "Particulier (personne physique)",
+  AUTRE: "Autre",
+};
+
 /** A bank client, independent of any credit case — backs the Caution module so documents can be grouped by matricule. */
 export interface Client {
   id: string;
   /** The bank's internal client code; null until captured (optional for a leasing client). */
   matricule: string | null;
+  type: ClientType;
   raisonSociale: string;
   sigle: string | null;
   formeJuridique: string | null;
@@ -13,7 +24,6 @@ export interface Client {
   activiteDeBase: string | null;
   codeNif: string | null;
   rccm: string | null;
-  accountNumber: string | null;
   principalDirigeant: string | null;
   dateEntreeRelation: string | null;
   dateDerniereVisite: string | null;
@@ -44,7 +54,6 @@ export interface ClientFormInput {
   activiteDeBase?: string;
   codeNif?: string;
   rccm?: string;
-  accountNumber?: string;
   principalDirigeant?: string;
   dateEntreeRelation?: string;
   dateDerniereVisite?: string;
@@ -55,19 +64,18 @@ export interface ClientFormInput {
   cotationActuelle?: string;
 }
 
-export type CreateClientInput = ClientFormInput & { matricule?: string };
+export type CreateClientInput = ClientFormInput & { matricule: string };
 
 /**
  * Only the fields the Caution module's SMS/ACF renderers actually consume —
  * the rest of [Client]'s identity fields (forme juridique, dates, cotations...)
  * are left for a future client-detail screen to capture incrementally, the
- * same way a credit case's own identity is filled in over time.
+ * same way a credit case's own identity is filled in over time. [matricule]
+ * is the client's sole identifier in Nimba (what its account number and
+ * caution reference number key off) and is required going forward.
  */
 export const createClientSchema = z.object({
-  // Optional: the bank's internal code is not always known when the dossier opens
-  // (a leasing client may have none yet); the Caution module requires it to issue a
-  // document, enforced at that point.
-  matricule: z.string().max(50, "50 caractères maximum").optional(),
+  matricule: z.string().min(1, "Matricule requis").max(50, "50 caractères maximum"),
   raisonSociale: z.string().min(1, "Raison sociale requise").max(200, "200 caractères maximum"),
   // The national tax id — unlike raisonSociale, genuinely unique, so the backend
   // rejects a create/update that would duplicate another client's codeNif.
@@ -75,7 +83,6 @@ export const createClientSchema = z.object({
   sigle: z.string().max(100, "100 caractères maximum").optional(),
   adressePhysique: z.string().max(300, "300 caractères maximum").optional(),
   rccm: z.string().max(50, "50 caractères maximum").optional(),
-  accountNumber: z.string().max(50, "50 caractères maximum").optional(),
   agence: z.string().max(100, "100 caractères maximum").optional(),
   gestionnaire: z.string().max(100, "100 caractères maximum").optional(),
   // Sent to the backend as a LocalDate: omit it when blank rather than sending "" (which can't be parsed).
@@ -109,7 +116,6 @@ export const updateClientSchema = z.object({
   activiteDeBase: z.string().max(300, "300 caractères maximum").optional(),
   codeNif: z.string().max(50, "50 caractères maximum").optional(),
   rccm: z.string().max(50, "50 caractères maximum").optional(),
-  accountNumber: z.string().max(50, "50 caractères maximum").optional(),
   principalDirigeant: z.string().max(200, "200 caractères maximum").optional(),
   dateEntreeRelation: optionalClientDate,
   dateDerniereVisite: optionalClientDate,
