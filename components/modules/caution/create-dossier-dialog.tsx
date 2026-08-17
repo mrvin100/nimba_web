@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Plus } from "lucide-react";
 import { ClientPicker } from "@/components/modules/client";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { ROUTES } from "@/lib/constants";
-import { useCreateDossier, useReferenceSequenceStatus } from "./useCaution";
+import { useCreateDossier, useNextDossierSequence } from "./useCaution";
+import { RequiredMark } from "./required-mark";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,9 +23,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
+const createDossierFormSchema = z.object({
+  clientId: z.string().min(1, "Choisissez un client."),
+  sequence: z
+    .string()
+    .trim()
+    .min(1, "Le numéro de référence est requis.")
+    .regex(/^\d+$/, "Le numéro de référence doit être composé uniquement de chiffres."),
+  beneficiaire: z.string().trim().min(1, "Indiquez le bénéficiaire (maître d'ouvrage)."),
+  referenceAppelOffres: z.string().trim().min(1, "Indiquez la référence de l'appel d'offres."),
+  numeroCompte: z.string().trim().min(1, "Indiquez le numéro de compte sur lequel cette demande est adossée."),
+  objetMarche: z.string().trim().optional(),
+});
+
+type CreateDossierFormInput = z.infer<typeof createDossierFormSchema>;
 
 /**
  * Opens a dossier de caution de soumission with its market context. The rest of
@@ -31,52 +50,51 @@ import { Textarea } from "@/components/ui/textarea";
 export function CreateDossierDialog() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [beneficiaire, setBeneficiaire] = useState("");
-  const [referenceAppelOffres, setReferenceAppelOffres] = useState("");
-  const [objetMarche, setObjetMarche] = useState("");
-  const [startingSequence, setStartingSequence] = useState("");
-  const [rootError, setRootError] = useState<string | null>(null);
-  const { data: referenceSequenceStatus } = useReferenceSequenceStatus();
   const createDossier = useCreateDossier();
+  const { data: suggestedSequence } = useNextDossierSequence(open);
 
-  const showStartingSequence = referenceSequenceStatus?.initialized === false;
-  const canSubmit = Boolean(clientId) && beneficiaire.trim().length > 0 && referenceAppelOffres.trim().length > 0;
+  const form = useForm<CreateDossierFormInput>({
+    resolver: zodResolver(createDossierFormSchema),
+    mode: "onTouched",
+    defaultValues: { clientId: "", sequence: "", beneficiaire: "", referenceAppelOffres: "", numeroCompte: "", objetMarche: "" },
+  });
 
-  function reset() {
-    setClientId(null);
-    setBeneficiaire("");
-    setReferenceAppelOffres("");
-    setObjetMarche("");
-    setStartingSequence("");
-    setRootError(null);
+  function onOpenChange(next: boolean) {
+    if (next) {
+      form.reset({ clientId: "", sequence: "", beneficiaire: "", referenceAppelOffres: "", numeroCompte: "", objetMarche: "" });
+    }
+    setOpen(next);
   }
 
-  async function handleSubmit() {
-    if (!clientId) return;
-    setRootError(null);
+  // The suggestion loads asynchronously right after the dialog opens; fill it
+  // in once it arrives, but never clobber a value the analyst already touched.
+  useEffect(() => {
+    if (open && suggestedSequence && !form.formState.dirtyFields.sequence) {
+      form.setValue("sequence", String(suggestedSequence.sequence));
+    }
+  }, [open, suggestedSequence, form]);
+
+  async function onSubmit(values: CreateDossierFormInput) {
     try {
       const created = await createDossier.mutateAsync({
-        clientId,
-        content: { beneficiaire, referenceAppelOffres, objetMarche },
-        startingReferenceSequence: showStartingSequence && startingSequence.trim() ? Number(startingSequence) : undefined,
+        clientId: values.clientId,
+        sequence: Number(values.sequence),
+        content: {
+          beneficiaire: values.beneficiaire,
+          referenceAppelOffres: values.referenceAppelOffres,
+          numeroCompte: values.numeroCompte,
+          objetMarche: values.objetMarche ?? "",
+        },
       });
       setOpen(false);
-      reset();
       router.push(`${ROUTES.DCM}/cautions/${created.id}`);
     } catch (error) {
-      setRootError(getErrorMessage(error));
+      form.setError("root", { message: getErrorMessage(error) });
     }
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (!next) reset();
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button>
           <Plus />
@@ -92,64 +110,120 @@ export function CreateDossierDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[65vh] overflow-y-auto px-6 py-5">
-          <FieldGroup>
-            <Field>
-              <FieldLabel>Client</FieldLabel>
-              <ClientPicker value={clientId} onChange={setClientId} workspaceBase={ROUTES.DCM} />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="dossier-beneficiaire">Bénéficiaire (Maître d&apos;ouvrage)</FieldLabel>
-              <Input id="dossier-beneficiaire" value={beneficiaire} onChange={(e) => setBeneficiaire(e.target.value)} />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="dossier-reference">Référence de l&apos;appel d&apos;offres</FieldLabel>
-              <Input
-                id="dossier-reference"
-                value={referenceAppelOffres}
-                onChange={(e) => setReferenceAppelOffres(e.target.value)}
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="contents">
+          <div className="max-h-[65vh] overflow-y-auto px-6 py-5">
+            <FieldGroup>
+              <Controller
+                control={form.control}
+                name="clientId"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>
+                      Client
+                      <RequiredMark />
+                    </FieldLabel>
+                    <ClientPicker value={field.value || null} onChange={field.onChange} workspaceBase={ROUTES.DCM} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
               />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="dossier-objet">Objet du marché</FieldLabel>
-              <Textarea id="dossier-objet" value={objetMarche} onChange={(e) => setObjetMarche(e.target.value)} />
-            </Field>
-            {showStartingSequence && (
-              <Field>
-                <FieldLabel htmlFor="dossier-starting-sequence">Numéro de départ (première référence)</FieldLabel>
-                <Input
-                  id="dossier-starting-sequence"
-                  type="number"
-                  min={1}
-                  placeholder="Pour reprendre la numérotation papier existante"
-                  value={startingSequence}
-                  onChange={(e) => setStartingSequence(e.target.value)}
-                />
-              </Field>
-            )}
-            {rootError && (
-              <Field data-invalid>
-                <FieldError errors={[{ message: rootError }]} />
-              </Field>
-            )}
-          </FieldGroup>
-        </div>
+              <Controller
+                control={form.control}
+                name="sequence"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Numéro de référence
+                      <RequiredMark />
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id={field.name}
+                      inputMode="numeric"
+                      aria-invalid={fieldState.invalid}
+                      aria-required
+                    />
+                    <FieldDescription>
+                      Propre à la série des dossiers (DOS) ; pré-rempli avec le prochain numéro libre, modifiable si besoin.
+                      Verrouillé une fois le dossier finalisé.
+                    </FieldDescription>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="beneficiaire"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Bénéficiaire (Maître d&apos;ouvrage)
+                      <RequiredMark />
+                    </FieldLabel>
+                    <Input {...field} id={field.name} aria-invalid={fieldState.invalid} aria-required />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="referenceAppelOffres"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Référence de l&apos;appel d&apos;offres
+                      <RequiredMark />
+                    </FieldLabel>
+                    <Input {...field} id={field.name} aria-invalid={fieldState.invalid} aria-required />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="numeroCompte"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Numéro de compte
+                      <RequiredMark />
+                    </FieldLabel>
+                    <Input {...field} id={field.name} aria-invalid={fieldState.invalid} aria-required />
+                    <FieldDescription>Le compte sur lequel cette demande de caution est adossée.</FieldDescription>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="objetMarche"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>Objet du marché</FieldLabel>
+                    <Textarea {...field} id={field.name} aria-invalid={fieldState.invalid} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              {form.formState.errors.root && (
+                <Field data-invalid>
+                  <FieldError errors={[form.formState.errors.root]} />
+                </Field>
+              )}
+            </FieldGroup>
+          </div>
 
-        <DialogFooter className="border-t px-6 py-4">
-          <DialogClose asChild>
-            <Button type="button" variant="outline">
-              Annuler
-            </Button>
-          </DialogClose>
-          <SubmitButton
-            formState={{ isSubmitting: createDossier.isPending }}
-            disabled={!canSubmit}
-            pendingLabel="Création en cours"
-            onClick={handleSubmit}
-          >
-            Créer le dossier
-          </SubmitButton>
-        </DialogFooter>
+          <DialogFooter className="border-t px-6 py-4">
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Annuler
+              </Button>
+            </DialogClose>
+            <SubmitButton formState={{ isSubmitting: createDossier.isPending }} pendingLabel="Création en cours">
+              Créer le dossier
+            </SubmitButton>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

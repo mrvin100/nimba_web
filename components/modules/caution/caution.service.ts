@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import type { PagedResponse } from "@/lib/pagination";
 import type {
   Caution,
+  CautionDocumentType,
   CautionDocumentTypeInfo,
   CautionDossier,
   CautionDossierDetail,
@@ -10,7 +11,7 @@ import type {
   CreateDossierInput,
   DocumentVersion,
   DossierEvent,
-  ReferenceSequenceStatus,
+  SuggestedSequence,
   UpdateCautionInput,
   UpdateDossierInput,
 } from "./schema";
@@ -20,9 +21,14 @@ export function listCautionDocumentTypes(): Promise<CautionDocumentTypeInfo[]> {
   return api.get("cautions/document-types").json<CautionDocumentTypeInfo[]>();
 }
 
-/** Whether the create form should still offer a starting-sequence override (only before the very first caution ever created). */
-export function getReferenceSequenceStatus(): Promise<ReferenceSequenceStatus> {
-  return api.get("cautions/reference-sequence-status").json<ReferenceSequenceStatus>();
+/** The next free number in documentType's own series — pre-fills the create form's editable sequence field. */
+export function getNextSequence(documentType: CautionDocumentType): Promise<SuggestedSequence> {
+  return api.get("cautions/next-sequence", { searchParams: { documentType } }).json<SuggestedSequence>();
+}
+
+/** The next free number in the dossier series. */
+export function getNextDossierSequence(): Promise<SuggestedSequence> {
+  return api.get("caution-dossiers/next-sequence").json<SuggestedSequence>();
 }
 
 /** Opens a caution in draft; the reference number is assigned immediately (409 on a missing required field). */

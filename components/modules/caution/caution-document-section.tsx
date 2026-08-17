@@ -41,6 +41,8 @@ interface CautionDocumentSectionProps {
   typeLabel: string;
   specificFields: CautionFieldDefinition[];
   documents: Caution[];
+  /** The dossier's finalized SMS documents — a PRO's origin picker offers only these. */
+  originCandidates: Caution[];
   commonContent: Record<string, string>;
   writable: boolean;
   requireReasonOnEdit: boolean;
@@ -54,6 +56,7 @@ export function CautionDocumentSection({
   typeLabel,
   specificFields,
   documents,
+  originCandidates,
   commonContent,
   writable,
   requireReasonOnEdit,
@@ -118,7 +121,7 @@ export function CautionDocumentSection({
                           <DropdownMenuItem asChild>
                             <a href={cautionDocxExportPath(document.id)} download>
                               <Download />
-                              Prévisualiser / Télécharger
+                              Télécharger
                             </a>
                           </DropdownMenuItem>
                           {writable && (
@@ -154,6 +157,7 @@ export function CautionDocumentSection({
         documentType={documentType}
         typeLabel={typeLabel}
         fields={specificFields}
+        originCandidates={originCandidates}
         open={addOpen}
         onOpenChange={setAddOpen}
       />
@@ -165,6 +169,7 @@ export function CautionDocumentSection({
           documentType={documentType}
           typeLabel={typeLabel}
           fields={specificFields}
+          originCandidates={originCandidates}
           document={editing}
           requireReason={requireReasonOnEdit}
           open={Boolean(editing)}

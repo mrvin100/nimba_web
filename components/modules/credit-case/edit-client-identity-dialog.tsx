@@ -47,14 +47,13 @@ const orUndefined = (value: string | null | undefined): string | undefined => (v
 /**
  * Merges the edited identity fields onto the client's current record. The client
  * update is wholesale, so the fields the identity form does not edit (raison
- * sociale, sigle, RCCM, compte) are carried over from [client] unchanged.
+ * sociale, sigle, RCCM) are carried over from [client] unchanged.
  */
 function toClientPayload(client: Client, values: ClientIdentityInput): ClientFormInput {
   return {
     raisonSociale: client.raisonSociale,
     sigle: orUndefined(client.sigle),
     rccm: orUndefined(client.rccm),
-    accountNumber: orUndefined(client.accountNumber),
     formeJuridique: orUndefined(values.formeJuridique),
     dateCreation: values.dateCreation,
     adressePhysique: orUndefined(values.adressePhysique),

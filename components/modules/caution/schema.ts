@@ -1,5 +1,5 @@
 /** Every kind of caution/attestation the DCM can generate (mirrors the backend enum). Adding a future type (AVD...) is a backend + frontend metadata change, never a new hardcoded page. */
-export const CAUTION_DOCUMENT_TYPES = ["SMS", "ACF"] as const;
+export const CAUTION_DOCUMENT_TYPES = ["SMS", "ACF", "AFC", "PRO"] as const;
 export type CautionDocumentType = (typeof CAUTION_DOCUMENT_TYPES)[number];
 
 export type CautionStatus = "DRAFT" | "FINAL";
@@ -49,6 +49,7 @@ export interface Caution {
   clientId: string;
   documentType: CautionDocumentType;
   referenceNumber: string;
+  sequence: number;
   status: CautionStatus;
   content: Record<string, string>;
   clientSnapshot: CautionClientSnapshot | null;
@@ -61,8 +62,10 @@ export interface CreateCautionInput {
   clientId: string;
   documentType: CautionDocumentType;
   content: Record<string, string>;
-  /** Only takes effect for the very first caution ever created — see the create dialog's KDoc. */
-  startingReferenceSequence?: number;
+  /** The analyst-entered number in documentType's own series; omitted (never asked) for a PRO. */
+  sequence?: number;
+  /** Required for a PRO: the SMS document (in the same dossier) it prorogates. */
+  originDocumentId?: string;
   /** The dossier this document belongs to, or omitted when created standalone. */
   dossierId?: string;
 }
@@ -103,6 +106,7 @@ export interface CautionDossier {
   id: string;
   clientId: string;
   referenceNumber: string;
+  sequence: number;
   status: DossierStatus;
   /** Bumped on each amendment; the companion documents are re-issued carrying this version. */
   version: number;
@@ -120,7 +124,7 @@ export interface CautionDossierDetail {
 export interface CreateDossierInput {
   clientId: string;
   content: Record<string, string>;
-  startingReferenceSequence?: number;
+  sequence: number;
 }
 
 export interface UpdateDossierInput {
@@ -129,11 +133,13 @@ export interface UpdateDossierInput {
 
 export interface UpdateCautionInput {
   content: Record<string, string>;
+  /** Corrects the reference number's series value while still editable; omitted leaves it unchanged. */
+  sequence?: number;
   /** Journaled in the document's history (used notably during a prorogation). */
   reason?: string;
 }
 
-/** Whether the create form should still offer a starting-sequence override (only before the very first caution ever created). */
-export interface ReferenceSequenceStatus {
-  initialized: boolean;
+/** The next free number in a series, so the create form can pre-fill its editable sequence field. */
+export interface SuggestedSequence {
+  sequence: number;
 }

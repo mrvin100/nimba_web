@@ -8,6 +8,7 @@ import { useClients } from "@/components/modules/client";
 import { useSession } from "@/components/modules/identity";
 import { getErrorMessage } from "@/lib/api-error";
 import { SubmitButton } from "@/components/shared/submit-button";
+import { useBreadcrumbRecord } from "@/components/shared/breadcrumb-record";
 import { ROUTES } from "@/lib/constants";
 import { formatDate, formatDateTime } from "@/lib/format";
 import {
@@ -68,6 +69,7 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
   const finalize = useFinalizeDossier(dossierId);
   const refinalize = useRefinalizeDossier(dossierId);
   const remove = useDeleteDossier();
+  useBreadcrumbRecord(data?.dossier.referenceNumber);
 
   const clientName = useMemo(() => {
     const map = new Map<string, string>();
@@ -180,6 +182,7 @@ export function CautionDossierDetailView({ dossierId }: { dossierId: string }) {
           typeLabel={`${type.label} (${type.code})`}
           specificFields={type.specificFields}
           documents={documents.filter((document) => document.documentType === type.code)}
+          originCandidates={documents.filter((document) => document.documentType === "SMS" && document.status === "FINAL")}
           commonContent={dossier.content}
           writable={writable}
           requireReasonOnEdit={dossier.status === "EN_PROROGATION"}
