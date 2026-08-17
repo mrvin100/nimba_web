@@ -46,7 +46,31 @@ export function BootstrapForm() {
     return <Skeleton className="h-64 w-full max-w-sm" />;
   }
 
-  if (status.isError || !status.data?.available) {
+  // A failed request (server unreachable, still starting up, network error) is
+  // NOT the same thing as "an admin already exists" — conflating the two used to
+  // show a misleading "already initialized" card when the real problem was that
+  // the backend couldn't be reached at all, e.g. right after `docker compose up`
+  // while the app container is still starting.
+  if (status.isError) {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Impossible de contacter le serveur</CardTitle>
+          <CardDescription>
+            Le backend n&apos;a pas répondu. S&apos;il vient de démarrer (ex. juste après{" "}
+            <code>docker compose up</code>), patientez quelques instants puis réessayez.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button className="w-full" onClick={() => status.refetch()}>
+            Réessayer
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!status.data?.available) {
     return (
       <Card className="w-full max-w-sm">
         <CardHeader>
