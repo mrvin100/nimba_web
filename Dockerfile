@@ -40,6 +40,7 @@ USER node
 # Expose Next.js default port
 EXPOSE 3000
 
-# Start Next.js in production (BACKEND_ORIGIN is read at runtime by next.config.ts's
-# rewrites(), so it stays a normal environment variable, not a build arg)
+# Start Next.js in production (BACKEND_ORIGIN is read at runtime by proxy.ts's
+# middleware on every request, so it stays a normal environment variable, not a
+# build arg)
 CMD ["pnpm", "start"]

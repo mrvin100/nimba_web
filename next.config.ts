@@ -8,16 +8,15 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
 ];
 
-// Backend origin the dev proxy forwards to. The browser only ever calls this app
-// (same origin), so the SameSite=Strict session cookie flows without CORS.
-const backendOrigin = process.env.BACKEND_ORIGIN ?? "http://localhost:8080";
+// The /api proxy itself lives in proxy.ts (Next.js 16 middleware), not here:
+// rewrites() below is evaluated once at `next build` time and its resolved
+// destination gets frozen into `.next/routes-manifest.json`, so a container's
+// runtime BACKEND_ORIGIN would have no effect. Middleware runs per-request, so
+// it can read the env var fresh every time.
 
 const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
-  },
-  async rewrites() {
-    return [{ source: "/api/:path*", destination: `${backendOrigin}/api/:path*` }];
   },
 };
 
