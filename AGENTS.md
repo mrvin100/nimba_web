@@ -88,7 +88,9 @@ index.ts              barrel
 
 - Calls go through `lib/api-client.ts` (ky, `prefixUrl` = `env.apiBasePath`,
   `credentials: include`). The browser is same-origin; Next.js proxies `/api/*` to the
-  backend (`next.config.ts`), so the `SameSite=Strict` session cookie flows without CORS.
+  backend (`proxy.ts` middleware, not `next.config.ts`'s `rewrites()` — that runs once
+  at build time and can't see a container's runtime `BACKEND_ORIGIN`), so the
+  `SameSite=Strict` session cookie flows without CORS.
 - Non-OK responses surface as a typed `ApiError` (`lib/api-error.ts`) carrying the
   backend problem detail. Handle status codes explicitly (401 invalid credentials, 429
   throttled, 422 validation, etc.).
@@ -98,8 +100,9 @@ index.ts              barrel
 ## Environment & constants
 
 - **Never** read `process.env` outside `lib/env.ts` (client, `NEXT_PUBLIC_*` only) and
-  `lib/env.server.ts` (server-only, guarded by `server-only`). `next.config.ts` is the
-  one infra boundary that may read `process.env` for the dev proxy.
+  `lib/env.server.ts` (server-only, guarded by `server-only`). `proxy.ts` is the
+  one infra boundary that may read `process.env` directly, for the `/api` proxy's
+  `BACKEND_ORIGIN`.
 - **Never hardcode route strings or cookie names.** Use `ROUTES` and `AUTH_COOKIES`
   from `lib/constants.ts`.
 
