@@ -90,7 +90,9 @@ index.ts              barrel
   `credentials: include`). The browser is same-origin; Next.js proxies `/api/*` to the
   backend (`proxy.ts` middleware, not `next.config.ts`'s `rewrites()` — that runs once
   at build time and can't see a container's runtime `BACKEND_ORIGIN`), so the
-  `SameSite=Strict` session cookie flows without CORS.
+  `SameSite=Strict` session cookie flows without CORS. That same proxy sets the
+  `X-Forwarded-*` headers: the hop hides the public host, and without them the
+  backend judges every browser write cross-origin and answers 403.
 - Non-OK responses surface as a typed `ApiError` (`lib/api-error.ts`) carrying the
   backend problem detail. Handle status codes explicitly (401 invalid credentials, 429
   throttled, 422 validation, etc.).
