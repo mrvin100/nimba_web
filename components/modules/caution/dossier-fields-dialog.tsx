@@ -88,7 +88,11 @@ const dossierContentSchema = z
       ]),
     ),
   )
-  .catchall(z.string());
+  // Dynamic keys (the fee schedule, and whatever an older dossier still carries)
+  // are free-form and never required. They must stay optional: a bare z.string()
+  // rejects a field the analyst simply never touched, which blocks the save on an
+  // error no visible field can own, so nothing explains why nothing happens.
+  .catchall(z.string().optional());
 type DossierContentInput = z.infer<typeof dossierContentSchema>;
 
 /**
@@ -99,7 +103,13 @@ type DossierContentInput = z.infer<typeof dossierContentSchema>;
  */
 function buildDefaultValues(content: Record<string, string>): DossierContentInput {
   const seeded = Object.fromEntries(ALL_FIELDS.map((field) => [field.key, ""]));
-  return { ...seeded, ...content } as DossierContentInput;
+  // The fee schedule's inputs are rendered unconditionally, so seed them too:
+  // an unseeded Controller submits `undefined`, which dirty-tracking and the
+  // resolver both handle worse than an empty string.
+  const schedule = Object.fromEntries(
+    FEE_LINES.flatMap((line) => ["taux", "min", "tva"].map((suffix) => [`${line.key}_${suffix}`, ""])),
+  );
+  return { ...seeded, ...schedule, ...content } as DossierContentInput;
 }
 
 /**
@@ -472,8 +482,12 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
   }, [open, content, signatoryOptions, form]);
 
   async function onSubmit(values: DossierContentInput) {
+    // The backend stores a string map; drop any key the form left undefined.
+    const content = Object.fromEntries(
+      Object.entries(values).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+    );
     try {
-      await update.mutateAsync({ content: values });
+      await update.mutateAsync({ content });
       onOpenChange(false);
     } catch (error) {
       form.setError("root", { message: getErrorMessage(error) });
@@ -492,10 +506,14 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
 
   // Named, clickable list of what blocks the save. A required field can sit on a
   // tab the analyst is not looking at, so the inline error alone is invisible.
-  const missingFields = Object.keys(form.formState.errors)
+  const errorKeys = Object.keys(form.formState.errors).filter((key) => key !== "root");
+  const missingFields = errorKeys
     .map((key) => ({ key, location: FIELD_LOCATION.get(key) }))
     .filter((entry): entry is { key: string; location: NonNullable<typeof entry.location> } => entry.location !== undefined);
   const sectionsWithErrors = new Set(missingFields.map((entry) => entry.location.sectionId));
+  // An error on a key no visible field owns would otherwise block the save with
+  // nothing on screen to explain it. Name the keys rather than stay silent.
+  const unmappedErrorKeys = errorKeys.filter((key) => !FIELD_LOCATION.has(key));
 
   return (
     <Dialog
@@ -566,13 +584,16 @@ export function DossierFieldsDialog({ dossierId, content, open, onOpenChange }: 
               ))}
             </Tabs>
 
-            {missingFields.length > 0 && (
+            {errorKeys.length > 0 && (
               <div role="alert" className="mt-4 rounded-md border border-destructive/50 bg-destructive/5 p-3 text-sm">
                 <p className="font-medium text-destructive">
-                  {missingFields.length === 1
+                  {errorKeys.length === 1
                     ? "1 champ obligatoire est manquant."
-                    : `${missingFields.length} champs obligatoires sont manquants.`}
+                    : `${errorKeys.length} champs obligatoires sont manquants.`}
                 </p>
+                {unmappedErrorKeys.length > 0 && (
+                  <p className="mt-1 text-muted-foreground">Champs concernés : {unmappedErrorKeys.join(", ")}.</p>
+                )}
                 <ul className="mt-2 space-y-1">
                   {missingFields.map((entry) => (
                     <li key={entry.key}>
