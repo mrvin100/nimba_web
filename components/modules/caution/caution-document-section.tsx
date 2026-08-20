@@ -6,6 +6,7 @@ import { useSession } from "@/components/modules/identity";
 import { cautionDocxExportPath } from "./caution.service";
 import { useDeleteCaution } from "./useCaution";
 import { CautionDocumentDialog } from "./caution-document-dialog";
+import { parseLots } from "./caution-form-fields";
 import { DocumentHistoryDialog } from "./document-history-dialog";
 import { CautionStatusBadge } from "./caution-status-badge";
 import type { Caution, CautionDocumentType, CautionFieldDefinition } from "./schema";
@@ -158,6 +159,7 @@ export function CautionDocumentSection({
         typeLabel={typeLabel}
         fields={specificFields}
         originCandidates={originCandidates}
+        lotChoices={parseLots(commonContent.lots)}
         open={addOpen}
         onOpenChange={setAddOpen}
       />
@@ -170,6 +172,7 @@ export function CautionDocumentSection({
           typeLabel={typeLabel}
           fields={specificFields}
           originCandidates={originCandidates}
+          lotChoices={parseLots(commonContent.lots)}
           document={editing}
           requireReason={requireReasonOnEdit}
           open={Boolean(editing)}
