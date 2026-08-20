@@ -90,6 +90,8 @@ interface CautionDocumentDialogProps {
   fields: CautionFieldDefinition[];
   /** The dossier's finalized SMS documents — a PRO's origin picker offers only these. */
   originCandidates?: Caution[];
+  /** The lots the dossier declared; the document's own "lot" field picks one of them. */
+  lotChoices?: string[];
   /** Present ⇒ edit mode; absent ⇒ add mode. */
   document?: Caution;
   /** When true (during a prorogation), a reason is required and journaled. */
@@ -113,6 +115,7 @@ export function CautionDocumentDialog({
   typeLabel,
   fields,
   originCandidates = [],
+  lotChoices = [],
   document,
   requireReason = false,
   open,
@@ -258,6 +261,7 @@ export function CautionDocumentDialog({
                 fields={fields}
                 control={form.control}
                 pathFor={(key) => `content.${key}` as Path<DocumentFormInput>}
+                lotChoices={lotChoices}
               />
             )}
 

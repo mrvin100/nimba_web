@@ -89,6 +89,17 @@ function DateWithDurationInput({
   );
 }
 
+/** The select value used to represent "no lot" (Radix Select forbids an empty-string item value). */
+const NO_LOT = "__none__";
+
+/** The lots the dossier declared, in the order they were entered. */
+export function parseLots(lots: string | undefined): string[] {
+  return (lots ?? "")
+    .split(",")
+    .map((lot) => lot.trim())
+    .filter((lot) => lot.length > 0);
+}
+
 interface CautionFieldInputProps {
   field: CautionFieldDefinition;
   value: string;
@@ -97,13 +108,32 @@ interface CautionFieldInputProps {
   invalid?: boolean;
   /** The dateOffre value, only passed when rendering dateExpiration (their computed-duration pairing). */
   baseDateForDuration?: string;
+  /** The lots declared on the dossier, only passed when rendering a LOT field. */
+  lotChoices?: string[];
 }
 
-/** One field of the dynamic form. A currency or civility picks from a select, everything else is a typed input. */
-export function CautionFieldInput({ field, value, onChange, onBlur, invalid, baseDateForDuration }: CautionFieldInputProps) {
+/** One field of the dynamic form. A currency, civility or lot picks from a select, everything else is a typed input. */
+export function CautionFieldInput({ field, value, onChange, onBlur, invalid, baseDateForDuration, lotChoices }: CautionFieldInputProps) {
   const required = !field.optional;
   if (field.key === "dateExpiration" && baseDateForDuration !== undefined) {
     return <DateWithDurationInput fieldKey={field.key} baseDate={baseDateForDuration} value={value} onChange={onChange} invalid={invalid} />;
+  }
+  if (field.type === "LOT") {
+    return (
+      <Select value={value || NO_LOT} onValueChange={(next) => onChange(next === NO_LOT ? "" : next)}>
+        <SelectTrigger id={field.key} className="w-full" aria-required={required} aria-invalid={invalid}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={NO_LOT}>Aucun (demande mono-lot)</SelectItem>
+          {(lotChoices ?? []).map((lot) => (
+            <SelectItem key={lot} value={lot}>
+              {lot}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
   }
   if (field.type === "CURRENCY") {
     return (
@@ -157,10 +187,12 @@ interface CautionFieldsGridProps<T extends FieldValues> {
   control: Control<T>;
   /** Maps a field's key to its path in the form (e.g. `content.${key}`). */
   pathFor: (key: string) => Path<T>;
+  /** The lots declared on the dossier, offered by the LOT field's select. */
+  lotChoices?: string[];
 }
 
 /** Renders a set of fields in a responsive two-column grid (single column on narrow screens), each wired to react-hook-form with accessible validation feedback (label "*", aria-invalid, inline error). */
-export function CautionFieldsGrid<T extends FieldValues>({ fields, control, pathFor }: CautionFieldsGridProps<T>) {
+export function CautionFieldsGrid<T extends FieldValues>({ fields, control, pathFor, lotChoices }: CautionFieldsGridProps<T>) {
   const hasDateOffre = fields.some((field) => field.key === "dateOffre");
   // Watching a path outside this grid's own fields (when it has no dateOffre) is harmless — RHF just reports it as undefined.
   const dateOffre = useWatch({ control, name: pathFor("dateOffre") }) as string | undefined;
@@ -185,6 +217,7 @@ export function CautionFieldsGrid<T extends FieldValues>({ fields, control, path
                 onBlur={controllerField.onBlur}
                 invalid={fieldState.invalid}
                 baseDateForDuration={field.key === "dateExpiration" && hasDateOffre ? (dateOffre ?? "") : undefined}
+                lotChoices={lotChoices}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>

@@ -9,8 +9,13 @@
  * "commun" mirrors the backend's CautionFieldRegistry.SHARED_FIELDS exactly
  * (every generated document reads these — SMS, ACF, AFC, PRO alike), the
  * other two are read only by their own document.
+ *
+ * Figures that a document already carries are deliberately absent: the Fiche's
+ * sollicitations and its per-lot rentability are computed from the documents
+ * attached to the dossier and from the fee schedule (see FeeScheduleFields),
+ * never entered a second time here.
  */
-export type DossierFieldType = "text" | "textarea" | "date" | "ouinon";
+export type DossierFieldType = "text" | "textarea" | "date" | "ouinon" | "civilite";
 
 export interface DossierFieldDef {
   key: string;
@@ -67,11 +72,12 @@ export const DOSSIER_SECTIONS: DossierSection[] = [
           },
           {
             key: "objetMarche",
-            label: "Objet du marché",
+            label: "Objet du marché (une ligne par lot)",
             type: "textarea",
             required: true,
             requiredMessage: "Décrivez l'objet du marché.",
-            description: "Repris tel quel sur la caution, la notification et la fiche.",
+            description:
+              "Une seule ligne couvre tous les lots. Pour un intitulé différent par lot, saisissez une ligne par lot, dans le même ordre que le champ « Lots ».",
           },
           {
             key: "dateEmission",
@@ -85,10 +91,9 @@ export const DOSSIER_SECTIONS: DossierSection[] = [
             key: "lots",
             label: "Lots (séparés par des virgules)",
             type: "text",
-            required: true,
-            requiredMessage: "Renseignez au moins un lot.",
             placeholder: "Lot 1, Lot 2, Lot 3",
-            description: "Séparez chaque lot par une virgule. Ils créent les colonnes de « Conditions par lot ».",
+            description:
+              "Laissez vide pour une demande mono-lot. Sinon séparez chaque lot par une virgule : ils alimentent le select « Lot » des documents et les colonnes de la fiche.",
           },
         ],
       },
@@ -139,13 +144,18 @@ export const DOSSIER_SECTIONS: DossierSection[] = [
         fields: [
           { key: "notifReference", label: "Référence du courrier", type: "text" },
           { key: "vReference", label: "V/Réf", type: "text" },
+          {
+            key: "destinataireCivilite",
+            label: "Civilité du destinataire",
+            type: "civilite",
+            description: "Ouvre et referme le courrier (« Monsieur, » / « Madame, »).",
+          },
           { key: "destinataireNom", label: "Destinataire", type: "text" },
           { key: "destinataireFonction", label: "Fonction du destinataire", type: "text" },
           { key: "demandeResume", label: "Résumé de la demande", type: "textarea" },
           { key: "articulationConcours", label: "Articulation des concours (une ligne par élément)", type: "textarea" },
           { key: "garantiesDetenues", label: "Garanties détenues", type: "text" },
           { key: "garantiesARecueillir", label: "Garanties à recueillir (une ligne par élément)", type: "textarea" },
-          { key: "conditionsBanque", label: "Conditions de banque (une ligne par condition)", type: "textarea" },
         ],
       },
     ],
@@ -170,13 +180,6 @@ export const DOSSIER_SECTIONS: DossierSection[] = [
           { key: "docDao", label: "DAO", type: "ouinon" },
           { key: "docCouvertureFrais", label: "Couverture des frais", type: "ouinon" },
           { key: "docAutres", label: "Autres", type: "ouinon" },
-        ],
-      },
-      {
-        title: "Sollicitations",
-        fields: [
-          { key: "sollicitationCaution", label: "Caution", type: "textarea" },
-          { key: "sollicitationPromesse", label: "Promesse de facilité", type: "textarea" },
         ],
       },
       {
