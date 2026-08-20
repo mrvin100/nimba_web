@@ -9,7 +9,7 @@ export const CAUTION_STATUS_LABELS: Record<CautionStatus, string> = {
   FINAL: "Finalisée",
 };
 
-export type CautionFieldType = "TEXT" | "DATE" | "AMOUNT" | "CURRENCY" | "CIVILITY";
+export type CautionFieldType = "TEXT" | "DATE" | "AMOUNT" | "CURRENCY" | "CIVILITY" | "LOT";
 
 export const CAUTION_CURRENCIES = ["GNF", "USD", "EUR"] as const;
 export type CautionCurrency = (typeof CAUTION_CURRENCIES)[number];
