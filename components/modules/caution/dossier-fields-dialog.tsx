@@ -132,26 +132,6 @@ function liveCivilityOf(
   return match.civility ? CIVILITY_LABELS[match.civility] : "";
 }
 
-/**
- * The civilité a signatory's live record carries today, matched on the nom/titre
- * pair the dossier stored when they were picked. A dossier keeps a copy of the
- * civilité (it must freeze with the rest of the content once finalized), but a
- * copy taken before the signatory's record was completed would otherwise stay
- * wrong forever, with no field in this form able to correct it.
- */
-function liveCivilityOf(
-  content: Record<string, string>,
-  index: 1 | 2,
-  options: SignatoryOption[] | undefined,
-): string | null {
-  const nom = content[`signataire${index}Nom`]?.trim();
-  const titre = content[`signataire${index}Titre`]?.trim();
-  if (!nom || !options?.length) return null;
-  const match = options.find((option) => option.nom.trim() === nom && option.titre.trim() === titre);
-  if (!match) return null;
-  return match.civility ? CIVILITY_LABELS[match.civility] : "";
-}
-
 interface DossierFieldsDialogProps {
   dossierId: string;
   content: Record<string, string>;
